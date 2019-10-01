@@ -126,6 +126,11 @@ namespace NexusForever.Shared.Network.Message
         ClientItemGenericUnlock         = 0x0400,
         ClientQuestShareResult          = 0x045E,
         ClientQuestShare                = 0x045F,
+        ClientGroupInvite               = 0x0416,
+        ClientGroupInviteResponse       = 0x041A,
+        ServerGroupInviteResult         = 0x041D,
+        ServerGroupInviteReceived       = 0x041F,
+        ServerGroupJoin                 = 0x0427,
         Server0497                      = 0x0497, // guild info
         ClientCastSpell                 = 0x04DB,
         ServerHousingResidenceDecor     = 0x04DE,
