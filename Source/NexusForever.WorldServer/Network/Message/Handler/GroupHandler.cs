@@ -35,29 +35,29 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                     Result = inviteResult
                 });
 
-                WorldSession targetSession = NetworkManager<WorldSession>.GetSession(s => s.Player?.CharacterId == character.Id);
-                if (targetSession != null)
-                {
-                    targetSession.EnqueueMessageEncrypted(new ServerGroupInviteReceived
-                    {
-                        GroupId = 1,
-                        Unknown0 = 0,
-                        Unknown1 = 0,
-                        GroupMembers = new System.Collections.Generic.List<GroupMember>
-                        {
-                            new GroupMember
-                            {
-                                Name = session.Player.Name,
-                                Faction = session.Player.Faction1,
-                                Race = session.Player.Race,
-                                Class = session.Player.Class,
-                                Path = session.Player.Path,
-                                Level = (byte)session.Player.Level,
-                                GroupMemberId = 1
-                            }
-                        }
-                    });
-                }
+                //WorldSession targetSession = NetworkManager<WorldSession>.GetSession(s => s.Player?.CharacterId == character.Id);
+                //if (targetSession != null)
+                //{
+                //    targetSession.EnqueueMessageEncrypted(new ServerGroupInviteReceived
+                //    {
+                //        GroupId = 1,
+                //        Unknown0 = 0,
+                //        Unknown1 = 0,
+                //        GroupMembers = new System.Collections.Generic.List<GroupMember>
+                //        {
+                //            new GroupMember
+                //            {
+                //                Name = session.Player.Name,
+                //                Faction = session.Player.Faction1,
+                //                Race = session.Player.Race,
+                //                Class = session.Player.Class,
+                //                Path = session.Player.Path,
+                //                Level = (byte)session.Player.Level,
+                //                GroupMemberId = 1
+                //            }
+                //        }
+                //    });
+                //}
             }));
         }
 
