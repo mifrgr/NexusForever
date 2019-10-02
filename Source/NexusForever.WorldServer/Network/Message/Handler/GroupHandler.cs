@@ -109,7 +109,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                             MemberIdentity = new Model.Shared.TargetPlayerIdentity
                             {
                                 RealmId = WorldServer.RealmId,
-                                CharacterId = 2
+                                CharacterId = session.Player.Guid
                             },
                             Unknown7 = 8198,
                             GroupMember = new Model.Shared.GroupMember
@@ -134,7 +134,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                             MemberIdentity = new TargetPlayerIdentity
                             {
                                 RealmId = WorldServer.RealmId,
-                                CharacterId = session.Player.Guid
+                                CharacterId = targetSession.Player.Guid
                             },
                             Unknown7 = 8192,
                             GroupMember = new GroupMember
