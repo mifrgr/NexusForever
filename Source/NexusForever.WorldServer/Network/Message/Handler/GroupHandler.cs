@@ -20,19 +20,22 @@ namespace NexusForever.WorldServer.Network.Message.Handler
             session.EnqueueEvent(new TaskGenericEvent<Character>(CharacterDatabase.GetCharacterByName(request.PlayerName),
                 character =>
             {
-                InviteResult inviteResult = InviteResult.Sent;
-
                 if (character == null)
-                    inviteResult = InviteResult.PlayerNotFound;
-
-                //if (groupResult == GroupResult.Sent)
-                    // Send request via group manager
+                {
+                    session.EnqueueMessageEncrypted(new ServerGroupInviteResult
+                    {
+                        GroupId = 0,
+                        PlayerName = request.PlayerName,
+                        Result = InviteResult.PlayerNotFound
+                    });
+                    return;
+                }
 
                 session.EnqueueMessageEncrypted(new ServerGroupInviteResult
                 {
                     GroupId = 0,
                     PlayerName = request.PlayerName,
-                    Result = inviteResult
+                    Result = InviteResult.Sent
                 });
 
                 WorldSession targetSession = NetworkManager<WorldSession>.GetSession(s => s.Player?.CharacterId == character.Id);
