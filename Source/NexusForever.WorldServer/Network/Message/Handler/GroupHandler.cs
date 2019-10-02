@@ -3,6 +3,7 @@ using NexusForever.Shared.Network;
 using NexusForever.Shared.Network.Message;
 using NexusForever.WorldServer.Database.Character;
 using NexusForever.WorldServer.Database.Character.Model;
+using NexusForever.WorldServer.Game.Group;
 using NexusForever.WorldServer.Game.Group.Static;
 using NexusForever.WorldServer.Network.Message.Model;
 using NexusForever.WorldServer.Network.Message.Model.Shared;
@@ -31,9 +32,13 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                     return;
                 }
 
+                var group = GroupManager.CreateNewGroup();
+                group.PartyLeaderCharacterId = session.Player.CharacterId;
+                group.CreateNewInvite(character.Id);
+
                 session.EnqueueMessageEncrypted(new ServerGroupInviteResult
                 {
-                    GroupId = 0,
+                    GroupId = group.GroupId,
                     PlayerName = request.PlayerName,
                     Result = InviteResult.Sent
                 });
@@ -43,7 +48,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 {
                     targetSession.EnqueueMessageEncrypted(new ServerGroupInviteReceived
                     {
-                        GroupId = 1,
+                        GroupId = group.GroupId,
                         Unknown0 = 0,
                         Unknown1 = 0,
                         GroupMembers = new System.Collections.Generic.List<GroupMember>
@@ -69,17 +74,28 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         {
             log.Info($"{clientGroupInviteResponse.GroupId}, {clientGroupInviteResponse.Response}, {clientGroupInviteResponse.Unknown0}");
 
-            WorldSession targetSession = NetworkManager<WorldSession>.GetSession(s => s.Player?.CharacterId == 1);
+            var group = GroupManager.GetGroupById(clientGroupInviteResponse.GroupId);
+            var invite = group.FindInvite(session.Player.CharacterId);
+            if (group == null || invite == null)
+            {
+                return;
+            }
+
+            log.Info("Has group and invite");
+
+            WorldSession targetSession = NetworkManager<WorldSession>.GetSession(s => s.Player?.CharacterId == group.PartyLeaderCharacterId);
             if (clientGroupInviteResponse.Response != 0)
             {
-                session.EnqueueMessageEncrypted(new ServerGroupJoin
+                group.AcceptInvite(invite);
+
+                ServerGroupJoin join = new ServerGroupJoin
                 {
                     PlayerJoined = new Model.Shared.TargetPlayerIdentity
                     {
                         RealmId = WorldServer.RealmId,
                         CharacterId = session.Player.Guid
                     },
-                    GroupId = clientGroupInviteResponse.GroupId,
+                    GroupId = group.GroupId,
                     Unknown0 = 257,
                     Unknown1 = 5,
                     Unknown3 = 1,
@@ -145,14 +161,18 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                         CharacterId = targetSession.Player.Guid
                     },
                     Realm = WorldServer.RealmId
-                });
+                };
+
+                session.EnqueueMessageEncrypted(join);
 
                 targetSession.EnqueueMessageEncrypted(new ServerGroupInviteResult
                 {
-                    GroupId = clientGroupInviteResponse.GroupId,
+                    GroupId = group.GroupId,
                     PlayerName = session.Player.Name,
                     Result = InviteResult.Accepted
                 });
+
+                targetSession.EnqueueMessageEncrypted(join);
             }
             else
             {
@@ -162,6 +182,12 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                     PlayerName = session.Player.Name,
                     Result = InviteResult.Declined
                 });
+
+                group.DismissInvite(invite);
+                if (group.IsEmpty)
+                {
+                    GroupManager.DismissGroup(group);
+                }
             }
         }
     }
