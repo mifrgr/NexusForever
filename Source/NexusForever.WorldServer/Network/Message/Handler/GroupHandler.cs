@@ -35,7 +35,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 var group = GroupManager.CreateNewGroup();
                 group.PartyLeaderCharacterId = session.Player.CharacterId;
                 group.CreateNewInvite(character.Id);
-                group.CreateNewMember(session.Player.CharacterId);
+                var member = group.CreateNewMember(session.Player.CharacterId);
 
                 session.EnqueueMessageEncrypted(new ServerGroupInviteResult
                 {
@@ -62,7 +62,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                                 Class = session.Player.Class,
                                 Path = session.Player.Path,
                                 Level = (byte)session.Player.Level,
-                                GroupMemberId = 2
+                                GroupMemberId = (ushort)member.Id
                             }
                         }
                     });
@@ -106,7 +106,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
 
             // Accepted
 
-            group.AcceptInvite(invite);
+            var member = group.AcceptInvite(invite);
 
             ServerGroupJoin join = new ServerGroupJoin
             {
@@ -126,31 +126,6 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 {
                     new ServerGroupJoin.GroupMemberInfo
                     {
-                        MemberIdentity = new Model.Shared.TargetPlayerIdentity
-                        {
-                            RealmId = WorldServer.RealmId,
-                            CharacterId = session.Player.Guid
-                        },
-                        Unknown7 = 8198,
-                        GroupMember = new Model.Shared.GroupMember
-                        {
-                            Name = session.Player.Name,
-                            Faction = session.Player.Faction1,
-                            Race = session.Player.Race,
-                            Class = session.Player.Class,
-                            Path = session.Player.Path,
-                            Level = (byte)session.Player.Level,
-                            GroupMemberId = 1,
-                            Realm = WorldServer.RealmId,
-                            WorldZoneId = 51,
-                            Unknown25 = 2725,
-                            Unknown26 = 1,
-                            Unknown27 = true
-                        },
-                        GroupIndex = 1
-                    },
-                    new ServerGroupJoin.GroupMemberInfo
-                    {
                         MemberIdentity = new TargetPlayerIdentity
                         {
                             RealmId = WorldServer.RealmId,
@@ -165,7 +140,32 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                             Class = targetSession.Player.Class,
                             Path = targetSession.Player.Path,
                             Level = (byte)targetSession.Player.Level,
-                            GroupMemberId = 2,
+                            GroupMemberId = (ushort)group.PartyLeader.Id,
+                            Realm = WorldServer.RealmId,
+                            WorldZoneId = 51,
+                            Unknown25 = 2725,
+                            Unknown26 = 1,
+                            Unknown27 = true
+                        },
+                        GroupIndex = 1
+                    },
+                    new ServerGroupJoin.GroupMemberInfo
+                    {
+                        MemberIdentity = new Model.Shared.TargetPlayerIdentity
+                        {
+                            RealmId = WorldServer.RealmId,
+                            CharacterId = session.Player.Guid
+                        },
+                        Unknown7 = 8198,
+                        GroupMember = new Model.Shared.GroupMember
+                        {
+                            Name = session.Player.Name,
+                            Faction = session.Player.Faction1,
+                            Race = session.Player.Race,
+                            Class = session.Player.Class,
+                            Path = session.Player.Path,
+                            Level = (byte)session.Player.Level,
+                            GroupMemberId = (ushort)member.Id,
                             Realm = WorldServer.RealmId,
                             WorldZoneId = 51,
                             Unknown25 = 2725,
