@@ -35,6 +35,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 var group = GroupManager.CreateNewGroup();
                 group.PartyLeaderCharacterId = session.Player.CharacterId;
                 group.CreateNewInvite(character.Id);
+                group.CreateNewMember(session.Player.CharacterId);
 
                 session.EnqueueMessageEncrypted(new ServerGroupInviteResult
                 {
@@ -61,7 +62,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                                 Class = session.Player.Class,
                                 Path = session.Player.Path,
                                 Level = (byte)session.Player.Level,
-                                GroupMemberId = 1
+                                GroupMemberId = 2
                             }
                         }
                     });
@@ -81,100 +82,12 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 return;
             }
 
-            log.Info("Has group and invite");
-
+            
             WorldSession targetSession = NetworkManager<WorldSession>.GetSession(s => s.Player?.CharacterId == group.PartyLeaderCharacterId);
-            if (clientGroupInviteResponse.Response != 0)
-            {
-                group.AcceptInvite(invite);
-
-                ServerGroupJoin join = new ServerGroupJoin
-                {
-                    PlayerJoined = new Model.Shared.TargetPlayerIdentity
-                    {
-                        RealmId = WorldServer.RealmId,
-                        CharacterId = session.Player.Guid
-                    },
-                    GroupId = group.GroupId,
-                    Unknown0 = 257,
-                    Unknown1 = 5,
-                    Unknown3 = 1,
-                    Unknown4 = 2,
-                    Unknown5 = 3,
-                    Unknown6 = 0,
-                    GroupMembers = new System.Collections.Generic.List<ServerGroupJoin.GroupMemberInfo>
-                    {
-                        new ServerGroupJoin.GroupMemberInfo
-                        {
-                            MemberIdentity = new Model.Shared.TargetPlayerIdentity
-                            {
-                                RealmId = WorldServer.RealmId,
-                                CharacterId = session.Player.Guid
-                            },
-                            Unknown7 = 8198,
-                            GroupMember = new Model.Shared.GroupMember
-                            {
-                                Name = session.Player.Name,
-                                Faction = session.Player.Faction1,
-                                Race = session.Player.Race,
-                                Class = session.Player.Class,
-                                Path = session.Player.Path,
-                                Level = (byte)session.Player.Level,
-                                GroupMemberId = 1,
-                                Realm = WorldServer.RealmId,
-                                WorldZoneId = 51,
-                                Unknown25 = 2725,
-                                Unknown26 = 1,
-                                Unknown27 = true
-                            },
-                            GroupIndex = 1
-                        },
-                        new ServerGroupJoin.GroupMemberInfo
-                        {
-                            MemberIdentity = new TargetPlayerIdentity
-                            {
-                                RealmId = WorldServer.RealmId,
-                                CharacterId = targetSession.Player.Guid
-                            },
-                            Unknown7 = 8192,
-                            GroupMember = new GroupMember
-                            {
-                                Name = targetSession.Player.Name,
-                                Faction = targetSession.Player.Faction1,
-                                Race = targetSession.Player.Race,
-                                Class = targetSession.Player.Class,
-                                Path = targetSession.Player.Path,
-                                Level = (byte)targetSession.Player.Level,
-                                GroupMemberId = 2,
-                                Realm = WorldServer.RealmId,
-                                WorldZoneId = 51,
-                                Unknown25 = 2725,
-                                Unknown26 = 1,
-                                Unknown27 = true
-                            },
-                            GroupIndex = 2
-                        }
-                    },
-                    LeaderIdentity = new Model.Shared.TargetPlayerIdentity
-                    {
-                        RealmId = WorldServer.RealmId,
-                        CharacterId = targetSession.Player.Guid
-                    },
-                    Realm = WorldServer.RealmId
-                };
-
-                session.EnqueueMessageEncrypted(join);
-
-                targetSession.EnqueueMessageEncrypted(new ServerGroupInviteResult
-                {
-                    GroupId = group.GroupId,
-                    PlayerName = session.Player.Name,
-                    Result = InviteResult.Accepted
-                });
-
-                targetSession.EnqueueMessageEncrypted(join);
-            }
-            else
+            
+            // Declined
+            
+            if (clientGroupInviteResponse.Response != InviteResponseResult.Accepted)
             {
                 targetSession.EnqueueMessageEncrypted(new ServerGroupInviteResult
                 {
@@ -188,7 +101,98 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 {
                     GroupManager.DismissGroup(group);
                 }
+                return;
             }
+
+            // Accepted
+
+            group.AcceptInvite(invite);
+
+            ServerGroupJoin join = new ServerGroupJoin
+            {
+                PlayerJoined = new Model.Shared.TargetPlayerIdentity
+                {
+                    RealmId = WorldServer.RealmId,
+                    CharacterId = session.Player.Guid
+                },
+                GroupId = group.GroupId,
+                Unknown0 = 257,
+                Unknown1 = 5,
+                Unknown3 = 1,
+                Unknown4 = 2,
+                Unknown5 = 3,
+                Unknown6 = 0,
+                GroupMembers = new System.Collections.Generic.List<ServerGroupJoin.GroupMemberInfo>
+                {
+                    new ServerGroupJoin.GroupMemberInfo
+                    {
+                        MemberIdentity = new Model.Shared.TargetPlayerIdentity
+                        {
+                            RealmId = WorldServer.RealmId,
+                            CharacterId = session.Player.Guid
+                        },
+                        Unknown7 = 8198,
+                        GroupMember = new Model.Shared.GroupMember
+                        {
+                            Name = session.Player.Name,
+                            Faction = session.Player.Faction1,
+                            Race = session.Player.Race,
+                            Class = session.Player.Class,
+                            Path = session.Player.Path,
+                            Level = (byte)session.Player.Level,
+                            GroupMemberId = 1,
+                            Realm = WorldServer.RealmId,
+                            WorldZoneId = 51,
+                            Unknown25 = 2725,
+                            Unknown26 = 1,
+                            Unknown27 = true
+                        },
+                        GroupIndex = 1
+                    },
+                    new ServerGroupJoin.GroupMemberInfo
+                    {
+                        MemberIdentity = new TargetPlayerIdentity
+                        {
+                            RealmId = WorldServer.RealmId,
+                            CharacterId = targetSession.Player.Guid
+                        },
+                        Unknown7 = 8192,
+                        GroupMember = new GroupMember
+                        {
+                            Name = targetSession.Player.Name,
+                            Faction = targetSession.Player.Faction1,
+                            Race = targetSession.Player.Race,
+                            Class = targetSession.Player.Class,
+                            Path = targetSession.Player.Path,
+                            Level = (byte)targetSession.Player.Level,
+                            GroupMemberId = 2,
+                            Realm = WorldServer.RealmId,
+                            WorldZoneId = 51,
+                            Unknown25 = 2725,
+                            Unknown26 = 1,
+                            Unknown27 = true
+                        },
+                        GroupIndex = 2
+                    }
+                },
+                LeaderIdentity = new Model.Shared.TargetPlayerIdentity
+                {
+                    RealmId = WorldServer.RealmId,
+                    CharacterId = targetSession.Player.Guid
+                },
+                Realm = WorldServer.RealmId
+            };
+
+            session.EnqueueMessageEncrypted(join);
+
+            targetSession.EnqueueMessageEncrypted(new ServerGroupInviteResult
+            {
+                GroupId = group.GroupId,
+                PlayerName = session.Player.Name,
+                Result = InviteResult.Accepted
+            });
+
+            targetSession.EnqueueMessageEncrypted(join);
         }
     }
 }

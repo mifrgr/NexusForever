@@ -22,11 +22,16 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         public static ulong NextGroupId => nextGroupId++;
 
+        public static ulong NextGroupMemberId => nextGroupMemberId++;
+
         private static ulong nextGroupId;
+
+        private static ulong nextGroupMemberId;
 
         public static void Initialise()
         {
             nextGroupId = 0ul;
+            nextGroupMemberId = 0ul;
         }
 
         public static Group GetGroupById(ulong groupId)

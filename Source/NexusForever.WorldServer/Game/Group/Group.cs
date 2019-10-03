@@ -20,6 +20,7 @@ namespace NexusForever.WorldServer.Game.Group
 
         public class Member
         {
+            public ulong Id;
             public ulong CharacterId;
         }
 
@@ -32,6 +33,8 @@ namespace NexusForever.WorldServer.Game.Group
         private List<Member> members = new List<Member>();
 
         public bool IsEmpty => members.Count == 0;
+
+        public Member PartyLeader => members.Find(m => m.CharacterId == PartyLeaderCharacterId);
 
         public Group(ulong groupId)
         {
@@ -55,20 +58,40 @@ namespace NexusForever.WorldServer.Game.Group
 
         public Member AcceptInvite(Invite invite)
         {
-            var member = new Member
-            {
-                CharacterId = invite.CharacterId
-            };
-
-            members.Add(member);
             invites.Remove(invite);
-
-            return member;
+            return CreateNewMember(invite.CharacterId);
         }
 
         public void DismissInvite(Invite invite)
         {
             invites.Remove(invite);
+        }
+
+        public Member CreateNewMember(ulong characterId)
+        {
+            var member = new Member
+            {
+                Id = GroupManager.NextGroupMemberId,
+                CharacterId = characterId
+            };
+
+            members.Add(member);
+            return member;
+        }
+
+        public Member FindMemberByGroupMemberId(ulong id)
+        {
+            return members.Find(m => m.Id == id);
+        }
+
+        public Member FindMemberByCharacterId(ulong id)
+        {
+            return members.Find(m => m.CharacterId == id);
+        }
+
+        public void RemoveMember(Member member)
+        {
+            members.Remove(member);
         }
     }
 }
