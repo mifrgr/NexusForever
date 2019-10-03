@@ -87,7 +87,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
             
             // Declined
             
-            if (clientGroupInviteResponse.Response != InviteResponseResult.Accepted)
+            if (clientGroupInviteResponse.Response == InviteResponseResult.Declined)
             {
                 targetSession.EnqueueMessageEncrypted(new ServerGroupInviteResult
                 {
@@ -117,11 +117,11 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 },
                 GroupId = group.GroupId,
                 Unknown0 = 257,
-                Unknown1 = 5,
-                Unknown3 = 1,
-                Unknown4 = 2,
-                Unknown5 = 3,
-                Unknown6 = 0,
+                MaxSize = 5,
+                LootRuleNormal = 1,
+                LootRuleThreshold = 2,
+                LootThreshold = 3,
+                LootRuleHarvest = 0,
                 GroupMembers = new System.Collections.Generic.List<ServerGroupJoin.GroupMemberInfo>
                 {
                     new ServerGroupJoin.GroupMemberInfo
@@ -131,7 +131,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                             RealmId = WorldServer.RealmId,
                             CharacterId = targetSession.Player.Guid
                         },
-                        Unknown7 = 8192,
+                        Flags = 8192,
                         GroupMember = new GroupMember
                         {
                             Name = targetSession.Player.Name,
@@ -156,7 +156,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                             RealmId = WorldServer.RealmId,
                             CharacterId = session.Player.Guid
                         },
-                        Unknown7 = 8198,
+                        Flags = 8198,
                         GroupMember = new Model.Shared.GroupMember
                         {
                             Name = session.Player.Name,

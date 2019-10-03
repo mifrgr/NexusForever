@@ -12,14 +12,14 @@ namespace NexusForever.WorldServer.Network.Message.Model
         public class GroupMemberInfo : IWritable
         {
             public TargetPlayerIdentity MemberIdentity { get; set; }
-            public uint Unknown7 { get; set; }
+            public uint Flags { get; set; }
             public GroupMember GroupMember { get; set; } = new GroupMember();
             public uint GroupIndex { get; set; }
 
             public void Write(GamePacketWriter writer)
             {
                 MemberIdentity.Write(writer);
-                writer.Write(Unknown7);
+                writer.Write(Flags);
                 GroupMember.Write(writer);
                 writer.Write(GroupIndex);
             }
@@ -40,11 +40,11 @@ namespace NexusForever.WorldServer.Network.Message.Model
         public TargetPlayerIdentity PlayerJoined { get; set; } = new TargetPlayerIdentity();
         public ulong GroupId { get; set; }
         public uint Unknown0 { get; set; }
-        public uint Unknown1 { get; set; }
-        public byte Unknown3 { get; set; } // 3
-        public byte Unknown4 { get; set; } // 3
-        public byte Unknown5 { get; set; } // 4
-        public byte Unknown6 { get; set; } // 2
+        public uint MaxSize { get; set; }
+        public byte LootRuleNormal { get; set; } // 3
+        public byte LootRuleThreshold { get; set; } // 3
+        public byte LootThreshold { get; set; } // 4
+        public byte LootRuleHarvest { get; set; } // 2
 
         public List<GroupMemberInfo> GroupMembers { get; set; } = new List<GroupMemberInfo>();
 
@@ -59,11 +59,11 @@ namespace NexusForever.WorldServer.Network.Message.Model
             writer.Write(GroupId);
             writer.Write(Unknown0);
             writer.Write(GroupMembers.Count, 32u);
-            writer.Write(Unknown1);
-            writer.Write(Unknown3, 3u);
-            writer.Write(Unknown4, 3u);
-            writer.Write(Unknown5, 4u);
-            writer.Write(Unknown6, 2u);
+            writer.Write(MaxSize);
+            writer.Write(LootRuleNormal, 3u);
+            writer.Write(LootRuleThreshold, 3u);
+            writer.Write(LootThreshold, 4u);
+            writer.Write(LootRuleHarvest, 2u);
 
             GroupMembers.ForEach(i => i.Write(writer));
 
