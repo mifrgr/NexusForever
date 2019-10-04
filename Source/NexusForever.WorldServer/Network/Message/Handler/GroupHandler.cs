@@ -200,6 +200,17 @@ namespace NexusForever.WorldServer.Network.Message.Handler
             }
 
             log.Info($"Leave group {request.GroupId}");
+
+            foreach (var member in group.Members)
+            {
+                var memberSession = NetworkManager<WorldSession>.GetSession(s => s.Player?.CharacterId == member.CharacterId);
+                memberSession.EnqueueMessageEncrypted(new ServerGroupLeave
+                {
+                    GroupId = 0, // group.GroupId,
+                    Unknown1 = 0 // (uint)member.Id,
+                    // Unknown2 = 0
+                });
+            }
         }
     }
 }

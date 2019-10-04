@@ -32,6 +32,8 @@ namespace NexusForever.WorldServer.Game.Group
         public ulong PartyLeaderCharacterId = 0;
         public Member PartyLeader => members.Find(m => m.CharacterId == PartyLeaderCharacterId);
 
+        public List<Member> Members => members;
+
         public Group(ulong groupId) => GroupId = groupId;
 
         public Invite CreateNewInvite(ulong characterId)
