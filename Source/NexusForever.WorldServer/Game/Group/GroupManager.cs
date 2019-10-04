@@ -21,11 +21,9 @@ namespace NexusForever.WorldServer.Game.Group
         /// Id assigned to the next new group
         /// </summary>
         public static ulong NextGroupId => nextGroupId++;
-
         public static ulong NextGroupMemberId => nextGroupMemberId++;
 
         private static ulong nextGroupId;
-
         private static ulong nextGroupMemberId;
 
         public static void Initialise()
@@ -37,9 +35,8 @@ namespace NexusForever.WorldServer.Game.Group
         public static Group GetGroupById(ulong groupId)
         {
             if (groupsMap.ContainsKey(groupId))
-            {
                 return groupsMap[groupId];
-            }
+
             return null;
         }
 

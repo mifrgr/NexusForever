@@ -8,6 +8,7 @@ using NexusForever.WorldServer.Game.Group.Static;
 using NexusForever.WorldServer.Network.Message.Model;
 using NexusForever.WorldServer.Network.Message.Model.Shared;
 using NLog;
+using System.Collections.Generic;
 
 namespace NexusForever.WorldServer.Network.Message.Handler
 {
@@ -52,7 +53,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                         GroupId = group.GroupId,
                         Unknown0 = 0,
                         Unknown1 = 0,
-                        GroupMembers = new System.Collections.Generic.List<GroupMember>
+                        GroupMembers = new List<GroupMember>
                         {
                             new GroupMember
                             {
@@ -77,16 +78,13 @@ namespace NexusForever.WorldServer.Network.Message.Handler
 
             var group = GroupManager.GetGroupById(clientGroupInviteResponse.GroupId);
             var invite = group.FindInvite(session.Player.CharacterId);
-            if (group == null || invite == null)
-            {
-                return;
-            }
 
-            
+            if (group == null || invite == null)
+                return;
+
             WorldSession targetSession = NetworkManager<WorldSession>.GetSession(s => s.Player?.CharacterId == group.PartyLeaderCharacterId);
             
             // Declined
-            
             if (clientGroupInviteResponse.Response == InviteResponseResult.Declined)
             {
                 targetSession.EnqueueMessageEncrypted(new ServerGroupInviteResult
@@ -98,19 +96,16 @@ namespace NexusForever.WorldServer.Network.Message.Handler
 
                 group.DismissInvite(invite);
                 if (group.IsEmpty)
-                {
                     GroupManager.DismissGroup(group);
-                }
+
                 return;
             }
 
             // Accepted
-
             var member = group.AcceptInvite(invite);
-
             ServerGroupJoin join = new ServerGroupJoin
             {
-                PlayerJoined = new Model.Shared.TargetPlayerIdentity
+                PlayerJoined = new TargetPlayerIdentity
                 {
                     RealmId = WorldServer.RealmId,
                     CharacterId = session.Player.Guid
@@ -122,7 +117,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 LootRuleThreshold = 2,
                 LootThreshold = 3,
                 LootRuleHarvest = 0,
-                GroupMembers = new System.Collections.Generic.List<ServerGroupJoin.GroupMemberInfo>
+                GroupMembers = new List<ServerGroupJoin.GroupMemberInfo>
                 {
                     new ServerGroupJoin.GroupMemberInfo
                     {
@@ -151,13 +146,13 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                     },
                     new ServerGroupJoin.GroupMemberInfo
                     {
-                        MemberIdentity = new Model.Shared.TargetPlayerIdentity
+                        MemberIdentity = new TargetPlayerIdentity
                         {
                             RealmId = WorldServer.RealmId,
                             CharacterId = session.Player.Guid
                         },
                         Flags = 8198,
-                        GroupMember = new Model.Shared.GroupMember
+                        GroupMember = new GroupMember
                         {
                             Name = session.Player.Name,
                             Faction = session.Player.Faction1,
@@ -175,7 +170,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                         GroupIndex = 2
                     }
                 },
-                LeaderIdentity = new Model.Shared.TargetPlayerIdentity
+                LeaderIdentity = new TargetPlayerIdentity
                 {
                     RealmId = WorldServer.RealmId,
                     CharacterId = targetSession.Player.Guid

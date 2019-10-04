@@ -24,22 +24,15 @@ namespace NexusForever.WorldServer.Game.Group
             public ulong CharacterId;
         }
 
-        public readonly ulong GroupId;
-
-        public ulong PartyLeaderCharacterId = 0;
-
         private List<Invite> invites = new List<Invite>();
-
         private List<Member> members = new List<Member>();
 
         public bool IsEmpty => members.Count == 0;
-
+        public readonly ulong GroupId;
+        public ulong PartyLeaderCharacterId = 0;
         public Member PartyLeader => members.Find(m => m.CharacterId == PartyLeaderCharacterId);
 
-        public Group(ulong groupId)
-        {
-            this.GroupId = groupId;
-        }
+        public Group(ulong groupId) => GroupId = groupId;
 
         public Invite CreateNewInvite(ulong characterId)
         {
@@ -51,10 +44,7 @@ namespace NexusForever.WorldServer.Game.Group
             return invite;
         }
 
-        public Invite FindInvite(ulong characterId)
-        {
-            return invites.Find(i => i.CharacterId == characterId);
-        }
+        public Invite FindInvite(ulong characterId) => invites.Find(i => i.CharacterId == characterId);
 
         public Member AcceptInvite(Invite invite)
         {
