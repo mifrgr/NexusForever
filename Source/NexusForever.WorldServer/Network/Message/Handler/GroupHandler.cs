@@ -189,5 +189,17 @@ namespace NexusForever.WorldServer.Network.Message.Handler
 
             targetSession.EnqueueMessageEncrypted(join);
         }
+
+        [MessageHandler(GameMessageOpcode.ClientGroupLeave)]
+        public static void HandleGroupLeave(WorldSession session, ClientGroupLeave request)
+        {
+            var group = GroupManager.GetGroupById(request.GroupId);
+            if (group == null)
+            {
+                return;
+            }
+
+            log.Info($"Leave group {request.GroupId}");
+        }
     }
 }
