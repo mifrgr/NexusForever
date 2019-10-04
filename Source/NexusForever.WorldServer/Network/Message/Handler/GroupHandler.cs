@@ -137,7 +137,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                             Level = (byte)targetSession.Player.Level,
                             GroupMemberId = (ushort)group.PartyLeader.Id,
                             Realm = WorldServer.RealmId,
-                            WorldZoneId = 51,
+                            WorldZoneId = (ushort)targetSession.Player.Zone.Id,
                             Unknown25 = 2725,
                             Unknown26 = 1,
                             Unknown27 = true
@@ -162,7 +162,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                             Level = (byte)session.Player.Level,
                             GroupMemberId = (ushort)member.Id,
                             Realm = WorldServer.RealmId,
-                            WorldZoneId = 51,
+                            WorldZoneId = (ushort)session.Player.Zone.Id,
                             Unknown25 = 2725,
                             Unknown26 = 1,
                             Unknown27 = true
