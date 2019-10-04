@@ -113,10 +113,10 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 GroupId = group.GroupId,
                 Unknown0 = 257,
                 MaxSize = 5,
-                LootRuleNormal = 1,
+                LootRuleNormal = LootRule.Master,
                 LootRuleThreshold = 2,
-                LootThreshold = 3,
-                LootRuleHarvest = 0,
+                LootThreshold = LootThreshold.Good,
+                LootRuleHarvest = LootRuleHarvest.RoundRobin,
                 GroupMembers = new List<ServerGroupJoin.GroupMemberInfo>
                 {
                     new ServerGroupJoin.GroupMemberInfo

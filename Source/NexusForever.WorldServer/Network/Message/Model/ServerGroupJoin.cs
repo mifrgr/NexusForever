@@ -1,6 +1,7 @@
 ﻿using NexusForever.Shared.Network;
 using NexusForever.Shared.Network.Message;
 using NexusForever.WorldServer.Game.Entity.Static;
+using NexusForever.WorldServer.Game.Group.Static;
 using NexusForever.WorldServer.Network.Message.Model.Shared;
 using System.Collections.Generic;
 
@@ -41,10 +42,10 @@ namespace NexusForever.WorldServer.Network.Message.Model
         public ulong GroupId { get; set; }
         public uint Unknown0 { get; set; }
         public uint MaxSize { get; set; }
-        public byte LootRuleNormal { get; set; } // 3
+        public LootRule LootRuleNormal { get; set; } // 3
         public byte LootRuleThreshold { get; set; } // 3
-        public byte LootThreshold { get; set; } // 4
-        public byte LootRuleHarvest { get; set; } // 2
+        public LootThreshold LootThreshold { get; set; } // 4
+        public LootRuleHarvest LootRuleHarvest { get; set; } // 2
 
         public List<GroupMemberInfo> GroupMembers { get; set; } = new List<GroupMemberInfo>();
 
