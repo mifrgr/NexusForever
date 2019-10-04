@@ -20,16 +20,16 @@ namespace NexusForever.WorldServer.Game.Group.Static
         AlreadyInvited                          = 0x000B,
         InvalidRealmName                        = 0x000C,
         GroupIsFull                             = 0x000D,
-        InviteFailedDueToFilledRoles            = 0x000E,
+        RoleFull                                = 0x000E,
         CannotInviteYourself                    = 0x000F,
-        Unknown16                               = 0x0010, // If in group invite gets sent to player, nothing happens on senders screen
-        Unknown17                               = 0x0011, // If in group invite gets sent to player, nothing happens on senders screen
-        PartyLeaderNotAcceptingRequests         = 0x0012,
-        PartyLeaderIsBusyWithOtherRequests      = 0x0013,
-        Unknown20                               = 0x0014,
-        Unknown21                               = 0x0015, // Invite sent to other player but no UI shows for the sender
-        Unknown22                               = 0x0016, // Lua Error if sender is not in group, if inviter is in group it sends another invite with no UI on the senders screen
-        PartyInvitePrivilegesHaveBeenRestricted = 0x0017,
-        GroupActionFailedDueToPvpFlagSetting    = 0x0018
+        ServerControlled                        = 0x0010,
+        GroupNotFound                           = 0x0011,
+        NotAcceptingRequests                    = 0x0012,
+        Busy                                    = 0x0013,
+        SentToLeader                            = 0x0014,
+        LeaderOffline                           = 0x0015,
+        WrongFaction                            = 0x0016,
+        PrivilegeRestricted                     = 0x0017,
+        PvPFlagRestriction                      = 0x0018
     }
 }
