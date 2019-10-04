@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace NexusForever.WorldServer.Network.Message.Model
 {
-    [Message(GameMessageOpcode.ServerGroupLeave)]
+    [Message(GameMessageOpcode.ServerGroupRemove)]
     class ServerGroupLeave : IWritable
     {
         public ulong GroupId { get; set; }
