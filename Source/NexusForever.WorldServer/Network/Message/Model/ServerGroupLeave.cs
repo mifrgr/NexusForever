@@ -1,23 +1,26 @@
 ﻿using NexusForever.Shared.Network;
 using NexusForever.Shared.Network.Message;
 using NexusForever.WorldServer.Game.Entity.Static;
+using NexusForever.WorldServer.Game.Group.Static;
 using NexusForever.WorldServer.Network.Message.Model.Shared;
 using System.Collections.Generic;
 
 namespace NexusForever.WorldServer.Network.Message.Model
 {
-    [Message(GameMessageOpcode.ServerGroupRemove)]
-    class ServerGroupLeave : IWritable
+    [Message(GameMessageOpcode.ServerGroupLeave)]
+    public class ServerGroupLeave : IWritable
     {
         public ulong GroupId { get; set; }
-        public uint Unknown1 { get; set; }
-        // public uint Unknown2 { get; set; }
+        public uint MemberId { get; set; }
+        public TargetPlayerIdentity UnkIdentity { get; set; }
+        public RemoveReason RemoveReason { get; set; }
 
         public void Write(GamePacketWriter writer)
         {
             writer.Write(GroupId);
-            writer.Write(Unknown1);
-            // writer.Write(Unknown2);
+            writer.Write(MemberId);
+            UnkIdentity.Write(writer);
+            writer.Write(RemoveReason, 4);
         }
     }
 }

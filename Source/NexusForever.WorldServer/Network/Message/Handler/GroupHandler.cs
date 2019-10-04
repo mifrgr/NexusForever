@@ -193,24 +193,22 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         [MessageHandler(GameMessageOpcode.ClientGroupLeave)]
         public static void HandleGroupLeave(WorldSession session, ClientGroupLeave request)
         {
+            log.Info($"{request.GroupId} {request.Unk1}");
             var group = GroupManager.GetGroupById(request.GroupId);
             if (group == null)
-            {
                 return;
-            }
 
-            log.Info($"Leave group {request.GroupId}");
-
-            foreach (var member in group.Members)
+            session.EnqueueMessageEncrypted(new ServerGroupLeave
             {
-                var memberSession = NetworkManager<WorldSession>.GetSession(s => s.Player?.CharacterId == member.CharacterId);
-                memberSession.EnqueueMessageEncrypted(new ServerGroupLeave
+                GroupId     = group.GroupId,
+                MemberId    = 1,
+                UnkIdentity = new TargetPlayerIdentity()
                 {
-                    GroupId = 0, // group.GroupId,
-                    Unknown1 = 0 // (uint)member.Id,
-                    // Unknown2 = 0
-                });
-            }
+                    RealmId = WorldServer.RealmId,
+                    CharacterId = session.Player.Guid
+                },
+                RemoveReason = RemoveReason.Left
+            });
         }
     }
 }
