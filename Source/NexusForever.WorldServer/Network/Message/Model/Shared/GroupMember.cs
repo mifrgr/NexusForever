@@ -39,7 +39,7 @@ namespace NexusForever.WorldServer.Network.Message.Model.Shared
         public Class Class { get; set; } // 14
         public byte Unknown2 { get; set; } // 2 -- 
         public byte Level { get; set; } // 7
-        public byte Unknown3 { get; set; } // 7 -- Effective Level?
+        public byte EffectiveLevel { get; set; } // 7
         public Path Path { get; set; } // 3
         public uint Unknown4 { get; set; } // 17
         public ushort GroupMemberId { get; set; } // 16
@@ -58,7 +58,7 @@ namespace NexusForever.WorldServer.Network.Message.Model.Shared
         public ushort Unknown17 { get; set; }
         public ushort Unknown18 { get; set; }
         public ushort Unknown19 { get; set; }
-        public ushort Unknown20 { get; set; }
+        public ulong Unknown20 { get; set; }
         public ushort Unknown21 { get; set; }
         public ushort Unknown22 { get; set; }
         public ushort Realm { get; set; } // 14
@@ -79,7 +79,7 @@ namespace NexusForever.WorldServer.Network.Message.Model.Shared
             writer.Write(Class, 14u);
             writer.Write(Unknown2, 2u);
             writer.Write(Level, 7u);
-            writer.Write(Unknown3, 7u);
+            writer.Write(EffectiveLevel, 7u);
             writer.Write(Path, 3u);
             writer.Write(Unknown4, 17u);
             writer.Write(GroupMemberId);
