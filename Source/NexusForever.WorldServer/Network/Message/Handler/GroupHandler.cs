@@ -108,7 +108,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 PlayerJoined = new TargetPlayerIdentity
                 {
                     RealmId = WorldServer.RealmId,
-                    CharacterId = 2
+                    CharacterId = 1
                 },
                 GroupId = group.GroupId,
                 Unknown0 = 257,
@@ -129,85 +129,14 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                         Flags = 8198,
                         GroupMember = new GroupMember
                         {
-                            Name = session.Player.Name,
-                            Faction = session.Player.Faction1,
-                            Race = session.Player.Race,
-                            Class = session.Player.Class,
-                            Path = session.Player.Path,
-                            Level = (byte)session.Player.Level,
-                            EffectiveLevel = (byte)session.Player.Level,
-                            GroupMemberId = (ushort)member.Id,
-                            UnknownStruct0List = new List<GroupMember.UnknownStruct0>
-                            {
-                                new GroupMember.UnknownStruct0
-                                {
-                                    Unknown6 = 0,
-                                    Unknown7 = 96
-                                },
-                                new GroupMember.UnknownStruct0
-                                {
-                                    Unknown6 = 0,
-                                    Unknown7 = 96
-                                },
-                                new GroupMember.UnknownStruct0
-                                {
-                                    Unknown6 = 0,
-                                    Unknown7 = 96
-                                },
-                                new GroupMember.UnknownStruct0
-                                {
-                                    Unknown6 = 0,
-                                    Unknown7 = 96
-                                },
-                                new GroupMember.UnknownStruct0
-                                {
-                                    Unknown6 = 0,
-                                    Unknown7 = 96
-                                }
-                            },
-                            Unknown8 = 0,
-                            Unknown9 = 0,
-                            Unknown10 = 0,
-                            Unknown11 = 0,
-                            Unknown12 = 0,
-                            Unknown13 = 0,
-                            Unknown14 = 0,
-                            Unknown15 = 0,
-                            Unknown16 = 0,
-                            Unknown17 = 0,
-                            Unknown18 = 0,
-                            Unknown19 = 0,
-                            Unknown20 = 0,
-                            Unknown21 = 0,
-                            Unknown22 = 0,
-                            Realm = WorldServer.RealmId,
-                            WorldZoneId = (ushort)session.Player.Zone.Id,
-                            Unknown25 = 2725,
-                            Unknown26 = 1,
-                            Unknown27 = true,
-                            Unknown28 = 0,
-                            Unknown29 = 0
-                        },
-                        GroupIndex = 1
-                    },
-                    new ServerGroupJoin.GroupMemberInfo
-                    {
-                        MemberIdentity = new TargetPlayerIdentity
-                        {
-                            RealmId = WorldServer.RealmId,
-                            CharacterId = 2
-                        },
-                        Flags = 8192,
-                        GroupMember = new GroupMember
-                        {
                             Name = targetSession.Player.Name,
                             Faction = targetSession.Player.Faction1,
                             Race = targetSession.Player.Race,
                             Class = targetSession.Player.Class,
                             Path = targetSession.Player.Path,
                             Level = (byte)targetSession.Player.Level,
-                            EffectiveLevel = (byte)session.Player.Level,
-                            GroupMemberId = (ushort)group.PartyLeader.Id,
+                            EffectiveLevel = (byte)targetSession.Player.Level,
+                            GroupMemberId = (ushort)member.Id,
                             UnknownStruct0List = new List<GroupMember.UnknownStruct0>
                             {
                                 new GroupMember.UnknownStruct0
@@ -259,13 +188,84 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                             Unknown28 = 0,
                             Unknown29 = 0
                         },
+                        GroupIndex = 1
+                    },
+                    new ServerGroupJoin.GroupMemberInfo
+                    {
+                        MemberIdentity = new TargetPlayerIdentity
+                        {
+                            RealmId = WorldServer.RealmId,
+                            CharacterId = 2
+                        },
+                        Flags = 8192,
+                        GroupMember = new GroupMember
+                        {
+                            Name = session.Player.Name,
+                            Faction = session.Player.Faction1,
+                            Race = session.Player.Race,
+                            Class = session.Player.Class,
+                            Path = session.Player.Path,
+                            Level = (byte)session.Player.Level,
+                            EffectiveLevel = (byte)session.Player.Level,
+                            GroupMemberId = (ushort)group.PartyLeader.Id,
+                            UnknownStruct0List = new List<GroupMember.UnknownStruct0>
+                            {
+                                new GroupMember.UnknownStruct0
+                                {
+                                    Unknown6 = 0,
+                                    Unknown7 = 96
+                                },
+                                new GroupMember.UnknownStruct0
+                                {
+                                    Unknown6 = 0,
+                                    Unknown7 = 96
+                                },
+                                new GroupMember.UnknownStruct0
+                                {
+                                    Unknown6 = 0,
+                                    Unknown7 = 96
+                                },
+                                new GroupMember.UnknownStruct0
+                                {
+                                    Unknown6 = 0,
+                                    Unknown7 = 96
+                                },
+                                new GroupMember.UnknownStruct0
+                                {
+                                    Unknown6 = 0,
+                                    Unknown7 = 96
+                                }
+                            },
+                            Unknown8 = 0,
+                            Unknown9 = 0,
+                            Unknown10 = 0,
+                            Unknown11 = 0,
+                            Unknown12 = 0,
+                            Unknown13 = 0,
+                            Unknown14 = 0,
+                            Unknown15 = 0,
+                            Unknown16 = 0,
+                            Unknown17 = 0,
+                            Unknown18 = 0,
+                            Unknown19 = 0,
+                            Unknown20 = 0,
+                            Unknown21 = 0,
+                            Unknown22 = 0,
+                            Realm = WorldServer.RealmId,
+                            WorldZoneId = (ushort)session.Player.Zone.Id,
+                            Unknown25 = 2725,
+                            Unknown26 = 1,
+                            Unknown27 = true,
+                            Unknown28 = 0,
+                            Unknown29 = 0
+                        },
                         GroupIndex = 2
                     },
                 },
                 LeaderIdentity = new TargetPlayerIdentity
                 {
                     RealmId = WorldServer.RealmId,
-                    CharacterId = 2
+                    CharacterId = 1
                 },
                 Realm = WorldServer.RealmId
             };
