@@ -82,7 +82,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
             if (group == null || invite == null)
                 return;
 
-            WorldSession targetSession = NetworkManager<WorldSession>.GetSession(s => s.Player?.CharacterId == group.PartyLeaderCharacterId);
+            WorldSession targetSession = NetworkManager<WorldSession>.GetSession(s => s.Player?.CharacterId == 1);
 
             // Declined
             if (clientGroupInviteResponse.Response == InviteResponseResult.Declined)
@@ -108,7 +108,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 PlayerJoined = new TargetPlayerIdentity
                 {
                     RealmId = WorldServer.RealmId,
-                    CharacterId = targetSession.Player.Guid
+                    CharacterId = 2
                 },
                 GroupId = group.GroupId,
                 Unknown0 = 257,
@@ -124,7 +124,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                         MemberIdentity = new TargetPlayerIdentity
                         {
                             RealmId = WorldServer.RealmId,
-                            CharacterId = session.Player.Guid
+                            CharacterId = 1
                         },
                         Flags = 8198,
                         GroupMember = new GroupMember
@@ -195,7 +195,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                         MemberIdentity = new TargetPlayerIdentity
                         {
                             RealmId = WorldServer.RealmId,
-                            CharacterId = targetSession.Player.Guid
+                            CharacterId = 2
                         },
                         Flags = 8192,
                         GroupMember = new GroupMember
@@ -265,7 +265,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 LeaderIdentity = new TargetPlayerIdentity
                 {
                     RealmId = WorldServer.RealmId,
-                    CharacterId = targetSession.Player.Guid
+                    CharacterId = 2
                 },
                 Realm = WorldServer.RealmId
             };
