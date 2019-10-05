@@ -83,7 +83,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 return;
 
             WorldSession targetSession = NetworkManager<WorldSession>.GetSession(s => s.Player?.CharacterId == group.PartyLeaderCharacterId);
-            
+
             // Declined
             if (clientGroupInviteResponse.Response == InviteResponseResult.Declined)
             {
@@ -108,7 +108,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 PlayerJoined = new TargetPlayerIdentity
                 {
                     RealmId = WorldServer.RealmId,
-                    CharacterId = session.Player.Guid
+                    CharacterId = targetSession.Player.Guid
                 },
                 GroupId = group.GroupId,
                 Unknown0 = 257,
@@ -137,7 +137,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                             Level = (byte)session.Player.Level,
                             GroupMemberId = (ushort)member.Id,
                             Realm = WorldServer.RealmId,
-                            WorldZoneId = (ushort)targetSession.Player.Zone.Id,
+                            WorldZoneId = (ushort)session.Player.Zone.Id,
                             Unknown25 = 2725,
                             Unknown26 = 1,
                             Unknown27 = true
@@ -162,7 +162,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                             Level = (byte)targetSession.Player.Level,
                             GroupMemberId = (ushort)group.PartyLeader.Id,
                             Realm = WorldServer.RealmId,
-                            WorldZoneId = (ushort)session.Player.Zone.Id,
+                            WorldZoneId = (ushort)targetSession.Player.Zone.Id,
                             Unknown25 = 2725,
                             Unknown26 = 1,
                             Unknown27 = true
@@ -173,7 +173,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 LeaderIdentity = new TargetPlayerIdentity
                 {
                     RealmId = WorldServer.RealmId,
-                    CharacterId = session.Player.Guid
+                    CharacterId = targetSession.Player.Guid
                 },
                 Realm = WorldServer.RealmId
             };
@@ -198,10 +198,11 @@ namespace NexusForever.WorldServer.Network.Message.Handler
             if (group == null)
                 return;
 
+            WorldSession targetSession = NetworkManager<WorldSession>.GetSession(s => s.Player?.CharacterId == group.PartyLeaderCharacterId);
             session.EnqueueMessageEncrypted(new ServerGroupLeave
             {
-                GroupId     = group.GroupId,
-                MemberId    = 1,
+                GroupId = group.GroupId,
+                MemberId = 1,
                 UnkIdentity = new TargetPlayerIdentity()
                 {
                     RealmId = WorldServer.RealmId,
@@ -209,6 +210,52 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 },
                 RemoveReason = RemoveReason.Left
             });
+
+            targetSession.EnqueueMessageEncrypted(new ServerGroupLeave
+            {
+                GroupId = group.GroupId,
+                MemberId = 1,
+                UnkIdentity = new TargetPlayerIdentity()
+                {
+                    RealmId = WorldServer.RealmId,
+                    CharacterId = session.Player.Guid
+                },
+                RemoveReason = RemoveReason.Left
+            });
+
+            // If there is going to only be one player the group should be auto disbaned
+            // This does not actually do anything.
+            if (group.Members.Count - 1 < 2)
+            {
+                foreach (Group.Member member in group.Members)
+                {
+                    group.RemoveMember(member);
+                }
+
+                session.EnqueueMessageEncrypted(new ServerGroupLeave
+                {
+                    GroupId = group.GroupId,
+                    MemberId = 1,
+                    UnkIdentity = new TargetPlayerIdentity()
+                    {
+                        RealmId = WorldServer.RealmId,
+                        CharacterId = session.Player.Guid
+                    },
+                    RemoveReason = RemoveReason.Disband
+                });
+
+                targetSession.EnqueueMessageEncrypted(new ServerGroupLeave
+                {
+                    GroupId = group.GroupId,
+                    MemberId = 1,
+                    UnkIdentity = new TargetPlayerIdentity()
+                    {
+                        RealmId = WorldServer.RealmId,
+                        CharacterId = session.Player.Guid
+                    },
+                    RemoveReason = RemoveReason.Disband
+                });
+            }
         }
     }
 }
