@@ -12,14 +12,14 @@ namespace NexusForever.WorldServer.Network.Message.Model
     {
         public ulong GroupId { get; set; }
         public uint MemberId { get; set; }
-        public TargetPlayerIdentity UnkIdentity { get; set; }
+        public TargetPlayerIdentity PlayerLeave { get; set; }
         public RemoveReason RemoveReason { get; set; }
 
         public void Write(GamePacketWriter writer)
         {
             writer.Write(GroupId);
             writer.Write(MemberId);
-            UnkIdentity.Write(writer);
+            PlayerLeave.Write(writer);
             writer.Write(RemoveReason, 4);
         }
     }

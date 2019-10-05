@@ -4,6 +4,7 @@ using NexusForever.Shared.Network.Message;
 using NexusForever.WorldServer.Database.Character;
 using NexusForever.WorldServer.Database.Character.Model;
 using NexusForever.WorldServer.Game.Group.Static;
+using NexusForever.WorldServer.Network;
 using NexusForever.WorldServer.Network.Message.Model;
 using NexusForever.WorldServer.Network.Message.Model.Shared;
 using NLog;
@@ -13,77 +14,46 @@ namespace NexusForever.WorldServer.Game.Group
 {
     public class Group
     {
-        public class Invite
-        {
-            public ulong CharacterId;
-        }
-
         public class Member
         {
             public ulong Id;
-            public ulong CharacterId;
+            public ulong Guid;
+            public WorldSession PlayerSession;
         }
 
-        private List<Invite> invites = new List<Invite>();
-        private List<Member> members = new List<Member>();
-
-        public bool IsEmpty => members.Count == 0;
+        public bool IsEmpty => Members.Count == 0;
         public readonly ulong GroupId;
-        public ulong PartyLeaderCharacterId = 0;
-        public Member PartyLeader => members.Find(m => m.CharacterId == PartyLeaderCharacterId);
+        public ulong PartyLead = 0;
+        public Member PartyLeader => Members.Find(m => m.Guid == PartyLead);
 
-        public List<Member> Members => members;
+        public List<Member> Members { get; } = new List<Member>();
 
         public Group(ulong groupId) => GroupId = groupId;
 
-        public Invite CreateNewInvite(ulong characterId)
+        public Member CreateNewMember(WorldSession playerSession)
         {
-            var invite = new Invite
+            if (!GroupManager.GroupMember.ContainsKey(playerSession.Player.Guid))
             {
-                CharacterId = characterId
-            };
-            invites.Add(invite);
-            return invite;
+                var member = new Member
+                {
+                    Id = GroupManager.NextGroupMemberId,
+                    Guid = playerSession.Player.Guid,
+                    PlayerSession = playerSession
+                };
+
+                Members.Add(member);
+                GroupManager.GroupMember.Add(playerSession.Player.Guid, member);
+
+                return member;
+            }
+            else
+                return GroupManager.GroupMember[playerSession.Player.Guid];
         }
 
-        public Invite FindInvite(ulong characterId) => invites.Find(i => i.CharacterId == characterId);
+        public Member FindMemberByMemberId(ulong id) => Members.Find(m => m.Id == id);
 
-        public Member AcceptInvite(Invite invite)
-        {
-            invites.Remove(invite);
-            return CreateNewMember(invite.CharacterId);
-        }
+        public Member FindMemberByPlayerGuid(ulong guid) => Members.Find(m => m.Guid == guid);
 
-        public void DismissInvite(Invite invite)
-        {
-            invites.Remove(invite);
-        }
-
-        public Member CreateNewMember(ulong characterId)
-        {
-            var member = new Member
-            {
-                Id = GroupManager.NextGroupMemberId,
-                CharacterId = characterId
-            };
-
-            members.Add(member);
-            return member;
-        }
-
-        public Member FindMemberByGroupMemberId(ulong id)
-        {
-            return members.Find(m => m.Id == id);
-        }
-
-        public Member FindMemberByCharacterId(ulong id)
-        {
-            return members.Find(m => m.CharacterId == id);
-        }
-
-        public void RemoveMember(Member member)
-        {
-            members.Remove(member);
-        }
+        public void RemoveMember(Member member) => Members.Remove(member);
     }
 }

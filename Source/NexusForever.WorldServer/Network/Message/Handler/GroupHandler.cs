@@ -9,6 +9,7 @@ using NexusForever.WorldServer.Network.Message.Model;
 using NexusForever.WorldServer.Network.Message.Model.Shared;
 using NLog;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace NexusForever.WorldServer.Network.Message.Handler
 {
@@ -19,295 +20,175 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         [MessageHandler(GameMessageOpcode.ClientGroupInvite)]
         public static void HandleGroupInvite(WorldSession session, ClientGroupInvite request)
         {
-            session.EnqueueEvent(new TaskGenericEvent<Character>(CharacterDatabase.GetCharacterByName(request.PlayerName),
-                character =>
+            session.EnqueueEvent(new TaskGenericEvent<Character>(CharacterDatabase.GetCharacterByName(request.PlayerName), character =>
             {
-                if (character == null)
-                {
-                    session.EnqueueMessageEncrypted(new ServerGroupInviteResult
-                    {
-                        GroupId = 0,
-                        PlayerName = request.PlayerName,
-                        Result = InviteResult.PlayerNotFound
-                    });
-                    return;
-                }
+                var inviteResult = InviteResult.Sent;
 
-                var group = GroupManager.CreateNewGroup();
-                group.PartyLeaderCharacterId = session.Player.CharacterId;
-                group.CreateNewInvite(character.Id);
-                var member = group.CreateNewMember(session.Player.CharacterId);
+                if (character == null)
+                    inviteResult = InviteResult.PlayerNotFound;
 
                 session.EnqueueMessageEncrypted(new ServerGroupInviteResult
                 {
-                    GroupId = group.GroupId,
-                    PlayerName = request.PlayerName,
-                    Result = InviteResult.Sent
+                    GroupId     = 0,
+                    PlayerName  = request.PlayerName,
+                    Result      = inviteResult
                 });
 
-                WorldSession targetSession = NetworkManager<WorldSession>.GetSession(s => s.Player?.CharacterId == character.Id);
-                var newMember = group.CreateNewMember(targetSession.Player.CharacterId);
-                if (targetSession != null)
+                if (inviteResult == InviteResult.Sent)
                 {
-                    targetSession.EnqueueMessageEncrypted(new ServerGroupInviteReceived
+                    var targetSession = NetworkManager<WorldSession>.GetSession(s => s.Player?.CharacterId == character.Id);
+                    if (targetSession != null)
                     {
-                        GroupId = group.GroupId,
-                        Unknown0 = 0,
-                        Unknown1 = 0,
-                        GroupMembers = new List<GroupMember>
+                        var group = GroupManager.CreateNewGroup(session.Player.Guid);
+                        var member = group.CreateNewMember(session);
+                        group.PartyLead = session.Player.CharacterId;
+
+                        targetSession.EnqueueMessageEncrypted(new ServerGroupInviteReceived
                         {
-                            new GroupMember
+                            GroupId     = group.GroupId,
+                            Unknown0    = 0,
+                            Unknown1    = 0,
+                            GroupMembers = new List<GroupMember>
                             {
-                                Name = targetSession.Player.Name,
-                                Faction = targetSession.Player.Faction1,
-                                Race = targetSession.Player.Race,
-                                Class = targetSession.Player.Class,
-                                Path = targetSession.Player.Path,
-                                Level = (byte)targetSession.Player.Level,
-                                GroupMemberId = (ushort)newMember.Id
+                                new GroupMember
+                                {
+                                    Name            = session.Player.Name,
+                                    Faction         = session.Player.Faction1,
+                                    Race            = session.Player.Race,
+                                    Class           = session.Player.Class,
+                                    Path            = session.Player.Path,
+                                    Level           = (byte)session.Player.Level,
+                                    GroupMemberId   = (ushort)member.Id
+                                }
                             }
-                        }
-                    });
+                        });
+                    }
                 }
             }));
         }
 
         [MessageHandler(GameMessageOpcode.ClientGroupInviteResponse)]
-        public static void HandleGroupInviteResponse(WorldSession session, ClientGroupInviteResponse clientGroupInviteResponse)
+        public static void HandleGroupInviteResponse(WorldSession invited, ClientGroupInviteResponse clientGroupInviteResponse)
         {
             log.Info($"{clientGroupInviteResponse.GroupId}, {clientGroupInviteResponse.Response}, {clientGroupInviteResponse.Unknown0}");
 
             var group = GroupManager.GetGroupById(clientGroupInviteResponse.GroupId);
-            var invite = group.FindInvite(session.Player.CharacterId);
-
-            if (group == null || invite == null)
+            if (group == null)
                 return;
 
-            WorldSession targetSession = NetworkManager<WorldSession>.GetSession(s => s.Player?.CharacterId == 1);
+            WorldSession invitee = NetworkManager<WorldSession>.GetSession(s => s.Player?.CharacterId == group.PartyLead);
+            if (invitee == null)
+                GroupManager.RemoveGroup(group);
 
             // Declined
             if (clientGroupInviteResponse.Response == InviteResponseResult.Declined)
             {
-                targetSession.EnqueueMessageEncrypted(new ServerGroupInviteResult
+                invitee.EnqueueMessageEncrypted(new ServerGroupInviteResult
                 {
                     GroupId = clientGroupInviteResponse.GroupId,
-                    PlayerName = session.Player.Name,
+                    PlayerName = invited.Player.Name,
                     Result = InviteResult.Declined
                 });
 
-                group.DismissInvite(invite);
-                if (group.IsEmpty)
-                    GroupManager.DismissGroup(group);
+                // Remove Group and Members
+                if (group.Members.Count - 1 < 2)
+                    GroupManager.RemoveGroup(group);
 
                 return;
             }
 
             // Accepted
-            var member = group.AcceptInvite(invite);
-            ServerGroupJoin join = new ServerGroupJoin
+            var leader      = group.FindMemberByPlayerGuid(invitee.Player.Guid);
+            var newMember   = group.CreateNewMember(invited);
+            var joinGroup   = new ServerGroupJoin
             {
                 PlayerJoined = new TargetPlayerIdentity
                 {
-                    RealmId = WorldServer.RealmId,
-                    CharacterId = 1
+                    RealmId         = WorldServer.RealmId,
+                    CharacterId     = invited.Player.CharacterId
                 },
-                GroupId = group.GroupId,
-                Unknown0 = 1,
-                MaxSize = 5,
-                LootRuleNormal = LootRule.RoundRobin,
-                LootRuleThreshold = 2,
-                LootThreshold = LootThreshold.Good,
-                LootRuleHarvest = LootRuleHarvest.RoundRobin,
-                GroupMembers = new List<ServerGroupJoin.GroupMemberInfo>
+                GroupId             = clientGroupInviteResponse.GroupId,
+                Unknown0            = 1,
+                MaxSize             = 5,
+                LootRuleNormal      = LootRule.RoundRobin,
+                LootRuleThreshold   = 2,
+                LootThreshold       = LootThreshold.Good,
+                LootRuleHarvest     = LootRuleHarvest.RoundRobin,
+                GroupMembers        = new List<ServerGroupJoin.GroupMemberInfo>
                 {
                     new ServerGroupJoin.GroupMemberInfo
                     {
                         MemberIdentity = new TargetPlayerIdentity
                         {
-                            RealmId = WorldServer.RealmId,
-                            CharacterId = 1
+                            RealmId     = WorldServer.RealmId,
+                            CharacterId = invitee.Player.CharacterId
                         },
-                        Flags = 0,
+                        Flags = 8198,
                         GroupMember = new GroupMember
                         {
-<<<<<<< refs/remotes/Party-Time/party-time
-                            Name = targetSession.Player.Name,
-                            Faction = targetSession.Player.Faction1,
-                            Race = targetSession.Player.Race,
-                            Class = targetSession.Player.Class,
-                            Path = targetSession.Player.Path,
-                            Level = (byte)targetSession.Player.Level,
-                            EffectiveLevel = (byte)targetSession.Player.Level,
-=======
-                            Name = session.Player.Name,
-                            Faction = session.Player.Faction1,
-                            Race = session.Player.Race,
-                            Class = session.Player.Class,
-                            Path = session.Player.Path,
-                            Level = (byte)session.Player.Level,
-                            EffectiveLevel = 0,
->>>>>>> Changes
-                            GroupMemberId = (ushort)member.Id,
-                            UnknownStruct0List = new List<GroupMember.UnknownStruct0>
-                            {
-                                new GroupMember.UnknownStruct0
-                                {
-                                    Unknown6 = 0,
-                                    Unknown7 = 96
-                                },
-                                new GroupMember.UnknownStruct0
-                                {
-                                    Unknown6 = 0,
-                                    Unknown7 = 96
-                                },
-                                new GroupMember.UnknownStruct0
-                                {
-                                    Unknown6 = 0,
-                                    Unknown7 = 96
-                                },
-                                new GroupMember.UnknownStruct0
-                                {
-                                    Unknown6 = 0,
-                                    Unknown7 = 96
-                                },
-                                new GroupMember.UnknownStruct0
-                                {
-                                    Unknown6 = 0,
-                                    Unknown7 = 96
-                                }
-                            },
-                            Unknown8 = 0,
-                            Unknown9 = 0,
-                            Unknown10 = 0,
-                            Unknown11 = 0,
-                            Unknown12 = 0,
-                            Unknown13 = 0,
-                            Unknown14 = 0,
-                            Unknown15 = 0,
-                            Unknown16 = 0,
-                            Unknown17 = 0,
-                            Unknown18 = 0,
-                            Unknown19 = 0,
-                            Unknown20 = 0,
-                            Unknown21 = 0,
-                            Unknown22 = 0,
-                            Realm = WorldServer.RealmId,
-<<<<<<< refs/remotes/Party-Time/party-time
-                            WorldZoneId = (ushort)targetSession.Player.Zone.Id,
-                            Unknown25 = 2725,
-=======
-                            WorldZoneId = (ushort)session.Player.Zone.Id,
-                            Unknown25 = 1873,
->>>>>>> Idk
-                            Unknown26 = 1,
-                            Unknown27 = true,
-                            Unknown28 = 0,
-                            Unknown29 = 0,
-                            UnknownStruct1List = new List<GroupMember.UnknownStruct1>()
+                            Name            = invitee.Player.Name,
+                            Faction         = invitee.Player.Faction1,
+                            Race            = invitee.Player.Race,
+                            Class           = invitee.Player.Class,
+                            Path            = invitee.Player.Path,
+                            Level           = (byte)invitee.Player.Level,
+                            GroupMemberId   = (ushort)leader.Id,
+                            Realm           = WorldServer.RealmId,
+                            WorldZoneId     = (ushort)invitee.Player.Zone.Id,
+                            Unknown25       = 2725,
+                            Unknown26       = 1,
+                            Unknown27       = true,
                         },
-                        GroupIndex = 1
+                        GroupIndex = 0
                     },
                     new ServerGroupJoin.GroupMemberInfo
                     {
                         MemberIdentity = new TargetPlayerIdentity
                         {
-                            RealmId = WorldServer.RealmId,
-                            CharacterId = 2
+                            RealmId     = WorldServer.RealmId,
+                            CharacterId = invited.Player.CharacterId
                         },
-                        Flags = 0,
+                        Flags = 8192,
                         GroupMember = new GroupMember
                         {
-<<<<<<< refs/remotes/Party-Time/party-time
-                            Name = session.Player.Name,
-                            Faction = session.Player.Faction1,
-                            Race = session.Player.Race,
-                            Class = session.Player.Class,
-                            Path = session.Player.Path,
-                            Level = (byte)session.Player.Level,
-                            EffectiveLevel = (byte)session.Player.Level,
-=======
-                            Name = targetSession.Player.Name,
-                            Faction = targetSession.Player.Faction1,
-                            Race = targetSession.Player.Race,
-                            Class = targetSession.Player.Class,
-                            Path = targetSession.Player.Path,
-                            Level = (byte)targetSession.Player.Level,
-                            EffectiveLevel = 0,
->>>>>>> Changes
-                            GroupMemberId = (ushort)group.PartyLeader.Id,
-                            UnknownStruct0List = new List<GroupMember.UnknownStruct0>
-                            {
-                                new GroupMember.UnknownStruct0
-                                {
-                                    Unknown6 = 0,
-                                    Unknown7 = 48
-                                },
-                                new GroupMember.UnknownStruct0
-                                {
-                                    Unknown6 = 0,
-                                    Unknown7 = 48
-                                },
-                                new GroupMember.UnknownStruct0
-                                {
-                                    Unknown6 = 0,
-                                    Unknown7 = 48
-                                },
-                                new GroupMember.UnknownStruct0
-                                {
-                                    Unknown6 = 0,
-                                    Unknown7 = 96
-                                },
-                                new GroupMember.UnknownStruct0
-                                {
-                                    Unknown6 = 0,
-                                    Unknown7 = 96
-                                }
-                            },
-                            Unknown8 = 0,
-                            Unknown9 = 0,
-                            Unknown10 = 0,
-                            Unknown11 = 0,
-                            Unknown12 = 0,
-                            Unknown13 = 0,
-                            Unknown14 = 0,
-                            Unknown15 = 0,
-                            Unknown16 = 0,
-                            Unknown17 = 0,
-                            Unknown18 = 0,
-                            Unknown19 = 0,
-                            Unknown20 = 0,
-                            Unknown21 = 0,
-                            Unknown22 = 0,
-                            Realm = WorldServer.RealmId,
-                            WorldZoneId = (ushort)session.Player.Zone.Id,
-                            Unknown25 = 2725,
-                            Unknown26 = 1,
-                            Unknown27 = true,
-                            Unknown28 = 0,
-                            Unknown29 = 0,
-                            UnknownStruct1List = new List<GroupMember.UnknownStruct1>()
+                            Name            = invited.Player.Name,
+                            Faction         = invited.Player.Faction1,
+                            Race            = invited.Player.Race,
+                            Class           = invited.Player.Class,
+                            Path            = invited.Player.Path,
+                            Level           = (byte)invited.Player.Level,
+                            GroupMemberId   = (ushort)newMember.Id,
+                            Realm           = WorldServer.RealmId,
+                            WorldZoneId     = (ushort)invited.Player.Zone.Id,
+                            Unknown25       = 2725,
+                            Unknown26       = 1,
+                            Unknown27       = true,
                         },
-                        GroupIndex = 2
+                        GroupIndex = GroupManager.NextGroupIndex
                     },
                 },
                 LeaderIdentity = new TargetPlayerIdentity
                 {
-                    RealmId = WorldServer.RealmId,
-                    CharacterId = 1
+                    RealmId     = WorldServer.RealmId,
+                    CharacterId = invitee.Player.CharacterId
                 },
                 Realm = WorldServer.RealmId
             };
 
-            session.EnqueueMessageEncrypted(join);
-
-            targetSession.EnqueueMessageEncrypted(new ServerGroupInviteResult
+            foreach (var member in group.Members)
             {
-                GroupId = group.GroupId,
-                PlayerName = session.Player.Name,
-                Result = InviteResult.Accepted
-            });
+                if (member != newMember)
+                {
+                    member.PlayerSession.EnqueueMessageEncrypted(new ServerGroupInviteResult
+                    {
+                        GroupId = clientGroupInviteResponse.GroupId,
+                        PlayerName = invited.Player.Name,
+                        Result = InviteResult.Accepted
+                    });
+                }
 
-            targetSession.EnqueueMessageEncrypted(join);
+                member.PlayerSession.EnqueueMessageEncrypted(joinGroup);
+            }
         }
 
         [MessageHandler(GameMessageOpcode.ClientGroupLeave)]
@@ -318,64 +199,21 @@ namespace NexusForever.WorldServer.Network.Message.Handler
             if (group == null)
                 return;
 
-            WorldSession targetSession = NetworkManager<WorldSession>.GetSession(s => s.Player?.CharacterId == group.PartyLeaderCharacterId);
-
-            group.RemoveMember(group.FindMemberByCharacterId(session.Player.CharacterId));
-            session.EnqueueMessageEncrypted(new ServerGroupLeave
-            {
-                GroupId = group.GroupId,
-                MemberId = (uint)group.FindMemberByCharacterId(session.Player.CharacterId).Id,
-                UnkIdentity = new TargetPlayerIdentity()
-                {
-                    RealmId = WorldServer.RealmId,
-                    CharacterId = session.Player.Guid
-                },
-                RemoveReason = RemoveReason.Left
-            });
-
-            targetSession.EnqueueMessageEncrypted(new ServerGroupLeave
-            {
-                GroupId = group.GroupId,
-                MemberId = (uint)group.FindMemberByCharacterId(session.Player.CharacterId).Id,
-                UnkIdentity = new TargetPlayerIdentity()
-                {
-                    RealmId = WorldServer.RealmId,
-                    CharacterId = session.Player.Guid
-                },
-                RemoveReason = RemoveReason.Left
-            });
+            var members     = group.Members.ToList();
+            var memberId    = group.FindMemberByPlayerGuid(session.Player.Guid).Id;
 
             // If there is going to only be one player the group should be auto disbaned
             // This does not actually do anything.
             if (group.Members.Count - 1 < 2)
             {
-                foreach (Group.Member member in group.Members)
-                    group.RemoveMember(member);
-
-                session.EnqueueMessageEncrypted(new ServerGroupLeave
-                {
-                    GroupId = group.GroupId,
-                    MemberId = 1,
-                    UnkIdentity = new TargetPlayerIdentity()
-                    {
-                        RealmId = WorldServer.RealmId,
-                        CharacterId = session.Player.Guid
-                    },
-                    RemoveReason = RemoveReason.Disband
-                });
-
-                targetSession.EnqueueMessageEncrypted(new ServerGroupLeave
-                {
-                    GroupId = group.GroupId,
-                    MemberId = 1,
-                    UnkIdentity = new TargetPlayerIdentity()
-                    {
-                        RealmId = WorldServer.RealmId,
-                        CharacterId = session.Player.Guid
-                    },
-                    RemoveReason = RemoveReason.Disband
-                });
+                var targetMember = group.FindMemberByPlayerGuid(session.Player.Guid);
+                GroupManager.SendGroupRemove(session, targetMember.PlayerSession, group, memberId, RemoveReason.Disband);
+                group.RemoveMember(group.FindMemberByPlayerGuid(session.Player.Guid));
+                GroupManager.RemoveGroup(group);
             }
+            else
+                foreach (var member in members)
+                    GroupManager.SendGroupRemove(session, member.PlayerSession, group, memberId, RemoveReason.Left);
         }
     }
 }
