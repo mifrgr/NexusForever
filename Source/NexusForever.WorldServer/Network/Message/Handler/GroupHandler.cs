@@ -57,12 +57,12 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                         {
                             new GroupMember
                             {
-                                Name = session.Player.Name,
-                                Faction = session.Player.Faction1,
-                                Race = session.Player.Race,
-                                Class = session.Player.Class,
-                                Path = session.Player.Path,
-                                Level = (byte)session.Player.Level,
+                                Name = targetSession.Player.Name,
+                                Faction = targetSession.Player.Faction1,
+                                Race = targetSession.Player.Race,
+                                Class = targetSession.Player.Class,
+                                Path = targetSession.Player.Path,
+                                Level = (byte)targetSession.Player.Level,
                                 GroupMemberId = (ushort)member.Id
                             }
                         }
@@ -181,8 +181,13 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                             Unknown21 = 0,
                             Unknown22 = 0,
                             Realm = WorldServer.RealmId,
+<<<<<<< refs/remotes/Party-Time/party-time
                             WorldZoneId = (ushort)targetSession.Player.Zone.Id,
                             Unknown25 = 2725,
+=======
+                            WorldZoneId = (ushort)session.Player.Zone.Id,
+                            Unknown25 = 1873,
+>>>>>>> Idk
                             Unknown26 = 1,
                             Unknown27 = true,
                             Unknown28 = 0,
@@ -294,7 +299,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
             session.EnqueueMessageEncrypted(new ServerGroupLeave
             {
                 GroupId = group.GroupId,
-                MemberId = 1,
+                MemberId = (uint)group.FindMemberByCharacterId(session.Player.Guid).Id,
                 UnkIdentity = new TargetPlayerIdentity()
                 {
                     RealmId = WorldServer.RealmId,
@@ -306,11 +311,11 @@ namespace NexusForever.WorldServer.Network.Message.Handler
             targetSession.EnqueueMessageEncrypted(new ServerGroupLeave
             {
                 GroupId = group.GroupId,
-                MemberId = 1,
+                MemberId = (uint)group.FindMemberByCharacterId(session.Player.Guid).Id,
                 UnkIdentity = new TargetPlayerIdentity()
                 {
                     RealmId = WorldServer.RealmId,
-                    CharacterId = session.Player.Guid
+                    CharacterId = targetSession.Player.Guid
                 },
                 RemoveReason = RemoveReason.Left
             });
@@ -320,9 +325,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
             if (group.Members.Count - 1 < 2)
             {
                 foreach (Group.Member member in group.Members)
-                {
                     group.RemoveMember(member);
-                }
 
                 session.EnqueueMessageEncrypted(new ServerGroupLeave
                 {
