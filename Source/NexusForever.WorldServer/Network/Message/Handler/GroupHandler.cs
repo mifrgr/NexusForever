@@ -46,6 +46,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 });
 
                 WorldSession targetSession = NetworkManager<WorldSession>.GetSession(s => s.Player?.CharacterId == character.Id);
+                var newMember = group.CreateNewMember(targetSession.Player.CharacterId);
                 if (targetSession != null)
                 {
                     targetSession.EnqueueMessageEncrypted(new ServerGroupInviteReceived
@@ -63,7 +64,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                                 Class = targetSession.Player.Class,
                                 Path = targetSession.Player.Path,
                                 Level = (byte)targetSession.Player.Level,
-                                GroupMemberId = (ushort)member.Id
+                                GroupMemberId = (ushort)newMember.Id
                             }
                         }
                     });
@@ -111,9 +112,9 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                     CharacterId = 1
                 },
                 GroupId = group.GroupId,
-                Unknown0 = 257,
+                Unknown0 = 1,
                 MaxSize = 5,
-                LootRuleNormal = LootRule.Master,
+                LootRuleNormal = LootRule.RoundRobin,
                 LootRuleThreshold = 2,
                 LootThreshold = LootThreshold.Good,
                 LootRuleHarvest = LootRuleHarvest.RoundRobin,
@@ -126,9 +127,10 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                             RealmId = WorldServer.RealmId,
                             CharacterId = 1
                         },
-                        Flags = 8198,
+                        Flags = 0,
                         GroupMember = new GroupMember
                         {
+<<<<<<< refs/remotes/Party-Time/party-time
                             Name = targetSession.Player.Name,
                             Faction = targetSession.Player.Faction1,
                             Race = targetSession.Player.Race,
@@ -136,6 +138,15 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                             Path = targetSession.Player.Path,
                             Level = (byte)targetSession.Player.Level,
                             EffectiveLevel = (byte)targetSession.Player.Level,
+=======
+                            Name = session.Player.Name,
+                            Faction = session.Player.Faction1,
+                            Race = session.Player.Race,
+                            Class = session.Player.Class,
+                            Path = session.Player.Path,
+                            Level = (byte)session.Player.Level,
+                            EffectiveLevel = 0,
+>>>>>>> Changes
                             GroupMemberId = (ushort)member.Id,
                             UnknownStruct0List = new List<GroupMember.UnknownStruct0>
                             {
@@ -191,7 +202,8 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                             Unknown26 = 1,
                             Unknown27 = true,
                             Unknown28 = 0,
-                            Unknown29 = 0
+                            Unknown29 = 0,
+                            UnknownStruct1List = new List<GroupMember.UnknownStruct1>()
                         },
                         GroupIndex = 1
                     },
@@ -202,9 +214,10 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                             RealmId = WorldServer.RealmId,
                             CharacterId = 2
                         },
-                        Flags = 8192,
+                        Flags = 0,
                         GroupMember = new GroupMember
                         {
+<<<<<<< refs/remotes/Party-Time/party-time
                             Name = session.Player.Name,
                             Faction = session.Player.Faction1,
                             Race = session.Player.Race,
@@ -212,23 +225,32 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                             Path = session.Player.Path,
                             Level = (byte)session.Player.Level,
                             EffectiveLevel = (byte)session.Player.Level,
+=======
+                            Name = targetSession.Player.Name,
+                            Faction = targetSession.Player.Faction1,
+                            Race = targetSession.Player.Race,
+                            Class = targetSession.Player.Class,
+                            Path = targetSession.Player.Path,
+                            Level = (byte)targetSession.Player.Level,
+                            EffectiveLevel = 0,
+>>>>>>> Changes
                             GroupMemberId = (ushort)group.PartyLeader.Id,
                             UnknownStruct0List = new List<GroupMember.UnknownStruct0>
                             {
                                 new GroupMember.UnknownStruct0
                                 {
                                     Unknown6 = 0,
-                                    Unknown7 = 96
+                                    Unknown7 = 48
                                 },
                                 new GroupMember.UnknownStruct0
                                 {
                                     Unknown6 = 0,
-                                    Unknown7 = 96
+                                    Unknown7 = 48
                                 },
                                 new GroupMember.UnknownStruct0
                                 {
                                     Unknown6 = 0,
-                                    Unknown7 = 96
+                                    Unknown7 = 48
                                 },
                                 new GroupMember.UnknownStruct0
                                 {
@@ -262,7 +284,8 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                             Unknown26 = 1,
                             Unknown27 = true,
                             Unknown28 = 0,
-                            Unknown29 = 0
+                            Unknown29 = 0,
+                            UnknownStruct1List = new List<GroupMember.UnknownStruct1>()
                         },
                         GroupIndex = 2
                     },
@@ -296,10 +319,12 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 return;
 
             WorldSession targetSession = NetworkManager<WorldSession>.GetSession(s => s.Player?.CharacterId == group.PartyLeaderCharacterId);
+
+            group.RemoveMember(group.FindMemberByCharacterId(session.Player.CharacterId));
             session.EnqueueMessageEncrypted(new ServerGroupLeave
             {
                 GroupId = group.GroupId,
-                MemberId = (uint)group.FindMemberByCharacterId(session.Player.Guid).Id,
+                MemberId = (uint)group.FindMemberByCharacterId(session.Player.CharacterId).Id,
                 UnkIdentity = new TargetPlayerIdentity()
                 {
                     RealmId = WorldServer.RealmId,
@@ -311,11 +336,11 @@ namespace NexusForever.WorldServer.Network.Message.Handler
             targetSession.EnqueueMessageEncrypted(new ServerGroupLeave
             {
                 GroupId = group.GroupId,
-                MemberId = (uint)group.FindMemberByCharacterId(session.Player.Guid).Id,
+                MemberId = (uint)group.FindMemberByCharacterId(session.Player.CharacterId).Id,
                 UnkIdentity = new TargetPlayerIdentity()
                 {
                     RealmId = WorldServer.RealmId,
-                    CharacterId = targetSession.Player.Guid
+                    CharacterId = session.Player.Guid
                 },
                 RemoveReason = RemoveReason.Left
             });
