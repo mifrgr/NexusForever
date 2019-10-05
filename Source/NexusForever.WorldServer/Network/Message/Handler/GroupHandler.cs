@@ -142,22 +142,27 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                                 new GroupMember.UnknownStruct0
                                 {
                                     Unknown6 = 0,
-                                    Unknown7 = 48
+                                    Unknown7 = 96
                                 },
                                 new GroupMember.UnknownStruct0
                                 {
                                     Unknown6 = 0,
-                                    Unknown7 = 48
+                                    Unknown7 = 96
                                 },
                                 new GroupMember.UnknownStruct0
                                 {
                                     Unknown6 = 0,
-                                    Unknown7 = 48
+                                    Unknown7 = 96
                                 },
                                 new GroupMember.UnknownStruct0
                                 {
                                     Unknown6 = 0,
-                                    Unknown7 = 48
+                                    Unknown7 = 96
+                                },
+                                new GroupMember.UnknownStruct0
+                                {
+                                    Unknown6 = 0,
+                                    Unknown7 = 96
                                 }
                             },
                             Unknown8 = 0,
@@ -205,6 +210,11 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                             GroupMemberId = (ushort)group.PartyLeader.Id,
                             UnknownStruct0List = new List<GroupMember.UnknownStruct0>
                             {
+                                new GroupMember.UnknownStruct0
+                                {
+                                    Unknown6 = 0,
+                                    Unknown7 = 96
+                                },
                                 new GroupMember.UnknownStruct0
                                 {
                                     Unknown6 = 0,
