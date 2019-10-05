@@ -58,7 +58,7 @@ namespace NexusForever.WorldServer.Network.Message.Model.Shared
         public ushort Unknown17 { get; set; }
         public ushort Unknown18 { get; set; }
         public ushort Unknown19 { get; set; }
-        public ulong Unknown20 { get; set; }
+        public ushort Unknown20 { get; set; }
         public ushort Unknown21 { get; set; }
         public ushort Unknown22 { get; set; }
         public ushort Realm { get; set; } // 14
