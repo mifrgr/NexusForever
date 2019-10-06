@@ -206,7 +206,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                             }
                         },
                         Unknown8 = 1, // Something to do with Mentoring, Sets mentoring of first player that isn't you
-                        Unknown9 = 0,
+                        Unknown9 = 1, // This and Unknown8 have to both be 1
                         Unknown10 = 0,
                         Unknown11 = 0,
                         Unknown12 = 0,
