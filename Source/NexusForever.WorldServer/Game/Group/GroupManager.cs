@@ -12,73 +12,83 @@ namespace NexusForever.WorldServer.Game.Group
     {
         private static ILogger Logger { get; } = LogManager.GetCurrentClassLogger();
 
-        private static Dictionary<ulong, Group> groupsMap = new Dictionary<ulong, Group>();
-        private static Dictionary<ulong, ulong> groupChar = new Dictionary<ulong, ulong>();
+        /// <summary>
+        /// List of active groups
+        /// </summary>
+        private static List<Group> Groups = new List<Group>();
 
         /// <summary>
-        /// Id assigned to the next new group
+        /// Unique ID for the next new group
         /// </summary>
         public static ulong NextGroupId => nextGroupId++;
+
+        /// <summary>
+        /// Unique ID for the next new group member
+        /// </summary>
         public static ulong NextGroupMemberId => nextGroupMemberId++;
-        public static uint NextGroupIndex => nextGroupIndex++;
-        public static Dictionary<ulong, Group.Member> GroupMember = new Dictionary<ulong, Group.Member>();
 
         private static ulong nextGroupId;
         private static ulong nextGroupMemberId;
-        private static uint nextGroupIndex;
 
         public static void Initialise()
         {
             nextGroupId = 1ul;
             nextGroupMemberId = 1ul;
-            nextGroupIndex = 1u;
         }
 
         public static Group GetGroupById(ulong groupId)
         {
-            if (groupsMap.ContainsKey(groupId))
-                return groupsMap[groupId];
-
-            return null;
+            return Groups.Find(group => group.Id == groupId);
         }
 
         public static void DismissGroup(Group group)
         {
-            groupsMap.Remove(group.Id);
-
-            foreach (var item in groupChar.Where(gc => gc.Value == group.Id).ToList())
-            {
-                groupChar.Remove(item.Key);
-            }
+            Groups.Remove(group);
         }
 
-        public static Group CreateNewGroup(ulong playerGuid)
+        /// <summary>
+        /// Return Group player is part of or null
+        /// </summary>
+        /// <param name="session"></param>
+        /// <returns></returns>
+        public static Group FindPlayerGroup(WorldSession session)
         {
-            var id = NextGroupId;
-            var group = new Group(id);
+            return Groups.Find(
+                group => group.Members.Exists(
+                    member => member.Guid == session.Player.Guid
+                )
+            );
+        }
 
-            if (!groupChar.ContainsKey(playerGuid))
+        /// <summary>
+        /// Return Group player has been invited to, or null
+        /// </summary>
+        /// <param name="session"></param>
+        /// <returns></returns>
+        public static Group.Invite FindPlayerInvite(WorldSession session)
+        {
+            foreach (var group in Groups)
             {
-                groupsMap.Add(id, group);
-                groupChar.Add(playerGuid, id);
+                var invite = group.FindInvite(session);
+                if (invite != null)
+                    return invite;
             }
-            else
-            {
-                id = groupChar[playerGuid];
-                return groupsMap[id];
-            }
+            return null;
+        }
 
+        public static Group CreateGroup()
+        {
+            var group = new Group
+            {
+                Id = NextGroupId
+            };
+            Groups.Add(group);
             return group;
         }
 
         public static void RemoveGroup(Group group)
         {
-            // Remove Group and Members
-            foreach (var groupMember in group.Members.ToList())
-                group.RemoveMember(groupMember);
-
-            if (group.IsEmpty)
-                DismissGroup(group);
+            Groups.Remove(group);
         }
 
         public static ServerGroupLeave BuildLeaveGroup(ulong characterId, uint memberId, ulong groupId, RemoveReason reason)
