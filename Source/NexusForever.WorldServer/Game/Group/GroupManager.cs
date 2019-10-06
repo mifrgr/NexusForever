@@ -15,7 +15,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// <summary>
         /// List of active groups
         /// </summary>
-        private static List<Group> Groups = new List<Group>();
+        public static List<Group> Groups = new List<Group>();
 
         /// <summary>
         /// Unique ID for the next new group
@@ -86,7 +86,7 @@ namespace NexusForever.WorldServer.Game.Group
             return group;
         }
 
-        public static void RemoveGroup(Group group)
+        public static void DisbandGroup(Group group)
         {
             Groups.Remove(group);
         }

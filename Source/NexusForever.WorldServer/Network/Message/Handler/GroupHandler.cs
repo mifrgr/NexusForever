@@ -143,7 +143,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 
                 // Remove Group and Members
                 if (group.IsEmpty)
-                    GroupManager.RemoveGroup(group);
+                    GroupManager.DisbandGroup(group);
 
                 return;
             }
@@ -284,26 +284,8 @@ namespace NexusForever.WorldServer.Network.Message.Handler
             if (group == null)
                 return;
 
-            var removeReason = RemoveReason.Left;
-
-            // Player that leaves the group
-            var targetMember = group.FindMember(session);
-            group.RemoveMember(targetMember);
-
-            // Remove the group if members count is under 2
-            if (group.Members.Count - 1 < 2)
-            {
-                removeReason = RemoveReason.Disband;
-                GroupManager.RemoveGroup(group);
-            }
-
-            var leaveGroup = GroupManager.BuildLeaveGroup(session.Player.CharacterId, (uint)targetMember.Id, group.Id, removeReason);
-
-            // Send Disband Response
-            foreach (var member in group.Members.ToList())
-                member.Session.EnqueueMessageEncrypted(leaveGroup);
-
-            session.EnqueueMessageEncrypted(leaveGroup);
+            // TODO
+            GroupManager.DisbandGroup(group);
         }
 
         [MessageHandler(GameMessageOpcode.ClientGroupSetRole)]
