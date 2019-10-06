@@ -109,7 +109,6 @@ namespace NexusForever.WorldServer.Network.Message.Handler
             uint groupIndex = 1;
             foreach (var member in group.Members)
             {
-                log.Info($"Is leader: {member.Guid == group.PartyLeadGuid}");
                 groupMembersInfo.Add(new ServerGroupJoin.GroupMemberInfo
                 {
                     MemberIdentity = new TargetPlayerIdentity
@@ -117,7 +116,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                         RealmId = WorldServer.RealmId,
                         CharacterId = member.PlayerSession.Player.CharacterId
                     },
-                    Flags = (GroupMemberInfoFlags)8192,
+                    Flags = 0,
                     GroupMember = new GroupMember
                     {
                         Name = member.PlayerSession.Player.Name,
@@ -219,8 +218,19 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                         Result = InviteResult.Accepted
                     });
                 }
+
+                GroupMemberInfoFlags flags = member.Guid == group.PartyLeadGuid
+                                           ? GroupMemberInfoFlags.GroupAdmin
+                                           : GroupMemberInfoFlags.GroupMember
+                foreach (var groupmember in joinGroup.GroupMembers)
+                {
+                    groupmember.Flags |= flags;
+                }
+
                 member.PlayerSession.EnqueueMessageEncrypted(joinGroup);
             }
+
+            GroupManager.RemoveGroup(group); // TODO - to easy testing. REMOVE
         }
 
         [MessageHandler(GameMessageOpcode.ClientGroupLeave)]
