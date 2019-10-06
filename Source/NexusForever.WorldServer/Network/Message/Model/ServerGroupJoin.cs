@@ -12,14 +12,14 @@ namespace NexusForever.WorldServer.Network.Message.Model
         public class GroupMemberInfo : IWritable
         {
             public TargetPlayerIdentity MemberIdentity { get; set; }
-            public uint Flags { get; set; }
+            public GroupMemberInfoFlags Flags { get; set; }
             public GroupMember GroupMember { get; set; } = new GroupMember();
             public uint GroupIndex { get; set; }
 
             public void Write(GamePacketWriter writer)
             {
                 MemberIdentity.Write(writer);
-                writer.Write(Flags);
+                writer.Write((uint)Flags);
                 GroupMember.Write(writer);
                 writer.Write(GroupIndex);
             }

@@ -80,7 +80,7 @@ namespace NexusForever.WorldServer.Game.Group
                 PlayerLeave = new TargetPlayerIdentity()
                 {
                     RealmId = WorldServer.RealmId,
-                    CharacterId = localSession.Player.Guid
+                    CharacterId = localSession.Player.CharacterId
                 },
                 RemoveReason = reason
             };

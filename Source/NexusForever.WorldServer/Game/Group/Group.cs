@@ -23,8 +23,8 @@ namespace NexusForever.WorldServer.Game.Group
 
         public bool IsEmpty => Members.Count == 0;
         public readonly ulong GroupId;
-        public ulong PartyLead = 0;
-        public Member PartyLeader => Members.Find(m => m.Guid == PartyLead);
+        public ulong PartyLeadGuid = 0;
+        public Member PartyLeader => Members.Find(m => m.Guid == PartyLeadGuid);
 
         public List<Member> Members { get; } = new List<Member>();
 

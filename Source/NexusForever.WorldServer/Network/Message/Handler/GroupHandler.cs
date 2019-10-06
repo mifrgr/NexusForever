@@ -41,7 +41,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                     {
                         var group = GroupManager.CreateNewGroup(session.Player.Guid);
                         var newMember = group.CreateNewMember(session);
-                        group.PartyLead = session.Player.CharacterId;
+                        group.PartyLeadGuid = session.Player.Guid;
 
                         var groupMembers = new List<GroupMember>();
                         foreach (var member in group.Members)
@@ -79,7 +79,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
             if (group == null)
                 return;
 
-            WorldSession invitee = NetworkManager<WorldSession>.GetSession(s => s.Player?.CharacterId == group.PartyLead);
+            WorldSession invitee = NetworkManager<WorldSession>.GetSession(s => s.Player?.Guid == group.PartyLeadGuid);
             if (invitee == null)
                 GroupManager.RemoveGroup(group);
 
@@ -109,6 +109,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
             uint groupIndex = 1;
             foreach (var member in group.Members)
             {
+                log.Info($"Is leader: {member.Guid == group.PartyLeadGuid}");
                 groupMembersInfo.Add(new ServerGroupJoin.GroupMemberInfo
                 {
                     MemberIdentity = new TargetPlayerIdentity
@@ -116,7 +117,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                         RealmId = WorldServer.RealmId,
                         CharacterId = member.PlayerSession.Player.CharacterId
                     },
-                    Flags = 8192,
+                    Flags = (GroupMemberInfoFlags)8192,
                     GroupMember = new GroupMember
                     {
                         Name = member.PlayerSession.Player.Name,
