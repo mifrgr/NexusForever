@@ -22,15 +22,20 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         {
             session.EnqueueEvent(new TaskGenericEvent<Character>(CharacterDatabase.GetCharacterByName(request.PlayerName), character =>
             {
-                // Invalid character?
-                if (character == null)
+                void sendGroupInviteResult(InviteResult result, ulong groupId = 0)
                 {
                     session.EnqueueMessageEncrypted(new ServerGroupInviteResult
                     {
-                        GroupId = 0,
+                        GroupId = groupId,
                         PlayerName = character.Name,
-                        Result = InviteResult.PlayerNotFound
+                        Result = result
                     });
+                }
+
+                // Invalid character?
+                if (character == null)
+                {
+                    sendGroupInviteResult(InviteResult.PlayerNotFound);
                     return;
                 }
 
@@ -38,48 +43,28 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 var targetSession = NetworkManager<WorldSession>.GetSession(s => s.Player?.CharacterId == character.Id);
                 if (targetSession == null)
                 {
-                    session.EnqueueMessageEncrypted(new ServerGroupInviteResult
-                    {
-                        GroupId = 0,
-                        PlayerName = character.Name,
-                        Result = InviteResult.PlayerNotFound
-                    });
+                    sendGroupInviteResult(InviteResult.PlayerNotFound);
                     return;
                 }
 
                 // Player already in the group?
                 if (GroupManager.FindPlayerGroup(targetSession) != null)
                 {
-                    session.EnqueueMessageEncrypted(new ServerGroupInviteResult
-                    {
-                        GroupId = 0,
-                        PlayerName = character.Name,
-                        Result = InviteResult.PlayerAlreadyInGroup
-                    });
+                    sendGroupInviteResult(InviteResult.PlayerAlreadyInGroup);
                     return;
                 }
 
                 // Player already has a pending invite
                 if (GroupManager.FindPlayerInvite(targetSession) != null)
                 {
-                    session.EnqueueMessageEncrypted(new ServerGroupInviteResult
-                    {
-                        GroupId = 0,
-                        PlayerName = character.Name,
-                        Result = InviteResult.PlayerAlreadyInvited
-                    });
+                    sendGroupInviteResult(InviteResult.PlayerAlreadyInvited);
                     return;
                 }
 
                 // Inviting yourself?
                 if (targetSession.Player.Guid == session.Player.Guid)
                 {
-                    session.EnqueueMessageEncrypted(new ServerGroupInviteResult
-                    {
-                        GroupId = 0,
-                        PlayerName = character.Name,
-                        Result = InviteResult.CannotInviteYourself
-                    });
+                    sendGroupInviteResult(InviteResult.CannotInviteYourself);
                     return;
                 }
 
@@ -94,12 +79,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 // Not party leader trying to invite? Sneaky!
                 else if (group.PartyLeader.Guid != session.Player.Guid)
                 {
-                    session.EnqueueMessageEncrypted(new ServerGroupInviteResult
-                    {
-                        GroupId = 0,
-                        PlayerName = character.Name,
-                        Result = InviteResult.NotPermitted
-                    });
+                    sendGroupInviteResult(InviteResult.NotPermitted);
                     return;
                 }
 
@@ -124,12 +104,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                     });
                 }
 
-                session.EnqueueMessageEncrypted(new ServerGroupInviteResult
-                {
-                    GroupId = group.Id,
-                    PlayerName = character.Name,
-                    Result = InviteResult.Sent
-                });
+                sendGroupInviteResult(InviteResult.Sent, group.Id);
 
                 targetSession.EnqueueMessageEncrypted(new ServerGroupInviteReceived
                 {
