@@ -5,18 +5,34 @@ namespace NexusForever.WorldServer.Game.Group
 {
     public class Group
     {
+        /// <summary>
+        /// Represent player that is part of the group
+        /// </summary>
         public class Member
         {
             public ulong Id;
             public ulong Guid;
-            public WorldSession PlayerSession;
+            public WorldSession Session;
         }
 
-        public bool IsEmpty => Members.Count == 0;
+        /// <summary>
+        /// Unique Group ID
+        /// </summary>
         public readonly ulong Id;
-        public ulong PartyLeadGuid = 0;
-        public Member PartyLeader => Members.Find(m => m.Guid == PartyLeadGuid);
 
+        /// <summary>
+        /// True of group has no other members aside from party leader in it
+        /// </summary>
+        public bool IsEmpty => Members.Count <= 1;
+
+        /// <summary>
+        /// Current party leader
+        /// </summary>
+        public Member PartyLeader;
+
+        /// <summary>
+        /// Group members
+        /// </summary>
         public List<Member> Members { get; } = new List<Member>();
 
         public Group(ulong groupId) => Id = groupId;
@@ -29,7 +45,7 @@ namespace NexusForever.WorldServer.Game.Group
                 {
                     Id = GroupManager.NextGroupMemberId,
                     Guid = playerSession.Player.Guid,
-                    PlayerSession = playerSession
+                    Session = playerSession
                 };
 
                 Members.Add(member);
