@@ -122,37 +122,11 @@ namespace NexusForever.WorldServer.Game.Group
             return member;
         }
 
-        //public Member CreateNewMember(WorldSession playerSession)
-        //{
-        //    if (!GroupManager.GroupMember.ContainsKey(playerSession.Player.Guid))
-        //    {
-        //        var member = new Member
-        //        {
-        //            Id = GroupManager.NextGroupMemberId,
-        //            Guid = playerSession.Player.Guid,
-        //            Session = playerSession
-        //        };
-
-        //        Members.Add(member);
-        //        GroupManager.GroupMember.Add(playerSession.Player.Guid, member);
-
-        //        return member;
-        //    }
-        //    else
-        //        return GroupManager.GroupMember[playerSession.Player.Guid];
-        //}
-
         public Member FindMember(WorldSession session) => Members.Find(m => m.Guid == session.Player.Guid);
 
         public void RemoveMember(Member member)
         {
             Members.Remove(member);
         }
-
-        //public void RemoveMember(Member member)
-        //{
-        //    GroupManager.GroupMember.Remove(member.Guid);
-        //    Members.Remove(member);
-        //}
     }
 }
