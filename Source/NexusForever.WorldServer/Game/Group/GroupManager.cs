@@ -46,8 +46,10 @@ namespace NexusForever.WorldServer.Game.Group
         {
             groupsMap.Remove(group.GroupId);
 
-            var item = groupChar.First(id => id.Value == group.GroupId);
-            groupChar.Remove(item.Key);
+            foreach (var item in groupChar.Where(gc => gc.Value == group.GroupId).ToList())
+            {
+                groupChar.Remove(item.Key);
+            }
         }
 
         public static Group CreateNewGroup(ulong playerGuid)

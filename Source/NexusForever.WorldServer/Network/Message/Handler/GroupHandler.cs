@@ -94,18 +94,19 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 });
 
                 // Remove Group and Members
-                if (group.Members.Count - 1 < 2)
+                if (group.Members.Count <= 1)
                     GroupManager.RemoveGroup(group);
 
                 return;
             }
 
             // Accepted
-            var leader           = group.FindMemberByPlayerGuid(invitee.Player.Guid);
+            var leader           = group.FindMember(invitee);
             var newMember        = group.CreateNewMember(invited);
             var groupMembersInfo = new List<ServerGroupJoin.GroupMemberInfo>();
 
             // Create ServerGroupJoin.GroupMemberInfo for every member
+            uint groupIndex = 1;
             foreach (var member in group.Members)
             {
                 groupMembersInfo.Add(new ServerGroupJoin.GroupMemberInfo
@@ -180,6 +181,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                         Unknown29 = 0
                     },
                     GroupIndex = (uint)member.Id
+                    GroupIndex = groupIndex++
                 });
             }
 
@@ -230,12 +232,12 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 return;
 
             var members  = group.Members.ToList();
-            var memberId = group.FindMemberByPlayerGuid(session.Player.Guid).Id;
+            var memberId = group.FindMember(session).Id;
 
             if (group.Members.Count - 1 < 2)
             {
-                var targetMember = group.FindMemberByPlayerGuid(session.Player.Guid);
-                group.RemoveMember(group.FindMemberByPlayerGuid(session.Player.Guid));
+                var targetMember = group.FindMember(session);
+                group.RemoveMember(group.FindMember(session));
 
                 GroupManager.SendGroupRemove(session, targetMember.PlayerSession, group, memberId, RemoveReason.Disband);
                 GroupManager.RemoveGroup(group);

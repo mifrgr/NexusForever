@@ -50,10 +50,12 @@ namespace NexusForever.WorldServer.Game.Group
                 return GroupManager.GroupMember[playerSession.Player.Guid];
         }
 
-        public Member FindMemberByMemberId(ulong id) => Members.Find(m => m.Id == id);
+        public Member FindMember(WorldSession session) => Members.Find(m => m.Guid == session.Player.Guid);
 
-        public Member FindMemberByPlayerGuid(ulong guid) => Members.Find(m => m.Guid == guid);
-
-        public void RemoveMember(Member member) => Members.Remove(member);
+        public void RemoveMember(Member member)
+        {
+            GroupManager.GroupMember.Remove(member.Guid);
+            Members.Remove(member);
+        }
     }
 }
