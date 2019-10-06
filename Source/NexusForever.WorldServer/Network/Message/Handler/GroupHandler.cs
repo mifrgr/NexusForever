@@ -262,7 +262,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                     member.Session.EnqueueMessageEncrypted(new ServerGroupInviteResult
                     {
                         GroupId = clientGroupInviteResponse.GroupId,
-                        PlayerName = invite.Inviter.Session.Player.Name,
+                        PlayerName = newMember.Session.Player.Name,
                         Result = InviteResult.Accepted
                     });
                 }
