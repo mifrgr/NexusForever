@@ -180,7 +180,6 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                         Unknown28 = 0,
                         Unknown29 = 0
                     },
-                    GroupIndex = (uint)member.Id
                     GroupIndex = groupIndex++
                 });
             }
