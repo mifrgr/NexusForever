@@ -221,7 +221,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
 
                 GroupMemberInfoFlags flags = member.Guid == group.PartyLeadGuid
                                            ? GroupMemberInfoFlags.GroupAdmin
-                                           : GroupMemberInfoFlags.GroupMember
+                                           : GroupMemberInfoFlags.GroupMember;
                 foreach (var groupmember in joinGroup.GroupMembers)
                 {
                     groupmember.Flags |= flags;
@@ -230,7 +230,6 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 member.PlayerSession.EnqueueMessageEncrypted(joinGroup);
             }
 
-            GroupManager.RemoveGroup(group); // TODO - to easy testing. REMOVE
         }
 
         [MessageHandler(GameMessageOpcode.ClientGroupLeave)]
