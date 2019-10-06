@@ -1,13 +1,4 @@
-﻿using NexusForever.Shared.Game.Events;
-using NexusForever.Shared.Network;
-using NexusForever.Shared.Network.Message;
-using NexusForever.WorldServer.Database.Character;
-using NexusForever.WorldServer.Database.Character.Model;
-using NexusForever.WorldServer.Game.Group.Static;
-using NexusForever.WorldServer.Network;
-using NexusForever.WorldServer.Network.Message.Model;
-using NexusForever.WorldServer.Network.Message.Model.Shared;
-using NLog;
+﻿using NexusForever.WorldServer.Network;
 using System.Collections.Generic;
 
 namespace NexusForever.WorldServer.Game.Group
