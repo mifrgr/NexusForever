@@ -108,9 +108,9 @@ namespace NexusForever.WorldServer.Network.Message.Handler
 
                 targetSession.EnqueueMessageEncrypted(new ServerGroupInviteReceived
                 {
-                    GroupId     = group.Id,
-                    Unknown0    = 0,
-                    Unknown1    = 0,
+                    GroupId = group.Id,
+                    Unknown0 = 0,
+                    Unknown1 = 0,
                     GroupMembers = groupMembers
                 });
             }));
@@ -140,7 +140,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                     PlayerName = invite.Session.Player.Name,
                     Result = InviteResult.Declined
                 });
-                
+
                 // Remove Group and Members
                 if (group.IsEmpty)
                     GroupManager.DisbandGroup(group);
@@ -236,20 +236,20 @@ namespace NexusForever.WorldServer.Network.Message.Handler
             {
                 PlayerJoined = new TargetPlayerIdentity
                 {
-                    RealmId         = WorldServer.RealmId,
-                    CharacterId     = newMember.Session.Player.CharacterId
+                    RealmId = WorldServer.RealmId,
+                    CharacterId = newMember.Session.Player.CharacterId
                 },
-                GroupId             = group.Id,
-                GroupType           = (uint)GroupType.Standard,
-                MaxSize             = 5,
-                LootRuleNormal      = LootRule.NeedBeforeGreed,         // Under LootThreshold rarity (For Raid)
-                LootRuleThreshold   = LootRule.RoundRobin,              // This is the selection for Loot Rules in the UI / Over LootTreshold rarity (For Raid)
-                LootThreshold       = LootThreshold.Excellent,
-                LootRuleHarvest     = LootRuleHarvest.FirstTagger,      // IDK were it shows this setting in the UI
-                GroupMembers        = groupMembersInfo,
+                GroupId = group.Id,
+                GroupType = (uint)GroupType.Standard,
+                MaxSize = 5,
+                LootRuleNormal = LootRule.NeedBeforeGreed,         // Under LootThreshold rarity (For Raid)
+                LootRuleThreshold = LootRule.RoundRobin,              // This is the selection for Loot Rules in the UI / Over LootTreshold rarity (For Raid)
+                LootThreshold = LootThreshold.Excellent,
+                LootRuleHarvest = LootRuleHarvest.FirstTagger,      // IDK were it shows this setting in the UI
+                GroupMembers = groupMembersInfo,
                 LeaderIdentity = new TargetPlayerIdentity
                 {
-                    RealmId     = WorldServer.RealmId,
+                    RealmId = WorldServer.RealmId,
                     CharacterId = group.PartyLeader.Session.Player.CharacterId
                 },
                 Realm = WorldServer.RealmId
@@ -284,7 +284,21 @@ namespace NexusForever.WorldServer.Network.Message.Handler
             if (group == null)
                 return;
 
-            // TODO
+            foreach (var member in group.Members)
+            {
+                member.Session.EnqueueMessageEncrypted(new ServerGroupDisband
+                {
+                    GroupId = group.Id,
+                    MemberId = (ushort)member.Id,
+                    PlayerLeave = new TargetPlayerIdentity
+                    {
+                        RealmId = WorldServer.RealmId,
+                        CharacterId = member.Session.Player.CharacterId
+                    },
+                    DisbandReason = RemoveReason.Disband
+                });
+            }
+
             GroupManager.DisbandGroup(group);
         }
 
