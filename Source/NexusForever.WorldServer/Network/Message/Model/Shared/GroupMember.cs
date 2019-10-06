@@ -37,7 +37,7 @@ namespace NexusForever.WorldServer.Network.Message.Model.Shared
         public Faction Faction { get; set; } // 14
         public Race Race { get; set; } // 14
         public Class Class { get; set; } // 14
-        public byte Unknown2 { get; set; } // 2 -- 
+        public Sex Sex { get; set; } // 2 -- 
         public byte Level { get; set; } // 7
         public byte EffectiveLevel { get; set; } // 7
         public Path Path { get; set; } // 3
@@ -77,7 +77,7 @@ namespace NexusForever.WorldServer.Network.Message.Model.Shared
             writer.Write(Faction, 14u);
             writer.Write(Race, 14u);
             writer.Write(Class, 14u);
-            writer.Write(Unknown2, 2u);
+            writer.Write(Sex, 2u);
             writer.Write(Level, 7u);
             writer.Write(EffectiveLevel, 7u);
             writer.Write(Path, 3u);

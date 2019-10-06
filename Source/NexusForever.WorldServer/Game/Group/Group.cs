@@ -13,13 +13,13 @@ namespace NexusForever.WorldServer.Game.Group
         }
 
         public bool IsEmpty => Members.Count == 0;
-        public readonly ulong GroupId;
+        public readonly ulong Id;
         public ulong PartyLeadGuid = 0;
         public Member PartyLeader => Members.Find(m => m.Guid == PartyLeadGuid);
 
         public List<Member> Members { get; } = new List<Member>();
 
-        public Group(ulong groupId) => GroupId = groupId;
+        public Group(ulong groupId) => Id = groupId;
 
         public Member CreateNewMember(WorldSession playerSession)
         {

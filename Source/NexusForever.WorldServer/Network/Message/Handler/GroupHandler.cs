@@ -52,6 +52,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                                 Faction = member.PlayerSession.Player.Faction1,
                                 Race = member.PlayerSession.Player.Race,
                                 Class = member.PlayerSession.Player.Class,
+                                Sex = member.PlayerSession.Player.Sex,
                                 Path = member.PlayerSession.Player.Path,
                                 Level = (byte)member.PlayerSession.Player.Level,
                                 GroupMemberId = (ushort)member.Id
@@ -60,7 +61,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
 
                         targetSession.EnqueueMessageEncrypted(new ServerGroupInviteReceived
                         {
-                            GroupId     = group.GroupId,
+                            GroupId     = group.Id,
                             Unknown0    = 0,
                             Unknown1    = 0,
                             GroupMembers = groupMembers
@@ -123,7 +124,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                         Faction = member.PlayerSession.Player.Faction1,
                         Race = member.PlayerSession.Player.Race,
                         Class = member.PlayerSession.Player.Class,
-                        Unknown2 = 0,
+                        Sex = member.PlayerSession.Player.Sex,
                         Level = (byte)member.PlayerSession.Player.Level,
                         EffectiveLevel = (byte)member.PlayerSession.Player.Level,
                         Path = member.PlayerSession.Player.Path,
@@ -191,13 +192,13 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                     RealmId         = WorldServer.RealmId,
                     CharacterId     = newMember.PlayerSession.Player.CharacterId
                 },
-                GroupId             = group.GroupId,
-                GroupType           = (uint)GroupType.Standard,
+                GroupId             = group.Id,
+                GroupType           = (uint)GroupType.Raid,
                 MaxSize             = 5,
-                LootRuleNormal      = LootRule.NeedBeforeGreed, // Under LootThreshold rarity (For Raid)
-                LootRuleThreshold   = LootRule.RoundRobin, // This is the selection for Loot Rules in the UI / Over LootTreshold rarity (For Raid)
+                LootRuleNormal      = LootRule.NeedBeforeGreed,         // Under LootThreshold rarity (For Raid)
+                LootRuleThreshold   = LootRule.RoundRobin,              // This is the selection for Loot Rules in the UI / Over LootTreshold rarity (For Raid)
                 LootThreshold       = LootThreshold.Excellent,
-                LootRuleHarvest     = LootRuleHarvest.FirstTagger, // IDK were it shows this setting in the UI
+                LootRuleHarvest     = LootRuleHarvest.FirstTagger,      // IDK were it shows this setting in the UI
                 GroupMembers        = groupMembersInfo,
                 LeaderIdentity = new TargetPlayerIdentity
                 {
@@ -223,9 +224,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                                            ? GroupMemberInfoFlags.GroupAdmin
                                            : GroupMemberInfoFlags.GroupMember;
                 foreach (var groupmember in joinGroup.GroupMembers)
-                {
                     groupmember.Flags |= flags;
-                }
 
                 member.PlayerSession.EnqueueMessageEncrypted(joinGroup);
             }
@@ -235,25 +234,36 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         [MessageHandler(GameMessageOpcode.ClientGroupLeave)]
         public static void HandleGroupLeave(WorldSession session, ClientGroupLeave request)
         {
-            log.Info($"{request.GroupId} {request.Unk1}");
             var group = GroupManager.GetGroupById(request.GroupId);
             if (group == null)
                 return;
 
-            var members  = group.Members.ToList();
-            var memberId = group.FindMember(session).Id;
+            var removeReason = RemoveReason.Left;
 
+            // Player that leaves the group
+            var targetMember = group.FindMember(session);
+            group.RemoveMember(targetMember);
+
+            // Remove the group if members count is under 2
             if (group.Members.Count - 1 < 2)
             {
-                var targetMember = group.FindMember(session);
-                group.RemoveMember(group.FindMember(session));
-
-                GroupManager.SendGroupRemove(session, targetMember.PlayerSession, group, memberId, RemoveReason.Disband);
+                removeReason = RemoveReason.Disband;
                 GroupManager.RemoveGroup(group);
             }
-            else
-                foreach (var member in members)
-                    GroupManager.SendGroupRemove(session, member.PlayerSession, group, memberId, RemoveReason.Left);
+
+            var leaveGroup = GroupManager.BuildLeaveGroup(session.Player.CharacterId, (uint)targetMember.Id, group.Id, removeReason);
+
+            // Send Disband Response
+            foreach (var member in group.Members.ToList())
+                member.PlayerSession.EnqueueMessageEncrypted(leaveGroup);
+
+            session.EnqueueMessageEncrypted(leaveGroup);
+        }
+
+        [MessageHandler(GameMessageOpcode.ClientGroupSetRole)]
+        public static void HandleGroupSetRole(WorldSession session, ClientGroupSetRole request)
+        {
+            log.Info($"GroupId: {request.GroupId} Unk1: {request.Unk1} Unk2: {request.Unk2}");
         }
     }
 }

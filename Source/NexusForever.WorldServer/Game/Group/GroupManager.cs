@@ -44,9 +44,9 @@ namespace NexusForever.WorldServer.Game.Group
 
         public static void DismissGroup(Group group)
         {
-            groupsMap.Remove(group.GroupId);
+            groupsMap.Remove(group.Id);
 
-            foreach (var item in groupChar.Where(gc => gc.Value == group.GroupId).ToList())
+            foreach (var item in groupChar.Where(gc => gc.Value == group.Id).ToList())
             {
                 groupChar.Remove(item.Key);
             }
@@ -71,24 +71,6 @@ namespace NexusForever.WorldServer.Game.Group
             return group;
         }
 
-        public static void SendGroupRemove(WorldSession localSession, WorldSession targetSession, Group group, ulong memberId, RemoveReason reason)
-        {
-            var groupLeave = new ServerGroupLeave
-            {
-                GroupId     = group.GroupId,
-                MemberId    = (uint)memberId,
-                PlayerLeave = new TargetPlayerIdentity()
-                {
-                    RealmId = WorldServer.RealmId,
-                    CharacterId = localSession.Player.CharacterId
-                },
-                RemoveReason = reason
-            };
-
-            localSession.EnqueueMessageEncrypted(groupLeave);
-            targetSession.EnqueueMessageEncrypted(groupLeave);
-        }
-
         public static void RemoveGroup(Group group)
         {
             // Remove Group and Members
@@ -97,6 +79,21 @@ namespace NexusForever.WorldServer.Game.Group
 
             if (group.IsEmpty)
                 DismissGroup(group);
+        }
+
+        public static ServerGroupLeave BuildLeaveGroup(ulong characterId, uint memberId, ulong groupId, RemoveReason reason)
+        {
+            return new ServerGroupLeave
+            {
+                GroupId = groupId,
+                MemberId = memberId,
+                PlayerLeave = new TargetPlayerIdentity()
+                {
+                    RealmId = WorldServer.RealmId,
+                    CharacterId = characterId
+                },
+                RemoveReason = reason
+            };
         }
     }
 }
