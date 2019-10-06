@@ -65,7 +65,7 @@ namespace NexusForever.WorldServer.Network.Message.Model.Shared
         public ushort WorldZoneId { get; set; } // 15
         public uint Unknown25 { get; set; }
         public uint Unknown26 { get; set; }
-        public bool Unknown27 { get; set; }
+        public bool SyncedToGroup { get; set; }
         public uint Unknown28 { get; set; }
         public uint Unknown29 { get; set; }
 
@@ -105,7 +105,7 @@ namespace NexusForever.WorldServer.Network.Message.Model.Shared
             writer.Write(WorldZoneId, 15u);
             writer.Write(Unknown25);
             writer.Write(Unknown26);
-            writer.Write(Unknown27);
+            writer.Write(SyncedToGroup);
             writer.Write(Unknown28);
             writer.Write(Unknown29);
 

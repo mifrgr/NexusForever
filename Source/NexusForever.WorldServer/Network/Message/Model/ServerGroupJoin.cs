@@ -39,10 +39,10 @@ namespace NexusForever.WorldServer.Network.Message.Model
 
         public TargetPlayerIdentity PlayerJoined { get; set; } = new TargetPlayerIdentity();
         public ulong GroupId { get; set; }
-        public uint Unknown0 { get; set; }
+        public uint GroupType { get; set; }
         public uint MaxSize { get; set; }
         public LootRule LootRuleNormal { get; set; } // 3
-        public byte LootRuleThreshold { get; set; } // 3
+        public LootRule LootRuleThreshold { get; set; } // 3
         public LootThreshold LootThreshold { get; set; } // 4
         public LootRuleHarvest LootRuleHarvest { get; set; } // 2
 
@@ -57,7 +57,7 @@ namespace NexusForever.WorldServer.Network.Message.Model
         {
             PlayerJoined.Write(writer);
             writer.Write(GroupId);
-            writer.Write(Unknown0);
+            writer.Write(GroupType);
             writer.Write(GroupMembers.Count, 32u);
             writer.Write(MaxSize);
             writer.Write(LootRuleNormal, 3u);
