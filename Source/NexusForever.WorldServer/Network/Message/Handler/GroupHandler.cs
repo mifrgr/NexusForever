@@ -234,11 +234,6 @@ namespace NexusForever.WorldServer.Network.Message.Handler
 
             var joinGroup = new ServerGroupJoin
             {
-                PlayerJoined = new TargetPlayerIdentity
-                {
-                    RealmId = WorldServer.RealmId,
-                    CharacterId = newMember.Session.Player.CharacterId
-                },
                 GroupId = group.Id,
                 GroupType = (uint)GroupType.Standard,
                 MaxSize = 5,
@@ -272,6 +267,12 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                                            : GroupMemberInfoFlags.GroupMember;
                 foreach (var groupmember in joinGroup.GroupMembers)
                     groupmember.Flags = flags;
+
+                joinGroup.TargetPlayer = new TargetPlayerIdentity
+                {
+                    RealmId = WorldServer.RealmId,
+                    CharacterId = member.Session.Player.CharacterId
+                };
 
                 member.Session.EnqueueMessageEncrypted(joinGroup);
             }

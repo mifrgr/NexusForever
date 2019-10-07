@@ -37,7 +37,7 @@ namespace NexusForever.WorldServer.Network.Message.Model
             }
         }
 
-        public TargetPlayerIdentity PlayerJoined { get; set; } = new TargetPlayerIdentity();
+        public TargetPlayerIdentity TargetPlayer { get; set; } = new TargetPlayerIdentity();
         public ulong GroupId { get; set; }
         public uint GroupType { get; set; }
         public uint MaxSize { get; set; }
@@ -55,7 +55,7 @@ namespace NexusForever.WorldServer.Network.Message.Model
 
         public void Write(GamePacketWriter writer)
         {
-            PlayerJoined.Write(writer);
+            TargetPlayer.Write(writer);
             writer.Write(GroupId);
             writer.Write(GroupType);
             writer.Write(GroupMembers.Count, 32u);
