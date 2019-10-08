@@ -8,12 +8,12 @@ namespace NexusForever.WorldServer.Network.Message.Model
     public class ClientGroupLeave : IReadable
     {
         public ulong GroupId { get; set; }
-        public uint Unk1 { get; set; }
+        public GroupLeaveScope Scope { get; set; }
 
         public void Read(GamePacketReader reader)
         {
             GroupId = reader.ReadULong();
-            Unk1    = reader.ReadUInt(1);
+            Scope = (GroupLeaveScope)reader.ReadUInt(1);
         }
     }
 }

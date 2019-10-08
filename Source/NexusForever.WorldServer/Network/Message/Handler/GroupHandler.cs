@@ -264,6 +264,42 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         }
 
         #endregion
+ 
+        [MessageHandler(GameMessageOpcode.ClientGroupLeave)]
+        public static void HandleGroupLeave(WorldSession session, ClientGroupLeave request)
+        {
+            var group = GroupManager.GetGroupById(request.GroupId);
+            if (group == null)
+                return;
+
+            var leavingMember = group.FindMember(session);
+            if (leavingMember == null)
+                return;
+
+            if (request.Scope == GroupLeaveScope.Disband)
+            {
+                if (leavingMember.Guid != group.PartyLeader.Guid)
+                    return;
+
+                foreach (var member in group.Members)
+                {
+                    member.Session.EnqueueMessageEncrypted(new ServerGroupLeave
+                    {
+                        GroupId = group.Id,
+                        Reason = RemoveReason.Disband
+                    });
+                }
+                GroupManager.DisbandGroup(group);
+            }
+        }
+
+        [MessageHandler(GameMessageOpcode.ClientGroupSetRole)]
+        public static void HandleGroupSetRole(WorldSession session, ClientGroupSetRole request)
+        {
+            log.Info($"GroupId: {request.GroupId} Unk1: {request.Unk1} Unk2: {request.Unk2}");
+        }
+
+        #region Helpers
 
         /// TODO: Refactor to a proper place
         private static TargetPlayerIdentity buildTargetPlayerIdentity(Group.Member member)
@@ -274,33 +310,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 CharacterId = member.Session.Player.CharacterId
             };
         }
-        
 
-        [MessageHandler(GameMessageOpcode.ClientGroupLeave)]
-        public static void HandleGroupLeave(WorldSession session, ClientGroupLeave request)
-        {
-            var group = GroupManager.GetGroupById(request.GroupId);
-            if (group == null)
-                return;
-
-            foreach (var member in group.Members)
-            {
-                member.Session.EnqueueMessageEncrypted(new ServerGroupDisband
-                {
-                    GroupId = group.Id,
-                    MemberId = member.Id,
-                    PlayerLeave = buildTargetPlayerIdentity(member),
-                    DisbandReason = RemoveReason.Disband
-                });
-            }
-
-            GroupManager.DisbandGroup(group);
-        }
-
-        [MessageHandler(GameMessageOpcode.ClientGroupSetRole)]
-        public static void HandleGroupSetRole(WorldSession session, ClientGroupSetRole request)
-        {
-            log.Info($"GroupId: {request.GroupId} Unk1: {request.Unk1} Unk2: {request.Unk2}");
-        }
+        #endregion
     }
 }

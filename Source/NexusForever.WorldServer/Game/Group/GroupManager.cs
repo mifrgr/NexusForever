@@ -91,9 +91,9 @@ namespace NexusForever.WorldServer.Game.Group
             Groups.Remove(group);
         }
 
-        public static ServerGroupLeave BuildLeaveGroup(ulong characterId, uint memberId, ulong groupId, RemoveReason reason)
+        public static ServerGroupRemove BuildLeaveGroup(ulong characterId, uint memberId, ulong groupId, RemoveReason reason)
         {
-            return new ServerGroupLeave
+            return new ServerGroupRemove
             {
                 GroupId = groupId,
                 MemberId = memberId,
