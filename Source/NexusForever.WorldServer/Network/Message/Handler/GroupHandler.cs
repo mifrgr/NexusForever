@@ -91,10 +91,10 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 var invite = group.CreateInvite(targetSession);
                 invite.Inviter = group.FindMember(session);
 
-                var groupMembers = new List<GroupMember>();
+                var groupMembers = new List<Member>();
                 foreach (var member in group.Members)
                 {
-                    groupMembers.Add(new GroupMember
+                    groupMembers.Add(new Member
                     {
                         Name = member.Session.Player.Name,
                         Faction = member.Session.Player.Faction1,
@@ -189,13 +189,13 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         }
 
         /// TODO: Refactor to a proper place
-        private static ServerGroupJoin.GroupMemberInfo BuildGroupMemberInfo(Group.Member member, GroupMemberInfoFlags flags, uint groupIndex)
+        private static ServerGroupJoin.GroupMemberInfo BuildGroupMemberInfo(Game.Group.Static.GroupMember member, GroupMemberInfoFlags flags, uint groupIndex)
         {
             return new ServerGroupJoin.GroupMemberInfo
             {
                 MemberIdentity = buildTargetPlayerIdentity(member),
                 Flags = flags,
-                GroupMember = new GroupMember
+                GroupMember = new Member
                 {
                     Name = member.Session.Player.Name,
                     Faction = member.Session.Player.Faction1,
@@ -220,7 +220,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         }
 
         /// TODO: Refactor to a proper place
-        private static ServerGroupJoin BuildServerGroupJoin(Group group, Group.Member member)
+        private static ServerGroupJoin BuildServerGroupJoin(Group group, GroupMember member)
         {
             uint groupIndex = 1;
             var flags = member.Guid == group.PartyLeader.Guid
@@ -249,7 +249,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         }
 
         /// TODO: Refactor to a proper place
-        private static ServerGroupMemberAdd BuildServerGroupMemberAdd(Group group, Group.Member member, Group.Member newMember)
+        private static ServerGroupMemberAdd BuildServerGroupMemberAdd(Group group, GroupMember member, GroupMember newMember)
         {
             var groupIndex = (uint)group.Members.IndexOf(newMember) + 1;
             var flags = member.Guid == group.PartyLeader.Guid
@@ -302,7 +302,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         #region Helpers
 
         /// TODO: Refactor to a proper place
-        private static TargetPlayerIdentity buildTargetPlayerIdentity(Group.Member member)
+        private static TargetPlayerIdentity buildTargetPlayerIdentity(GroupMember member)
         {
             return new TargetPlayerIdentity
             {

@@ -13,7 +13,7 @@ namespace NexusForever.WorldServer.Network.Message.Model
         public uint Unknown0 { get; set; }
         public uint Unknown1 { get; set; }
 
-        public List<GroupMember> GroupMembers { get; set; } = new List<GroupMember>();
+        public List<Member> GroupMembers { get; set; } = new List<Member>();
 
         public void Write(GamePacketWriter writer)
         {

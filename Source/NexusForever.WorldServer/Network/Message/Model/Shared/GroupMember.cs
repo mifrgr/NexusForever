@@ -7,7 +7,7 @@ using System.Text;
 
 namespace NexusForever.WorldServer.Network.Message.Model.Shared
 {
-    public class GroupMember : IWritable
+    public class Member : IWritable
     {
         public class UnknownStruct0 : IWritable
         {
