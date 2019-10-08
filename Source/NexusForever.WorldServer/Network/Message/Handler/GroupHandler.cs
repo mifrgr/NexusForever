@@ -319,9 +319,9 @@ namespace NexusForever.WorldServer.Network.Message.Handler
             leavingMember.Session.EnqueueMessageEncrypted(leavingGroup);
             group.RemoveMember(leavingMember);
 
+            var groupRemove = buildServerGroupRemove(group, leavingMember, RemoveReason.Left);
             foreach (var member in group.Members)
             {
-                var groupRemove = buildServerGroupRemove(group, leavingMember, RemoveReason.Left);
                 member.Session.EnqueueMessageEncrypted(groupRemove);
             }
         }
