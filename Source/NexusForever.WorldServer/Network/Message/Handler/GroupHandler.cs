@@ -180,10 +180,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                     if (member.Guid == newMember.Guid)
                         continue;
 
-                    var flags = member.Guid == group.PartyLeader.Guid
-                              ? GroupMemberInfoFlags.GroupAdmin
-                              : GroupMemberInfoFlags.GroupMember;
-                    var addMember = BuildServerGroupMemberAdd(group, newMember, flags);
+                    var addMember = BuildServerGroupMemberAdd(group, member, newMember);
                     member.Session.EnqueueMessageEncrypted(addMember);
                 }
             }
@@ -194,11 +191,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         {
             return new ServerGroupJoin.GroupMemberInfo
             {
-                MemberIdentity = new TargetPlayerIdentity
-                {
-                    RealmId = WorldServer.RealmId,
-                    CharacterId = member.Session.Player.CharacterId
-                },
+                MemberIdentity = buildTargetPlayerIdentity(member),
                 Flags = flags,
                 GroupMember = new GroupMember
                 {
@@ -239,11 +232,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
 
             return new ServerGroupJoin
             {
-                JoinedPlayer = new TargetPlayerIdentity
-                {
-                    RealmId = WorldServer.RealmId,
-                    CharacterId = member.Session.Player.CharacterId
-                },
+                JoinedPlayer = buildTargetPlayerIdentity(member),
                 GroupId = group.Id,
                 GroupType = GroupTypeFlags.OpenWorld,
                 MaxSize = 5,
@@ -252,25 +241,33 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 LootThreshold = LootThreshold.Excellent,
                 LootRuleHarvest = LootRuleHarvest.FirstTagger,      // IDK were it shows this setting in the UI
                 GroupMembers = groupMembers,
-                LeaderIdentity = new TargetPlayerIdentity
-                {
-                    RealmId = WorldServer.RealmId,
-                    CharacterId = group.PartyLeader.Session.Player.CharacterId
-                },
+                LeaderIdentity = buildTargetPlayerIdentity(group.PartyLeader),
                 Realm = WorldServer.RealmId
             };
         }
 
         /// TODO: Refactor to a proper place
-        private static ServerGroupMemberAdd BuildServerGroupMemberAdd(Group group, Group.Member newMember, GroupMemberInfoFlags flags)
+        private static ServerGroupMemberAdd BuildServerGroupMemberAdd(Group group, Group.Member member, Group.Member newMember)
         {
             var groupIndex = (uint)group.Members.IndexOf(newMember) + 1;
+            var flags = member.Guid == group.PartyLeader.Guid
+                      ? GroupMemberInfoFlags.GroupAdmin
+                      : GroupMemberInfoFlags.GroupMember;
             var memberInfo = BuildGroupMemberInfo(newMember, flags, groupIndex);
-
             return new ServerGroupMemberAdd
             {
                 GroupId = group.Id,
                 AddMemberInfo = memberInfo
+            };
+        }
+
+        /// TODO: Refactor to a proper place
+        private static TargetPlayerIdentity buildTargetPlayerIdentity(Group.Member member)
+        {
+            return new TargetPlayerIdentity
+            {
+                RealmId = WorldServer.RealmId,
+                CharacterId = member.Session.Player.CharacterId
             };
         }
 
@@ -287,11 +284,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 {
                     GroupId = group.Id,
                     MemberId = member.Id,
-                    PlayerLeave = new TargetPlayerIdentity
-                    {
-                        RealmId = WorldServer.RealmId,
-                        CharacterId = member.Session.Player.CharacterId
-                    },
+                    PlayerLeave = buildTargetPlayerIdentity(member),
                     DisbandReason = RemoveReason.Disband
                 });
             }
