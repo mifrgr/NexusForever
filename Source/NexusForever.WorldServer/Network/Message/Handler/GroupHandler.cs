@@ -149,107 +149,10 @@ namespace NexusForever.WorldServer.Network.Message.Handler
             }
 
             // Accepted. Add member and broadcast the info
-
             var newMember = group.AcceptInvite(invite);
-            var groupMembersInfo = new List<ServerGroupJoin.GroupMemberInfo>();
-
-            // Create ServerGroupJoin.GroupMemberInfo for every member
             uint groupIndex = 1;
-            foreach (var member in group.Members)
-            {
-                groupMembersInfo.Add(new ServerGroupJoin.GroupMemberInfo
-                {
-                    MemberIdentity = new TargetPlayerIdentity
-                    {
-                        RealmId = WorldServer.RealmId,
-                        CharacterId = member.Session.Player.CharacterId
-                    },
-                    Flags = 0,
-                    GroupMember = new GroupMember
-                    {
-                        Name = member.Session.Player.Name,
-                        Faction = member.Session.Player.Faction1,
-                        Race = member.Session.Player.Race,
-                        Class = member.Session.Player.Class,
-                        Sex = member.Session.Player.Sex,
-                        Level = (byte)member.Session.Player.Level,
-                        EffectiveLevel = (byte)member.Session.Player.Level,
-                        Path = member.Session.Player.Path,
-                        Unknown4 = 0,
-                        GroupMemberId = (ushort)member.Id,
-                        UnknownStruct0List = new List<GroupMember.UnknownStruct0>
-                        {
-                            new GroupMember.UnknownStruct0()
-                            {
-                                Unknown6 = 0,
-                                Unknown7 = 48
-                            },
-                            new GroupMember.UnknownStruct0()
-                            {
-                                Unknown6 = 0,
-                                Unknown7 = 48
-                            },
-                            new GroupMember.UnknownStruct0()
-                            {
-                                Unknown6 = 0,
-                                Unknown7 = 48
-                            },
-                            new GroupMember.UnknownStruct0()
-                            {
-                                Unknown6 = 0,
-                                Unknown7 = 48
-                            },
-                            new GroupMember.UnknownStruct0()
-                            {
-                                Unknown6 = 0,
-                                Unknown7 = 48
-                            }
-                        },
-                        Unknown8 = 1, // Something to do with Mentoring, Sets mentoring of first player that isn't you
-                        Unknown9 = 1, // This and Unknown8 have to both be 1
-                        Unknown10 = 0,
-                        Unknown11 = 0,
-                        Unknown12 = 0,
-                        Unknown13 = 0,
-                        Unknown14 = 0,
-                        Unknown15 = 0,
-                        Unknown16 = 0,
-                        Unknown17 = 0,
-                        Unknown18 = 0,
-                        Unknown19 = 0,
-                        Unknown20 = 0,
-                        Unknown21 = 0,
-                        Unknown22 = 0,
-                        Realm = WorldServer.RealmId,
-                        WorldZoneId = (ushort)member.Session.Player.Zone.Id,
-                        Unknown25 = 1873,
-                        Unknown26 = 1,
-                        SyncedToGroup = true,
-                        Unknown28 = 0,
-                        Unknown29 = 0
-                    },
-                    GroupIndex = groupIndex++
-                });
-            }
 
-            var joinGroup = new ServerGroupJoin
-            {
-                GroupId = group.Id,
-                GroupType = (uint)GroupType.Standard,
-                MaxSize = 5,
-                LootRuleNormal = LootRule.NeedBeforeGreed,         // Under LootThreshold rarity (For Raid)
-                LootRuleThreshold = LootRule.RoundRobin,              // This is the selection for Loot Rules in the UI / Over LootTreshold rarity (For Raid)
-                LootThreshold = LootThreshold.Excellent,
-                LootRuleHarvest = LootRuleHarvest.FirstTagger,      // IDK were it shows this setting in the UI
-                GroupMembers = groupMembersInfo,
-                LeaderIdentity = new TargetPlayerIdentity
-                {
-                    RealmId = WorldServer.RealmId,
-                    CharacterId = group.PartyLeader.Session.Player.CharacterId
-                },
-                Realm = WorldServer.RealmId
-            };
-
+            // Send ServerGroupMemberAdd to everyone else already in the group
             foreach (var member in group.Members)
             {
                 if (member != newMember && member.Guid == invite.Inviter.Session.Player.Guid)
@@ -257,24 +160,201 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                     member.Session.EnqueueMessageEncrypted(new ServerGroupInviteResult
                     {
                         GroupId = clientGroupInviteResponse.GroupId,
-                        PlayerName = newMember.Session.Player.Name,
+                        PlayerName = member.Session.Player.Name,
                         Result = InviteResult.Accepted
                     });
                 }
 
-                GroupMemberInfoFlags flags = member.Guid == group.PartyLeader.Guid
+                /*GroupMemberInfoFlags flags = member.Guid == group.PartyLeader.Guid
                                            ? GroupMemberInfoFlags.GroupAdmin
                                            : GroupMemberInfoFlags.GroupMember;
+
                 foreach (var groupmember in joinGroup.GroupMembers)
-                    groupmember.Flags = flags;
+                    groupmember.Flags = flags;*/
 
-                joinGroup.TargetPlayer = new TargetPlayerIdentity
+                if (member.Guid == newMember.Guid || (member.Guid == group.PartyLeader.Guid && group.Members.Count == 2))
                 {
-                    RealmId = WorldServer.RealmId,
-                    CharacterId = member.Session.Player.CharacterId
-                };
+                    var joinGroup = new ServerGroupJoin
+                    {
+                        JoinedPlayer = new TargetPlayerIdentity
+                        {
+                            RealmId = WorldServer.RealmId,
+                            CharacterId = member.Session.Player.CharacterId
+                        },
+                        GroupId = group.Id,
+                        GroupType = (uint)GroupType.Standard,
+                        MaxSize = 5,
+                        LootRuleNormal = LootRule.NeedBeforeGreed,         // Under LootThreshold rarity (For Raid)
+                        LootRuleThreshold = LootRule.RoundRobin,              // This is the selection for Loot Rules in the UI / Over LootTreshold rarity (For Raid)
+                        LootThreshold = LootThreshold.Excellent,
+                        LootRuleHarvest = LootRuleHarvest.FirstTagger,      // IDK were it shows this setting in the UI
+                        GroupMembers = new List<ServerGroupJoin.GroupMemberInfo>
+                        {
+                            new ServerGroupJoin.GroupMemberInfo
+                            {
+                                MemberIdentity = new TargetPlayerIdentity
+                                {
+                                    RealmId = WorldServer.RealmId,
+                                    CharacterId = member.Session.Player.CharacterId
+                                },
+                                Flags = 0,
+                                GroupMember = new GroupMember
+                                {
+                                    Name = member.Session.Player.Name,
+                                    Faction = member.Session.Player.Faction1,
+                                    Race = member.Session.Player.Race,
+                                    Class = member.Session.Player.Class,
+                                    Sex = member.Session.Player.Sex,
+                                    Level = (byte)member.Session.Player.Level,
+                                    EffectiveLevel = (byte)member.Session.Player.Level,
+                                    Path = member.Session.Player.Path,
+                                    Unknown4 = 0,
+                                    GroupMemberId = (ushort)member.Id,
+                                    UnknownStruct0List = new List<GroupMember.UnknownStruct0>
+                                    {
+                                        new GroupMember.UnknownStruct0()
+                                        {
+                                            Unknown6 = 0,
+                                            Unknown7 = 48
+                                        },
+                                        new GroupMember.UnknownStruct0()
+                                        {
+                                            Unknown6 = 0,
+                                            Unknown7 = 48
+                                        },
+                                        new GroupMember.UnknownStruct0()
+                                        {
+                                            Unknown6 = 0,
+                                            Unknown7 = 48
+                                        },
+                                        new GroupMember.UnknownStruct0()
+                                        {
+                                            Unknown6 = 0,
+                                            Unknown7 = 48
+                                        },
+                                        new GroupMember.UnknownStruct0()
+                                        {
+                                            Unknown6 = 0,
+                                            Unknown7 = 48
+                                        }
+                                    },
+                                    Unknown8 = 1, // Something to do with Mentoring, Sets mentoring of first player that isn't you
+                                    Unknown9 = 1, // This and Unknown8 have to both be 1
+                                    Unknown10 = 1,
+                                    Unknown11 = 0,
+                                    Unknown12 = 0,
+                                    Unknown13 = 0,
+                                    Unknown14 = 0,
+                                    Unknown15 = 0,
+                                    Unknown16 = 0,
+                                    Unknown17 = 0,
+                                    Unknown18 = 0,
+                                    Unknown19 = 0,
+                                    Unknown20 = 0,
+                                    Unknown21 = 0,
+                                    Unknown22 = 0,
+                                    Realm = WorldServer.RealmId,
+                                    WorldZoneId = (ushort)member.Session.Player.Zone.Id,
+                                    Unknown25 = 1873,
+                                    Unknown26 = 1,
+                                    SyncedToGroup = true,
+                                    Unknown28 = 0,
+                                    Unknown29 = 0
+                                },
+                                GroupIndex = groupIndex++
+                            }
+                        },
+                        LeaderIdentity = new TargetPlayerIdentity
+                        {
+                            RealmId = WorldServer.RealmId,
+                            CharacterId = group.PartyLeader.Session.Player.CharacterId
+                        },
+                        Realm = WorldServer.RealmId
+                    };
+                    member.Session.EnqueueMessageEncrypted(joinGroup);
+                }
 
-                member.Session.EnqueueMessageEncrypted(joinGroup);
+                if (member.Guid != newMember.Guid)
+                {
+                    member.Session.EnqueueMessageEncrypted(new ServerGroupMemberAdd
+                    {
+                        GroupId = group.Id,
+                        Unknown0 = 0,
+                        AddMemberInfo = new ServerGroupJoin.GroupMemberInfo
+                        {
+                            MemberIdentity = new TargetPlayerIdentity
+                            {
+                                RealmId = WorldServer.RealmId,
+                                CharacterId = newMember.Session.Player.CharacterId
+                            },
+                            Flags = 0,
+                            GroupMember = new GroupMember
+                            {
+                                Name = newMember.Session.Player.Name,
+                                Faction = newMember.Session.Player.Faction1,
+                                Race = newMember.Session.Player.Race,
+                                Class = newMember.Session.Player.Class,
+                                Sex = newMember.Session.Player.Sex,
+                                Level = (byte)newMember.Session.Player.Level,
+                                EffectiveLevel = (byte)newMember.Session.Player.Level,
+                                Path = newMember.Session.Player.Path,
+                                Unknown4 = 0,
+                                GroupMemberId = (ushort)newMember.Id,
+                                UnknownStruct0List = new List<GroupMember.UnknownStruct0>
+                                {
+                                    new GroupMember.UnknownStruct0()
+                                    {
+                                        Unknown6 = 0,
+                                        Unknown7 = 48
+                                    },
+                                    new GroupMember.UnknownStruct0()
+                                    {
+                                        Unknown6 = 0,
+                                        Unknown7 = 48
+                                    },
+                                    new GroupMember.UnknownStruct0()
+                                    {
+                                        Unknown6 = 0,
+                                        Unknown7 = 48
+                                    },
+                                    new GroupMember.UnknownStruct0()
+                                    {
+                                        Unknown6 = 0,
+                                        Unknown7 = 48
+                                    },
+                                    new GroupMember.UnknownStruct0()
+                                    {
+                                        Unknown6 = 0,
+                                        Unknown7 = 48
+                                    }
+                                },
+                                Unknown8 = 1, // Something to do with Mentoring, Sets mentoring of first player that isn't you
+                                Unknown9 = 1, // This and Unknown8 have to both be 1
+                                Unknown10 = 1,
+                                Unknown11 = 0,
+                                Unknown12 = 0,
+                                Unknown13 = 0,
+                                Unknown14 = 0,
+                                Unknown15 = 0,
+                                Unknown16 = 0,
+                                Unknown17 = 0,
+                                Unknown18 = 0,
+                                Unknown19 = 0,
+                                Unknown20 = 0,
+                                Unknown21 = 0,
+                                Unknown22 = 0,
+                                Realm = WorldServer.RealmId,
+                                WorldZoneId = (ushort)newMember.Session.Player.Zone.Id,
+                                Unknown25 = 1873,
+                                Unknown26 = 1,
+                                SyncedToGroup = true,
+                                Unknown28 = 0,
+                                Unknown29 = 0
+                            },
+                            GroupIndex = groupIndex++
+                        }
+                    });
+                }
             }
         }
 
