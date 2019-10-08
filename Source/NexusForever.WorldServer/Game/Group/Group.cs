@@ -27,7 +27,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         public class Member
         {
-            public ulong Id;
+            public ushort Id;
             public ulong Guid;
             public WorldSession Session;
         }

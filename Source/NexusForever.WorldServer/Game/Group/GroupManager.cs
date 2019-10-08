@@ -25,15 +25,15 @@ namespace NexusForever.WorldServer.Game.Group
         /// <summary>
         /// Unique ID for the next new group member
         /// </summary>
-        public static ulong NextGroupMemberId => nextGroupMemberId++;
+        public static ushort NextGroupMemberId => nextGroupMemberId++;
 
         private static ulong nextGroupId;
-        private static ulong nextGroupMemberId;
+        private static ushort nextGroupMemberId;
 
         public static void Initialise()
         {
-            nextGroupId = 1ul;
-            nextGroupMemberId = 1ul;
+            nextGroupId = 1;
+            nextGroupMemberId = 1;
         }
 
         public static Group GetGroupById(ulong groupId)

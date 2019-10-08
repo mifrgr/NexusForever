@@ -71,7 +71,8 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 // are we creating a new group, or inviting into
                 // existing one?
                 var group = GroupManager.FindPlayerGroup(session);
-                if (group == null) {
+                if (group == null)
+                {
                     group = GroupManager.CreateGroup();
                     var leader = group.CreateMember(session);
                     group.PartyLeader = leader;
@@ -100,7 +101,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                         Sex = member.Session.Player.Sex,
                         Path = member.Session.Player.Path,
                         Level = (byte)member.Session.Player.Level,
-                        GroupMemberId = (ushort)member.Id
+                        GroupMemberId = member.Id
                     });
                 }
 
@@ -166,14 +167,14 @@ namespace NexusForever.WorldServer.Network.Message.Handler
             {
                 foreach (var member in group.Members)
                 {
-                    var groupJoin = buildServerGroupJoin(group, member);
+                    var groupJoin = BuildServerGroupJoin(group, member);
                     member.Session.EnqueueMessageEncrypted(groupJoin);
                 }
             }
             // for existing group send join to new member and member joined to the rest
             else
             {
-                var groupJoin = buildServerGroupJoin(group, newMember);
+                var groupJoin = BuildServerGroupJoin(group, newMember);
                 newMember.Session.EnqueueMessageEncrypted(groupJoin);
 
                 foreach (var member in group.Members)
@@ -184,14 +185,14 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                     var flags = member.Guid == group.PartyLeader.Guid
                               ? GroupMemberInfoFlags.GroupAdmin
                               : GroupMemberInfoFlags.GroupMember;
-                    var addMember = buildServerGroupMemberAdd(group, newMember, flags);
+                    var addMember = BuildServerGroupMemberAdd(group, newMember, flags);
                     member.Session.EnqueueMessageEncrypted(addMember);
                 }
             }
         }
 
         /// TODO: Refactor to a proper place
-        private static ServerGroupJoin.GroupMemberInfo buildGroupMemberInfo(Group.Member member, GroupMemberInfoFlags flags, uint groupIndex)
+        private static ServerGroupJoin.GroupMemberInfo BuildGroupMemberInfo(Group.Member member, GroupMemberInfoFlags flags, uint groupIndex)
         {
             return new ServerGroupJoin.GroupMemberInfo
             {
@@ -212,7 +213,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                     EffectiveLevel = (byte)member.Session.Player.Level,
                     Path = member.Session.Player.Path,
                     Unknown4 = 0,
-                    GroupMemberId = (ushort)member.Id,
+                    GroupMemberId = member.Id,
                     UnknownStruct0List = new List<GroupMember.UnknownStruct0>
                     {
                         new GroupMember.UnknownStruct0()
@@ -269,7 +270,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         }
 
         /// TODO: Refactor to a proper place
-        private static ServerGroupJoin buildServerGroupJoin(Group group, Group.Member member)
+        private static ServerGroupJoin BuildServerGroupJoin(Group group, Group.Member member)
         {
             uint groupIndex = 1;
             var groupMembers = new List<ServerGroupJoin.GroupMemberInfo>();
@@ -278,7 +279,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                       : GroupMemberInfoFlags.GroupMember;
             foreach (var groupMember in group.Members)
             {
-                groupMembers.Add(buildGroupMemberInfo(groupMember, flags, groupIndex++));
+                groupMembers.Add(BuildGroupMemberInfo(groupMember, flags, groupIndex++));
             }
 
             return new ServerGroupJoin
@@ -289,7 +290,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                     CharacterId = member.Session.Player.CharacterId
                 },
                 GroupId = group.Id,
-                GroupType = (uint)GroupType.Standard,
+                GroupType = GroupTypeFlags.OpenWorld,
                 MaxSize = 5,
                 LootRuleNormal = LootRule.NeedBeforeGreed,         // Under LootThreshold rarity (For Raid)
                 LootRuleThreshold = LootRule.RoundRobin,              // This is the selection for Loot Rules in the UI / Over LootTreshold rarity (For Raid)
@@ -306,10 +307,10 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         }
 
         /// TODO: Refactor to a proper place
-        private static ServerGroupMemberAdd buildServerGroupMemberAdd(Group group, Group.Member newMember, GroupMemberInfoFlags flags)
+        private static ServerGroupMemberAdd BuildServerGroupMemberAdd(Group group, Group.Member newMember, GroupMemberInfoFlags flags)
         {
             var groupIndex = (uint)group.Members.IndexOf(newMember) + 1;
-            var memberInfo = buildGroupMemberInfo(newMember, flags, groupIndex);
+            var memberInfo = BuildGroupMemberInfo(newMember, flags, groupIndex);
 
             return new ServerGroupMemberAdd
             {
@@ -331,7 +332,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 member.Session.EnqueueMessageEncrypted(new ServerGroupDisband
                 {
                     GroupId = group.Id,
-                    MemberId = (ushort)member.Id,
+                    MemberId = member.Id,
                     PlayerLeave = new TargetPlayerIdentity
                     {
                         RealmId = WorldServer.RealmId,
