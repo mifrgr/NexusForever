@@ -135,6 +135,8 @@ namespace NexusForever.Shared.Network.Message
         ServerGroupJoin                 = 0x0427,
         ClientGroupKick                 = 0x0428,
         ClientGroupLeave                = 0x042B,
+        ClientGroupPromote              = 0x0446,
+        ServerGroupPromote              = 0x0447,
         ServerGroupLeave                = 0x042D,
         ServerGroupRemove               = 0x0450,
         Server0497                      = 0x0497, // guild info

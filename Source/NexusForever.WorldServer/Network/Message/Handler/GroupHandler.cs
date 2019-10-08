@@ -193,7 +193,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         {
             return new ServerGroupJoin.GroupMemberInfo
             {
-                MemberIdentity = buildTargetPlayerIdentity(member),
+                MemberIdentity = BuildTargetPlayerIdentity(member),
                 Flags = flags,
                 GroupMember = new Member
                 {
@@ -234,7 +234,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
 
             return new ServerGroupJoin
             {
-                JoinedPlayer = buildTargetPlayerIdentity(member),
+                JoinedPlayer = BuildTargetPlayerIdentity(member),
                 GroupId = group.Id,
                 GroupType = GroupTypeFlags.OpenWorld,
                 MaxSize = 5,
@@ -243,7 +243,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 LootThreshold = LootThreshold.Excellent,
                 LootRuleHarvest = LootRuleHarvest.FirstTagger,      // IDK were it shows this setting in the UI
                 GroupMembers = groupMembers,
-                LeaderIdentity = buildTargetPlayerIdentity(group.PartyLeader),
+                LeaderIdentity = BuildTargetPlayerIdentity(group.PartyLeader),
                 Realm = WorldServer.RealmId
             };
         }
@@ -343,12 +343,49 @@ namespace NexusForever.WorldServer.Network.Message.Handler
             {
                 GroupId = group.Id,
                 MemberId = leavingMember.Id,
-                PlayerLeave = buildTargetPlayerIdentity(leavingMember),
+                PlayerLeave = BuildTargetPlayerIdentity(leavingMember),
                 RemoveReason = reason
             };
         }
 
         #endregion
+   
+        [MessageHandler(GameMessageOpcode.ClientGroupPromote)]
+        public static void HandleGroupPromote(WorldSession session, ClientGroupPromote request)
+        {
+            var group = GroupManager.FindPlayerGroup(session);
+            if (group == null)
+                return;
+
+            var promoter = group.FindMember(session);
+            if (promoter == null)
+                return;
+
+            // not a party leader?
+            if (promoter.Guid != group.PartyLeader.Guid)
+                return;
+
+            var targetSession = NetworkManager<WorldSession>.GetSession(s => s.Player?.CharacterId == request.PlayerIdentity.CharacterId);
+            if (targetSession == null)
+                return;
+
+            var promotedMember = group.FindMember(targetSession);
+            if (promotedMember == null)
+                return;
+
+            // promote
+            //var groupPromote = new ServerGroupPromote
+            //{
+            //    // GroupId = group.Id,
+            //    PlayerIdentity = BuildTargetPlayerIdentity(promotedMember)
+            //};
+
+            //foreach (var member in group.Members)
+            //{
+            //    member.Session.EnqueueMessageEncrypted(groupPromote);
+            //}
+            // group.PartyLeader = promotedMember;
+        }
 
         [MessageHandler(GameMessageOpcode.ClientGroupSetRole)]
         public static void HandleGroupSetRole(WorldSession session, ClientGroupSetRole request)
@@ -359,7 +396,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         #region Helpers
 
         /// TODO: Refactor to a proper place
-        private static TargetPlayerIdentity buildTargetPlayerIdentity(GroupMember member)
+        private static TargetPlayerIdentity BuildTargetPlayerIdentity(GroupMember member)
         {
             return new TargetPlayerIdentity
             {
