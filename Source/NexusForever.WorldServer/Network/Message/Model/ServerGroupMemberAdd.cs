@@ -8,7 +8,7 @@ namespace NexusForever.WorldServer.Network.Message.Model
     public class ServerGroupMemberAdd : IWritable
     {
         public ulong GroupId { get; set; }
-        public ushort Unknown0 { get; set; }
+        public uint Unknown0 { get; set; }
         public GroupMemberInfo AddMemberInfo { get; set; }
 
         public void Write(GamePacketWriter writer)
