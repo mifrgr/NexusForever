@@ -17,6 +17,8 @@ namespace NexusForever.WorldServer.Network.Message.Handler
     {
         private static readonly ILogger log = LogManager.GetCurrentClassLogger();
 
+        #region Invite to / join group
+
         [MessageHandler(GameMessageOpcode.ClientGroupInvite)]
         public static void HandleGroupInvite(WorldSession session, ClientGroupInvite request)
         {
@@ -114,7 +116,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 });
             }));
         }
-
+        
         [MessageHandler(GameMessageOpcode.ClientGroupInviteResponse)]
         public static void HandleGroupInviteResponse(WorldSession session, ClientGroupInviteResponse clientGroupInviteResponse)
         {
@@ -160,7 +162,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 Result = InviteResult.Accepted
             });
 
-            // if is new group then only send join command to new member and inviter
+            // if new group send ServerGroupJoin to all members
             if (isNewGroup)
             {
                 foreach (var member in group.Members)
@@ -169,7 +171,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                     member.Session.EnqueueMessageEncrypted(groupJoin);
                 }
             }
-            // for existing group send join to new member and member joined to the rest
+            // otherwise send ServerGroupJoin to new member and ServerGroupMemberAdd to the rest
             else
             {
                 var groupJoin = BuildServerGroupJoin(group, newMember);
@@ -261,6 +263,8 @@ namespace NexusForever.WorldServer.Network.Message.Handler
             };
         }
 
+        #endregion
+
         /// TODO: Refactor to a proper place
         private static TargetPlayerIdentity buildTargetPlayerIdentity(Group.Member member)
         {
@@ -270,6 +274,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 CharacterId = member.Session.Player.CharacterId
             };
         }
+        
 
         [MessageHandler(GameMessageOpcode.ClientGroupLeave)]
         public static void HandleGroupLeave(WorldSession session, ClientGroupLeave request)
