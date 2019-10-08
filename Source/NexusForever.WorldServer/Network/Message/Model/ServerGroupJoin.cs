@@ -13,7 +13,7 @@ namespace NexusForever.WorldServer.Network.Message.Model
         {
             public TargetPlayerIdentity MemberIdentity { get; set; }
             public GroupMemberInfoFlags Flags { get; set; }
-            public GroupMember GroupMember { get; set; } = new GroupMember();
+            public Member GroupMember { get; set; } = new Member();
             public uint GroupIndex { get; set; }
 
             public void Write(GamePacketWriter writer)

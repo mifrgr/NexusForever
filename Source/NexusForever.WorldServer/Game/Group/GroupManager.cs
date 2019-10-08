@@ -10,8 +10,6 @@ namespace NexusForever.WorldServer.Game.Group
 {
     public static class GroupManager
     {
-        private static ILogger Logger { get; } = LogManager.GetCurrentClassLogger();
-
         /// <summary>
         /// List of active groups
         /// </summary>
@@ -65,7 +63,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         /// <param name="session"></param>
         /// <returns></returns>
-        public static Group.Invite FindPlayerInvite(WorldSession session)
+        public static GroupInvite FindPlayerInvite(WorldSession session)
         {
             foreach (var group in Groups)
             {
