@@ -221,10 +221,10 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         private static ServerGroupJoin BuildServerGroupJoin(Group group, Group.Member member)
         {
             uint groupIndex = 1;
-            var groupMembers = new List<ServerGroupJoin.GroupMemberInfo>();
             var flags = member.Guid == group.PartyLeader.Guid
                       ? GroupMemberInfoFlags.GroupAdmin
                       : GroupMemberInfoFlags.GroupMember;
+            var groupMembers = new List<ServerGroupJoin.GroupMemberInfo>();
             foreach (var groupMember in group.Members)
             {
                 groupMembers.Add(BuildGroupMemberInfo(groupMember, flags, groupIndex++));
