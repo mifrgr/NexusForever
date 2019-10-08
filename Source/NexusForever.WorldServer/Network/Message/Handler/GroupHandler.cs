@@ -337,7 +337,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         }
 
         /// TODO: Refactor to a proper place
-        private static ServerGroupRemove buildServerGroupRemove(Group group, Group.Member leavingMember, RemoveReason reason)
+        private static ServerGroupRemove buildServerGroupRemove(Group group, GroupMember leavingMember, RemoveReason reason)
         {
             return new ServerGroupRemove
             {
