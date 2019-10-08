@@ -264,7 +264,9 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         }
 
         #endregion
- 
+
+        #region Leave group
+
         [MessageHandler(GameMessageOpcode.ClientGroupLeave)]
         public static void HandleGroupLeave(WorldSession session, ClientGroupLeave request)
         {
@@ -276,22 +278,77 @@ namespace NexusForever.WorldServer.Network.Message.Handler
             if (leavingMember == null)
                 return;
 
+            // party leader disbanded
             if (request.Scope == GroupLeaveScope.Disband)
             {
                 if (leavingMember.Guid != group.PartyLeader.Guid)
                     return;
 
+                var groupDisband = buildServerGroupLeave(group, RemoveReason.Disband);
                 foreach (var member in group.Members)
                 {
-                    member.Session.EnqueueMessageEncrypted(new ServerGroupLeave
-                    {
-                        GroupId = group.Id,
-                        Reason = RemoveReason.Disband
-                    });
+                    member.Session.EnqueueMessageEncrypted(groupDisband);
                 }
+
                 GroupManager.DisbandGroup(group);
+                return;
+            }
+
+            // member leaving with only party leader remaining?
+            if (group.Members.Count == 2)
+            {
+                var groupLeave = buildServerGroupLeave(group, RemoveReason.Left);
+                leavingMember.Session.EnqueueMessageEncrypted(groupLeave);
+                group.RemoveMember(leavingMember);
+
+                var groupDisband = buildServerGroupLeave(group, RemoveReason.Disband);
+                group.Members[0].Session.EnqueueMessageEncrypted(groupDisband);
+
+                GroupManager.DisbandGroup(group);
+                return;
+            }
+
+            // is member who leaves a PartyLeader?
+            if (leavingMember.Guid == group.PartyLeader.Guid)
+            {
+                // TODO pass party lead to next person in group
+                return;
+            }
+
+            var leavingGroup = buildServerGroupLeave(group, RemoveReason.Left);
+            leavingMember.Session.EnqueueMessageEncrypted(leavingGroup);
+            group.RemoveMember(leavingMember);
+
+            foreach (var member in group.Members)
+            {
+                var groupRemove = buildServerGroupRemove(group, leavingMember, RemoveReason.Left);
+                member.Session.EnqueueMessageEncrypted(groupRemove);
             }
         }
+
+        /// TODO: Refactor to a proper place
+        private static ServerGroupLeave buildServerGroupLeave(Group group, RemoveReason reason)
+        {
+            return new ServerGroupLeave
+            {
+                GroupId = group.Id,
+                Reason = reason
+            };
+        }
+
+        /// TODO: Refactor to a proper place
+        private static ServerGroupRemove buildServerGroupRemove(Group group, Group.Member leavingMember, RemoveReason reason)
+        {
+            return new ServerGroupRemove
+            {
+                GroupId = group.Id,
+                MemberId = leavingMember.Id,
+                PlayerLeave = buildTargetPlayerIdentity(leavingMember),
+                RemoveReason = reason
+            };
+        }
+
+        #endregion
 
         [MessageHandler(GameMessageOpcode.ClientGroupSetRole)]
         public static void HandleGroupSetRole(WorldSession session, ClientGroupSetRole request)
