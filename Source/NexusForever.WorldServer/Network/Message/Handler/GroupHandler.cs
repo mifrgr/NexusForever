@@ -110,8 +110,6 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 targetSession.EnqueueMessageEncrypted(new ServerGroupInviteReceived
                 {
                     GroupId = group.Id,
-                    Unknown0 = 0,
-                    Unknown1 = 0,
                     GroupMembers = groupMembers
                 });
             }));
@@ -212,58 +210,15 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                     Level = (byte)member.Session.Player.Level,
                     EffectiveLevel = (byte)member.Session.Player.Level,
                     Path = member.Session.Player.Path,
-                    Unknown4 = 0,
                     GroupMemberId = member.Id,
-                    UnknownStruct0List = new List<GroupMember.UnknownStruct0>
-                    {
-                        new GroupMember.UnknownStruct0()
-                        {
-                            Unknown6 = 0,
-                            Unknown7 = 48
-                        },
-                        new GroupMember.UnknownStruct0()
-                        {
-                            Unknown6 = 0,
-                            Unknown7 = 48
-                        },
-                        new GroupMember.UnknownStruct0()
-                        {
-                            Unknown6 = 0,
-                            Unknown7 = 48
-                        },
-                        new GroupMember.UnknownStruct0()
-                        {
-                            Unknown6 = 0,
-                            Unknown7 = 48
-                        },
-                        new GroupMember.UnknownStruct0()
-                        {
-                            Unknown6 = 0,
-                            Unknown7 = 48
-                        }
-                    },
                     Unknown8 = 1, // Something to do with Mentoring, Sets mentoring of first player that isn't you
                     Unknown9 = 1, // This and Unknown8 have to both be 1
                     Unknown10 = 1,
-                    Unknown11 = 0,
-                    Unknown12 = 0,
-                    Unknown13 = 0,
-                    Unknown14 = 0,
-                    Unknown15 = 0,
-                    Unknown16 = 0,
-                    Unknown17 = 0,
-                    Unknown18 = 0,
-                    Unknown19 = 0,
-                    Unknown20 = 0,
-                    Unknown21 = 0,
-                    Unknown22 = 0,
                     Realm = WorldServer.RealmId,
                     WorldZoneId = (ushort)member.Session.Player.Zone.Id,
                     Unknown25 = 1873,
                     Unknown26 = 1,
-                    SyncedToGroup = true,
-                    Unknown28 = 0,
-                    Unknown29 = 0
+                    SyncedToGroup = true
                 },
                 GroupIndex = groupIndex
             };
@@ -315,7 +270,6 @@ namespace NexusForever.WorldServer.Network.Message.Handler
             return new ServerGroupMemberAdd
             {
                 GroupId = group.Id,
-                Unknown0 = 0,
                 AddMemberInfo = memberInfo
             };
         }
