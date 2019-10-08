@@ -28,6 +28,8 @@ namespace NexusForever.WorldServer.Game.Group
         private static ulong nextGroupId;
         private static ushort nextGroupMemberId;
 
+        private static double InviteToExpire = 30d;
+
         public static void Initialise()
         {
             nextGroupId = 1;
@@ -42,6 +44,16 @@ namespace NexusForever.WorldServer.Game.Group
         public static void DismissGroup(Group group)
         {
             Groups.Remove(group);
+        }
+
+        public static void Update(double lastTick)
+        {
+            InviteToExpire -= lastTick;
+            if (InviteToExpire <= 0d)
+            {
+                /// @TODO: Make them tickets dissapear like my dad when I was 4 years old
+                InviteToExpire = 30d;
+            }
         }
 
         /// <summary>
