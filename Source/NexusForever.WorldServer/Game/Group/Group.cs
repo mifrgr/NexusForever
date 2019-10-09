@@ -89,17 +89,8 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         public GroupMember AcceptInvite(GroupInvite invite)
         {
-            Invites.Remove(invite);
-            invite.Player.GroupInvite = null;
-            var member = new GroupMember
-            {
-                Id = GlobalGroupManager.NextGroupMemberId,
-                Group = this,
-                Player = invite.Player
-            };
-            Members.Add(member);
-            invite.Player.GroupMember = member;
-            return member;
+            DismissInvite(invite);
+            return CreateMember(invite.Player);
         }
 
         /// <summary>
@@ -137,14 +128,12 @@ namespace NexusForever.WorldServer.Game.Group
         public void SetPartyLeader(GroupMember member)
         {
             if (PartyLeader != null)
-            {
                 PartyLeader.isPartyLead = false;
-            }
+
             PartyLeader = member;
+
             if (PartyLeader != null)
-            {
                 PartyLeader.isPartyLead = true;
-            }
         }
     }
 }
