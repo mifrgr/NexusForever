@@ -50,14 +50,14 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 }
 
                 // Player already in the group?
-                if (GroupManager.FindPlayerGroup(targetSession) != null)
+                if (GlobalGroupManager.FindPlayerGroup(targetSession) != null)
                 {
                     sendGroupInviteResult(InviteResult.PlayerAlreadyInGroup);
                     return;
                 }
 
                 // Player already has a pending invite
-                if (GroupManager.FindPlayerInvite(targetSession) != null)
+                if (GlobalGroupManager.FindPlayerInvite(targetSession) != null)
                 {
                     sendGroupInviteResult(InviteResult.PlayerAlreadyInvited);
                     return;
@@ -72,10 +72,10 @@ namespace NexusForever.WorldServer.Network.Message.Handler
 
                 // are we creating a new group, or inviting into
                 // existing one?
-                var group = GroupManager.FindPlayerGroup(session);
+                var group = GlobalGroupManager.FindPlayerGroup(session);
                 if (group == null)
                 {
-                    group = GroupManager.CreateGroup();
+                    group = GlobalGroupManager.CreateGroup();
                     var leader = group.CreateMember(session);
                     group.PartyLeader = leader;
                 }
@@ -122,7 +122,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         {
             log.Info($"{clientGroupInviteResponse.GroupId}, {clientGroupInviteResponse.Response}, {clientGroupInviteResponse.Unknown0}");
 
-            var group = GroupManager.GetGroupById(clientGroupInviteResponse.GroupId);
+            var group = GlobalGroupManager.GetGroupById(clientGroupInviteResponse.GroupId);
             if (group == null)
                 return;
 
@@ -144,7 +144,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
 
                 // Remove Group and Members
                 if (group.IsEmpty)
-                    GroupManager.DisbandGroup(group);
+                    GlobalGroupManager.DisbandGroup(group);
 
                 return;
             }
@@ -269,7 +269,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         [MessageHandler(GameMessageOpcode.ClientGroupLeave)]
         public static void HandleGroupLeave(WorldSession session, ClientGroupLeave request)
         {
-            var group = GroupManager.GetGroupById(request.GroupId);
+            var group = GlobalGroupManager.GetGroupById(request.GroupId);
             if (group == null)
                 return;
 
@@ -289,7 +289,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                     member.Session.EnqueueMessageEncrypted(groupDisband);
                 }
 
-                GroupManager.DisbandGroup(group);
+                GlobalGroupManager.DisbandGroup(group);
                 return;
             }
 
@@ -305,7 +305,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 var groupDisband = buildServerGroupLeave(group, RemoveReason.Disband);
                 group.Members[0].Session.EnqueueMessageEncrypted(groupDisband);
 
-                GroupManager.DisbandGroup(group);
+                GlobalGroupManager.DisbandGroup(group);
                 return;
             }
 
@@ -364,7 +364,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         [MessageHandler(GameMessageOpcode.ClientGroupPromote)]
         public static void HandleGroupPromote(WorldSession session, ClientGroupPromote request)
         {
-            var group = GroupManager.FindPlayerGroup(session);
+            var group = GlobalGroupManager.FindPlayerGroup(session);
             if (group == null)
                 return;
 

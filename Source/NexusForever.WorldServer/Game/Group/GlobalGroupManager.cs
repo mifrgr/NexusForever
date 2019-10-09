@@ -2,13 +2,11 @@
 using NexusForever.WorldServer.Network;
 using NexusForever.WorldServer.Network.Message.Model;
 using NexusForever.WorldServer.Network.Message.Model.Shared;
-using NLog;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace NexusForever.WorldServer.Game.Group
 {
-    public static class GroupManager
+    public static class GlobalGroupManager
     {
         /// <summary>
         /// List of active groups

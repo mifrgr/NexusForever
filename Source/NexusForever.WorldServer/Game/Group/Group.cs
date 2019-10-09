@@ -78,7 +78,7 @@ namespace NexusForever.WorldServer.Game.Group
             Invites.Remove(invite);
             var member = new GroupMember
             {
-                Id = GroupManager.NextGroupMemberId,
+                Id = GlobalGroupManager.NextGroupMemberId,
                 Guid = invite.Guid,
                 Session = invite.Session
             };
@@ -94,7 +94,7 @@ namespace NexusForever.WorldServer.Game.Group
         {
             var member = new GroupMember
             {
-                Id = GroupManager.NextGroupMemberId,
+                Id = GlobalGroupManager.NextGroupMemberId,
                 Guid = session.Player.Guid,
                 Session = session
             };

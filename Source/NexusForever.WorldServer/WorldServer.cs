@@ -77,7 +77,7 @@ namespace NexusForever.WorldServer
             SocialManager.Initialise();
             CommandManager.Initialise();
             NetworkManager<WorldSession>.Initialise(ConfigurationManager<WorldServerConfiguration>.Config.Network);
-            GroupManager.Initialise();
+            GlobalGroupManager.Initialise();
 
             WorldManager.Initialise(lastTick =>
             {
@@ -86,7 +86,7 @@ namespace NexusForever.WorldServer
                 ResidenceManager.Update(lastTick);
                 BuybackManager.Update(lastTick);
                 GlobalQuestManager.Update(lastTick);
-                GroupManager.Update(lastTick);
+                GlobalGroupManager.Update(lastTick);
             });
 
             using (WorldServerEmbeddedWebServer.Initialise())
