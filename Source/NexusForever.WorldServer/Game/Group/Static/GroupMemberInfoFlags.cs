@@ -22,7 +22,7 @@ namespace NexusForever.WorldServer.Game.Group.Static
         CanMark         = 1 << 13,
         HasSetReady     = 1 << 14,
 
-        GroupMember     = CanMark,
+        GroupMember     = 0,
         GroupAdmin      = CanInvite | CanKick | CanMark
     }
 }

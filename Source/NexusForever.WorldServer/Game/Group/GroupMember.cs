@@ -24,48 +24,68 @@ namespace NexusForever.WorldServer.Game.Group
         public Player Player;
 
         /// <summary>
-        /// Can this player invite?
-        /// </summary>
-        public bool canInvite => isPartyLead || allowInvite;
-
-        /// <summary>
         /// Is this member a party leader
         /// </summary>
-        public bool isPartyLead;
+        public bool IsPartyLeader { get; private set; }
 
         /// <summary>
         /// Allow memmber to kick
         /// </summary>
-        public bool allowKick;
+        public bool CanKick
+        {
+            get { return (Flags & GroupMemberInfoFlags.CanKick) != 0; }
+        }
 
         /// <summary>
         /// Allow member to invite
         /// </summary>
-        public bool allowInvite;
+        public bool CanInvite
+        {
+            get { return (Flags & GroupMemberInfoFlags.CanInvite) != 0; }
+        }
 
         /// <summary>
         /// Allow member to mark
         /// </summary>
-        public bool allowMarking;
+        public bool CanMark
+        {
+            get { return (Flags & GroupMemberInfoFlags.CanMark) != 0; }
+        }
 
         /// <summary>
         /// Generate Info flags that can be sent to the client.
         /// </summary>
-        public GroupMemberInfoFlags InfoFlags
+        public GroupMemberInfoFlags Flags { get; private set; }
+
+        /// <summary>
+        /// Mark this member as party leader
+        /// </summary>
+        public void SetIsPartyLeader(bool isPartyLead)
         {
-            get
+            IsPartyLeader = isPartyLead;
+            if (IsPartyLeader)
             {
-                var flags = isPartyLead
-                          ? GroupMemberInfoFlags.GroupAdmin
-                          : GroupMemberInfoFlags.GroupMember;
-                if (allowInvite)
-                    flags |= GroupMemberInfoFlags.CanInvite;
-                if (allowKick)
-                    flags |= GroupMemberInfoFlags.CanKick;
-                if (allowMarking)
-                    flags |= GroupMemberInfoFlags.CanMark;
-                return flags;
+                Flags |= GroupMemberInfoFlags.GroupAdmin;
             }
+            else
+            {
+                Flags &= ~GroupMemberInfoFlags.GroupAdmin;
+                Flags |= GroupMemberInfoFlags.GroupMember;
+            }
+        }
+
+        /// <summary>
+        /// Toggle permission flags to on or off according to value
+        /// </summary>
+        public void SetPermissonFlags(GroupMemberInfoFlags flag, bool value)
+        {
+            var allowed = GroupMemberInfoFlags.GroupAdmin;
+            var cleanFlags = flag & allowed;
+
+            if (value)
+                Flags |= cleanFlags;
+            else
+                Flags &= ~cleanFlags;
         }
     }
 }

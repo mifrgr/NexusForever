@@ -104,6 +104,7 @@ namespace NexusForever.WorldServer.Game.Group
                 Group = this,
                 Player = player
             };
+            member.SetIsPartyLeader(false);
             Members.Add(member);
             player.GroupMember = member;
             return member;
@@ -128,12 +129,12 @@ namespace NexusForever.WorldServer.Game.Group
         public void SetPartyLeader(GroupMember member)
         {
             if (PartyLeader != null)
-                PartyLeader.isPartyLead = false;
+                PartyLeader.SetIsPartyLeader(false);
 
             PartyLeader = member;
 
             if (PartyLeader != null)
-                PartyLeader.isPartyLead = true;
+                PartyLeader.SetIsPartyLeader(true);
         }
     }
 }

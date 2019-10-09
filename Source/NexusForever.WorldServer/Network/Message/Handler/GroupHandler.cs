@@ -81,7 +81,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                     group = GlobalGroupManager.CreateGroup(player);
                 }
                 // Not party leader trying to invite? Sneaky!
-                else if (!player.GroupMember.canInvite)
+                else if (!player.GroupMember.CanInvite)
                 {
                     sendGroupInviteResult(InviteResult.NotPermitted);
                     return;
@@ -193,7 +193,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
             return new ServerGroupJoin.GroupMemberInfo
             {
                 MemberIdentity = BuildTargetPlayerIdentity(member),
-                Flags = member.InfoFlags,
+                Flags = member.Flags,
                 GroupMember = new Member
                 {
                     Name = member.Player.Name,
@@ -258,7 +258,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
 
         #endregion
 
-        #region Leave group
+        #region Disband / Leave group
 
         [MessageHandler(GameMessageOpcode.ClientGroupLeave)]
         public static void HandleGroupLeave(WorldSession session, ClientGroupLeave request)
@@ -274,7 +274,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
             // party leader disbanded
             if (request.Scope == GroupLeaveScope.Disband)
             {
-                if (!member.isPartyLead)
+                if (!member.IsPartyLeader)
                     return;
 
                 var groupDisband = BuildServerGroupLeave(group, RemoveReason.Disband);
@@ -285,7 +285,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
             }
 
             // remove leaver
-            var wasPartyLeader = member.isPartyLead;
+            var wasPartyLeader = member.IsPartyLeader;
             group.RemoveMember(member);
             var groupLeave = BuildServerGroupLeave(group, RemoveReason.Left);
             member.Player.Session.EnqueueMessageEncrypted(groupLeave);
@@ -310,8 +310,11 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 group.Members.ForEach(m => m.Player.Session.EnqueueMessageEncrypted(promotion));
                 
                 // send flags
-                var leaderFlags = BuildServerGroupMemberFlagsChanged(group, nextLeader, true);
-                nextLeader.Player.Session.EnqueueMessageEncrypted(leaderFlags);
+                foreach (var groupMember in group.Members)
+                {
+                    var memberFlags = BuildServerGroupMemberFlagsChanged(group, groupMember, true);
+                    nextLeader.Player.Session.EnqueueMessageEncrypted(memberFlags);
+                }
             }
 
             // broadcast about that member left
@@ -357,7 +360,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
             var group = member.Group;
 
             // not a party leader?
-            if (!member.isPartyLead)
+            if (!member.IsPartyLeader)
                 return;
 
             // next group lead
@@ -376,8 +379,11 @@ namespace NexusForever.WorldServer.Network.Message.Handler
             var oldLeaderFlags = BuildServerGroupMemberFlagsChanged(group, oldLeader, true);
             oldLeader.Player.Session.EnqueueMessageEncrypted(oldLeaderFlags);
 
-            var newLeaderFlags = BuildServerGroupMemberFlagsChanged(group, newLeader, true);
-            newLeader.Player.Session.EnqueueMessageEncrypted(newLeaderFlags);
+            foreach (var groupMember in group.Members)
+            {
+                var memberFlags = BuildServerGroupMemberFlagsChanged(group, groupMember, true);
+                newLeader.Player.Session.EnqueueMessageEncrypted(memberFlags);
+            }
         }
 
         /// TODO: Refactor to a proper place
@@ -399,18 +405,46 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 GroupId         = group.Id,
                 MemberId        = member.Id,
                 PlayerIdentity  = BuildTargetPlayerIdentity(member),
-                Flags           = member.InfoFlags,
+                Flags           = member.Flags,
                 FromPromotion   = fromPromotion
             };
         }
 
         #endregion
 
+        #region UpdatePlayerRole
+
         [MessageHandler(GameMessageOpcode.ClientGroupSetRole)]
         public static void HandleGroupSetRole(WorldSession session, ClientGroupSetRole request)
         {
-            log.Info($"GroupId: {request.GroupId} Unk1: {request.Unk1} Unk2: {request.Unk2}");
+            var player = session.Player;
+
+            var member = player.GroupMember;
+            if (member == null)
+                return;
+
+            var group = member.Group;
+
+            // not allowed?
+            if (!member.IsPartyLeader)
+                return;
+
+            // player whose flags will change
+            var targetPlayer = group.Members.Find(m => m.Player.CharacterId == request.PlayerIdentity.CharacterId);
+            if (targetPlayer == null)
+                return;
+
+            // update the player flags
+            var value = (request.Flags & request.ChangedFlag) == request.ChangedFlag;
+            targetPlayer.SetPermissonFlags(request.ChangedFlag, value);
+
+            // send responses
+            var updateFlags = BuildServerGroupMemberFlagsChanged(group, targetPlayer, false);
+            targetPlayer.Player.Session.EnqueueMessageEncrypted(updateFlags);
+            member.Player.Session.EnqueueMessageEncrypted(updateFlags);
         }
+
+        #endregion
 
         #region Helpers
 
