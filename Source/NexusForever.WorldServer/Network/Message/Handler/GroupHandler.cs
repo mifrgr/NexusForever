@@ -177,12 +177,11 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 var groupJoin = BuildServerGroupJoin(group, newMember);
                 newMember.Session.EnqueueMessageEncrypted(groupJoin);
 
+                var addMember = BuildServerGroupMemberAdd(group, newMember);
                 foreach (var member in group.Members)
                 {
                     if (member.Guid == newMember.Guid)
                         continue;
-
-                    var addMember = BuildServerGroupMemberAdd(group, member, newMember);
                     member.Session.EnqueueMessageEncrypted(addMember);
                 }
             }
@@ -223,12 +222,12 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         private static ServerGroupJoin BuildServerGroupJoin(Group group, GroupMember member)
         {
             uint groupIndex = 1;
-            var flags = member.Guid == group.PartyLeader.Guid
-                      ? GroupMemberInfoFlags.GroupAdmin
-                      : GroupMemberInfoFlags.GroupMember;
             var groupMembers = new List<ServerGroupJoin.GroupMemberInfo>();
             foreach (var groupMember in group.Members)
             {
+                var flags = groupMember.Guid == group.PartyLeader.Guid
+                          ? GroupMemberInfoFlags.GroupAdmin
+                          : GroupMemberInfoFlags.GroupMember;
                 groupMembers.Add(BuildGroupMemberInfo(groupMember, flags, groupIndex++));
             }
 
@@ -249,13 +248,13 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         }
 
         /// TODO: Refactor to a proper place
-        private static ServerGroupMemberAdd BuildServerGroupMemberAdd(Group group, GroupMember member, GroupMember newMember)
+        private static ServerGroupMemberAdd BuildServerGroupMemberAdd(Group group, GroupMember member)
         {
-            var groupIndex = (uint)group.Members.IndexOf(newMember) + 1;
+            var groupIndex = (uint)group.Members.IndexOf(member) + 1;
             var flags = member.Guid == group.PartyLeader.Guid
                       ? GroupMemberInfoFlags.GroupAdmin
                       : GroupMemberInfoFlags.GroupMember;
-            var memberInfo = BuildGroupMemberInfo(newMember, flags, groupIndex);
+            var memberInfo = BuildGroupMemberInfo(member, flags, groupIndex);
             return new ServerGroupMemberAdd
             {
                 GroupId = group.Id,
@@ -349,7 +348,9 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         }
 
         #endregion
-   
+
+        #region Promotion to Party Lead
+
         [MessageHandler(GameMessageOpcode.ClientGroupPromote)]
         public static void HandleGroupPromote(WorldSession session, ClientGroupPromote request)
         {
@@ -374,19 +375,51 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 return;
 
             // promote
-            var groupPromote = new ServerGroupPromote
-            {
-                GroupId = group.Id,
-                MemberId = promotedMember.Id,
-                PlayerIdentity = BuildTargetPlayerIdentity(promotedMember)
-            };
-
+            var groupPromote = BuildServerGroupPromote(group, promotedMember);
             foreach (var member in group.Members)
             {
                 member.Session.EnqueueMessageEncrypted(groupPromote);
             }
+
+            // update flags
+            var oldLeader = group.PartyLeader;
             group.PartyLeader = promotedMember;
+
+            var oldLeaderFlags = BuildServerGroupMemberFlagsChanged(group, oldLeader, true);
+            oldLeader.Session.EnqueueMessageEncrypted(oldLeaderFlags);
+
+            var newLeaderFlags = BuildServerGroupMemberFlagsChanged(group, promotedMember, true);
+            promotedMember.Session.EnqueueMessageEncrypted(newLeaderFlags);
         }
+
+        /// TODO: Refactor to a proper place
+        private static ServerGroupPromote BuildServerGroupPromote(Group group, GroupMember member)
+        {
+            return new ServerGroupPromote
+            {
+                GroupId = group.Id,
+                MemberId = member.Id,
+                PlayerIdentity = BuildTargetPlayerIdentity(member)
+            };
+        }
+
+        /// TODO: Refactor to a proper place
+        private static ServerGroupMemberFlagsChanged BuildServerGroupMemberFlagsChanged(Group group, GroupMember member, bool fromPromotion)
+        {
+            var flags = member.Guid == group.PartyLeader.Guid
+                      ? GroupMemberInfoFlags.GroupAdmin
+                      : GroupMemberInfoFlags.GroupMember;
+            return new ServerGroupMemberFlagsChanged
+            {
+                GroupId         = group.Id,
+                MemberId        = member.Id,
+                PlayerIdentity  = BuildTargetPlayerIdentity(member),
+                Flags           = flags,
+                FromPromotion   = fromPromotion
+            };
+        }
+
+        #endregion
 
         [MessageHandler(GameMessageOpcode.ClientGroupSetRole)]
         public static void HandleGroupSetRole(WorldSession session, ClientGroupSetRole request)

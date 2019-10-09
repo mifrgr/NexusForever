@@ -126,6 +126,7 @@ namespace NexusForever.Shared.Network.Message
         ClientItemGenericUnlock         = 0x0400,
         ServerGroupMemberAdd            = 0x0405,
         ClientGroupSetRole              = 0x0408,
+        ServerGroupFlagsChanged         = 0x0410,
         ClientQuestShareResult          = 0x045E,
         ClientQuestShare                = 0x045F,
         ClientGroupInvite               = 0x0416,
@@ -138,6 +139,7 @@ namespace NexusForever.Shared.Network.Message
         ClientGroupPromote              = 0x0446,
         ServerGroupPromote              = 0x0447,
         ServerGroupLeave                = 0x042D,
+        ServerGroupMemberFlagsChanged   = 0x0437,
         ServerGroupRemove               = 0x0450,
         Server0497                      = 0x0497, // guild info
         ClientCastSpell                 = 0x04DB,
