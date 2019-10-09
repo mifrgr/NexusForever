@@ -293,11 +293,13 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 return;
             }
 
+
+            // remove leaver
             var groupLeave = buildServerGroupLeave(group, RemoveReason.Left);
             leavingMember.Session.EnqueueMessageEncrypted(groupLeave);
             group.RemoveMember(leavingMember);
 
-            // member leaving with only party leader remaining?
+            // No more group members? Disband
             if (group.IsEmpty)
             {
                 var groupDisband = buildServerGroupLeave(group, RemoveReason.Disband);
@@ -307,7 +309,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 return;
             }
 
-            // is member who leaves a PartyLeader?
+            // PartyLeader left?
             if (leavingMember.Guid == group.PartyLeader.Guid)
             {
                 var nextLeader = group.NextPartyLeaderCandidate;
@@ -325,6 +327,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 nextLeader.Session.EnqueueMessageEncrypted(leaderFlags);
             }
 
+            // broadcast about that member left
             var groupRemove = buildServerGroupRemove(group, leavingMember, RemoveReason.Left);
             foreach (var member in group.Members)
             {
