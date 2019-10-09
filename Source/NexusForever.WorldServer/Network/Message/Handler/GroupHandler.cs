@@ -374,17 +374,18 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 return;
 
             // promote
-            //var groupPromote = new ServerGroupPromote
-            //{
-            //    // GroupId = group.Id,
-            //    PlayerIdentity = BuildTargetPlayerIdentity(promotedMember)
-            //};
+            var groupPromote = new ServerGroupPromote
+            {
+                GroupId = group.Id,
+                MemberId = promotedMember.Id,
+                PlayerIdentity = BuildTargetPlayerIdentity(promotedMember)
+            };
 
-            //foreach (var member in group.Members)
-            //{
-            //    member.Session.EnqueueMessageEncrypted(groupPromote);
-            //}
-            // group.PartyLeader = promotedMember;
+            foreach (var member in group.Members)
+            {
+                member.Session.EnqueueMessageEncrypted(groupPromote);
+            }
+            group.PartyLeader = promotedMember;
         }
 
         [MessageHandler(GameMessageOpcode.ClientGroupSetRole)]
