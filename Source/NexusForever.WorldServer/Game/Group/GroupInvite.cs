@@ -1,6 +1,6 @@
-﻿using NexusForever.WorldServer.Network;
+﻿using NexusForever.WorldServer.Game.Entity;
 
-namespace NexusForever.WorldServer.Game.Group.Static
+namespace NexusForever.WorldServer.Game.Group
 {
     /// <summary>
     /// Represent player that has been invited to the group,
@@ -10,8 +10,15 @@ namespace NexusForever.WorldServer.Game.Group.Static
     /// </summary>
     public class GroupInvite
     {
-        public ulong Guid;
-        public WorldSession Session;
+        /// <summary>
+        /// Group that this invite belongs to
+        /// </summary>
+        public Group Group;
+
+        /// <summary>
+        /// Player being invited
+        /// </summary>
+        public Player Player;
 
         /// <summary>
         /// Member who invited

@@ -18,6 +18,7 @@ using NexusForever.WorldServer.Database.Character.Model;
 using NexusForever.WorldServer.Game.Entity.Network;
 using NexusForever.WorldServer.Game.Entity.Network.Model;
 using NexusForever.WorldServer.Game.Entity.Static;
+using NexusForever.WorldServer.Game.Group;
 using NexusForever.WorldServer.Game.Map;
 using NexusForever.WorldServer.Game.Quest.Static;
 using NexusForever.WorldServer.Game.Setting;
@@ -112,6 +113,16 @@ namespace NexusForever.WorldServer.Game.Entity
 
         public WorldSession Session { get; }
         public bool IsLoading { get; private set; } = true;
+
+        /// <summary>
+        /// Pending invite to the group or null
+        /// </summary>
+        public GroupInvite GroupInvite { get; set; }
+
+        /// <summary>
+        /// Group that player is part of or null
+        /// </summary>
+        public GroupMember GroupMember { get; set; }
 
         public Inventory Inventory { get; }
         public CurrencyManager CurrencyManager { get; }

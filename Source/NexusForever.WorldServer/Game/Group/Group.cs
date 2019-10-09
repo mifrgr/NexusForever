@@ -1,4 +1,5 @@
-﻿using NexusForever.WorldServer.Game.Group.Static;
+﻿using NexusForever.WorldServer.Game.Entity;
+using NexusForever.WorldServer.Game.Group.Static;
 using NexusForever.WorldServer.Network;
 using System.Collections.Generic;
 
@@ -9,7 +10,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// <summary>
         /// Unique Group ID
         /// </summary>
-        public ulong Id;
+        public readonly ulong Id;
 
         /// <summary>
         /// True of group has no other members aside from party leader in it
@@ -19,13 +20,21 @@ namespace NexusForever.WorldServer.Game.Group
         /// <summary>
         /// Current party leader
         /// </summary>
-        public GroupMember PartyLeader;
+        public GroupMember PartyLeader { get; private set; }
 
         /// <summary>
         /// Give next member in the group as candidate for the PartyLeader
         /// </summary>
-        public GroupMember NextPartyLeaderCandidate =>
-            Members.Find(member => member.Guid != PartyLeader.Guid);
+        public GroupMember NextPartyLeaderCandidate {
+            get
+            {
+                if (PartyLeader == null)
+                {
+                    return Members[0];
+                }
+                return Members.Find(member => member.Id != PartyLeader.Id);
+            }
+        }
 
         /// <summary>
         /// Group members
@@ -38,27 +47,32 @@ namespace NexusForever.WorldServer.Game.Group
         public List<GroupInvite> Invites { get; } = new List<GroupInvite>();
 
         /// <summary>
-        /// Create invite for the given player
+        /// Create new Group
         /// </summary>
-        /// <param name="Session">Player session</param>
-        /// <returns></returns>
-        public GroupInvite CreateInvite(WorldSession session)
+        /// <param name="id"></param>
+        /// <param name="player">Initial party leader</param>
+        public Group(ulong id, Player player)
         {
-            var invite = new GroupInvite
-            {
-                Guid = session.Player.Guid,
-                Session = session
-            };
-            Invites.Add(invite);
-            return invite;
+            Id = id;
+            SetPartyLeader(CreateMember(player));
         }
 
         /// <summary>
-        /// Find Invite for the given player, or null
+        /// Create invite for the given player
         /// </summary>
-        public GroupInvite FindInvite(WorldSession session)
+        /// <param name="member">group member who is inviting</param>
+        /// <param name="player">player being invited</param>
+        public GroupInvite CreateInvite(GroupMember member, Player player)
         {
-            return Invites.Find(invite => invite.Guid == session.Player.Guid);
+            var invite = new GroupInvite
+            {
+                Group = this,
+                Player = player,
+                Inviter = member
+            };
+            Invites.Add(invite);
+            player.GroupInvite = invite;
+            return invite;
         }
 
         /// <summary>
@@ -66,47 +80,71 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         public void DismissInvite(GroupInvite invite)
         {
+            invite.Player.GroupInvite = null;
             Invites.Remove(invite);
         }
 
         /// <summary>
         /// Add new member to the group
         /// </summary>
-        /// <param name="invite">member invite</param>
         public GroupMember AcceptInvite(GroupInvite invite)
         {
             Invites.Remove(invite);
+            invite.Player.GroupInvite = null;
             var member = new GroupMember
             {
                 Id = GlobalGroupManager.NextGroupMemberId,
-                Guid = invite.Guid,
-                Session = invite.Session
+                Group = this,
+                Player = invite.Player
             };
             Members.Add(member);
+            invite.Player.GroupMember = member;
             return member;
         }
 
         /// <summary>
         /// Add new member to the group
         /// </summary>
-        /// <param name="session">member session</param>
-        public GroupMember CreateMember(WorldSession session)
+        public GroupMember CreateMember(Player player)
         {
             var member = new GroupMember
             {
                 Id = GlobalGroupManager.NextGroupMemberId,
-                Guid = session.Player.Guid,
-                Session = session
+                Group = this,
+                Player = player
             };
             Members.Add(member);
+            player.GroupMember = member;
             return member;
         }
 
-        public GroupMember FindMember(WorldSession session) => Members.Find(m => m.Guid == session.Player.Guid);
-
+        /// <summary>
+        /// Remove member from the group
+        /// </summary>
         public void RemoveMember(GroupMember member)
         {
             Members.Remove(member);
+            member.Player.GroupMember = null;
+            if (PartyLeader?.Id == member.Id)
+            {
+                SetPartyLeader(null);
+            }
+        }
+
+        /// <summary>
+        /// Set member as party leader
+        /// </summary>
+        public void SetPartyLeader(GroupMember member)
+        {
+            if (PartyLeader != null)
+            {
+                PartyLeader.isPartyLead = false;
+            }
+            PartyLeader = member;
+            if (PartyLeader != null)
+            {
+                PartyLeader.isPartyLead = true;
+            }
         }
     }
 }
