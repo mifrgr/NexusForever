@@ -22,6 +22,12 @@ namespace NexusForever.WorldServer.Game.Group
         public GroupMember PartyLeader;
 
         /// <summary>
+        /// Give next member in the group as candidate for the PartyLeader
+        /// </summary>
+        public GroupMember NextPartyLeaderCandidate =>
+            Members.Find(member => member.Guid != PartyLeader.Guid);
+
+        /// <summary>
         /// Group members
         /// </summary>
         public List<GroupMember> Members { get; } = new List<GroupMember>();

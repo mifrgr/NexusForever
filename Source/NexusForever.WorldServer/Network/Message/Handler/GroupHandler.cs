@@ -293,13 +293,13 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 return;
             }
 
-            // member leaving with only party leader remaining?
-            if (group.Members.Count == 2)
-            {
-                var groupLeave = buildServerGroupLeave(group, RemoveReason.Left);
-                leavingMember.Session.EnqueueMessageEncrypted(groupLeave);
-                group.RemoveMember(leavingMember);
+            var groupLeave = buildServerGroupLeave(group, RemoveReason.Left);
+            leavingMember.Session.EnqueueMessageEncrypted(groupLeave);
+            group.RemoveMember(leavingMember);
 
+            // member leaving with only party leader remaining?
+            if (group.IsEmpty)
+            {
                 var groupDisband = buildServerGroupLeave(group, RemoveReason.Disband);
                 group.Members[0].Session.EnqueueMessageEncrypted(groupDisband);
 
@@ -310,13 +310,20 @@ namespace NexusForever.WorldServer.Network.Message.Handler
             // is member who leaves a PartyLeader?
             if (leavingMember.Guid == group.PartyLeader.Guid)
             {
-                // TODO pass party lead to next person in group
-                return;
-            }
+                var nextLeader = group.NextPartyLeaderCandidate;
+                
+                // send promotion
+                var promotion = BuildServerGroupPromote(group, nextLeader);
+                foreach (var member in group.Members)
+                {
+                    member.Session.EnqueueMessageEncrypted(promotion);
+                }
+                group.PartyLeader = nextLeader;
 
-            var leavingGroup = buildServerGroupLeave(group, RemoveReason.Left);
-            leavingMember.Session.EnqueueMessageEncrypted(leavingGroup);
-            group.RemoveMember(leavingMember);
+                // send flags
+                var leaderFlags = BuildServerGroupMemberFlagsChanged(group, nextLeader, false);
+                nextLeader.Session.EnqueueMessageEncrypted(leaderFlags);
+            }
 
             var groupRemove = buildServerGroupRemove(group, leavingMember, RemoveReason.Left);
             foreach (var member in group.Members)
