@@ -50,10 +50,29 @@ namespace NexusForever.WorldServer.Game.Group
             IsPartyLeader || (Flags & GroupMemberInfoFlags.CanReadyCheck) != 0;
 
         /// <summary>
-        /// Can this member adjust flags?
+        /// Can this member update given flags for the given member?
         /// </summary>
-        public bool CanUpdateFlags =>
-            IsPartyLeader || (Flags & GroupMemberInfoFlags.RaidAssistant) != 0;
+        /// <param name="updateFlags">flags trying to update</param>
+        /// <param name="other">member whose flags are being modified</param>
+        /// <returns></returns>
+        public bool CanUpdateFlags(GroupMemberInfoFlags updateFlags, GroupMember other)
+        {
+            if (IsPartyLeader)
+                return true;
+
+            if ((Flags & GroupMemberInfoFlags.RaidAssistant) != 0)
+                return true;
+
+            if (other.Id != Id)
+                return false;
+
+            var allowedFlags = GroupMemberInfoFlags.RoleFlags
+                             | GroupMemberInfoFlags.HasSetReady
+                             | GroupMemberInfoFlags.Ready;
+            return (updateFlags & allowedFlags) == updateFlags;
+        }
+
+        
 
         /// <summary>8
         /// Generate Info flags that can be sent to the client.

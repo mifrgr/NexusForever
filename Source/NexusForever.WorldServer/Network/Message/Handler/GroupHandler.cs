@@ -270,17 +270,8 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 return;
 
             // not allowed?
-            if (!member.CanUpdateFlags)
-            {
-                if (member.Id != targetPlayer.Id)
-                    return;
-
-                var allowedFlags = GroupMemberInfoFlags.RoleFlags
-                                 | GroupMemberInfoFlags.HasSetReady
-                                 | GroupMemberInfoFlags.Ready;
-                if ((request.ChangedFlag & allowedFlags) != request.ChangedFlag)
-                    return;
-            }
+            if (!member.CanUpdateFlags(request.ChangedFlag, targetPlayer))
+                return;
 
             // update the player flags
             var value = (request.Flags & request.ChangedFlag) == request.ChangedFlag;
