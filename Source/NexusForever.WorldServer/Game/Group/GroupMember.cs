@@ -31,26 +31,17 @@ namespace NexusForever.WorldServer.Game.Group
         /// <summary>
         /// Allow memmber to kick
         /// </summary>
-        public bool CanKick
-        {
-            get { return (Flags & GroupMemberInfoFlags.CanKick) != 0; }
-        }
+        public bool CanKick => (Flags & GroupMemberInfoFlags.CanKick) != 0;
 
         /// <summary>
         /// Allow member to invite
         /// </summary>
-        public bool CanInvite
-        {
-            get { return (Flags & GroupMemberInfoFlags.CanInvite) != 0; }
-        }
+        public bool CanInvite => (Flags & GroupMemberInfoFlags.CanInvite) != 0;
 
         /// <summary>
         /// Allow member to mark
         /// </summary>
-        public bool CanMark
-        {
-            get { return (Flags & GroupMemberInfoFlags.CanMark) != 0; }
-        }
+        public bool CanMark => (Flags & GroupMemberInfoFlags.CanMark) != 0;
 
         /// <summary>
         /// Generate Info flags that can be sent to the client.

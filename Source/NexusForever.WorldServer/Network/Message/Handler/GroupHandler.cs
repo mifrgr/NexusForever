@@ -79,6 +79,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 if (group == null)
                 {
                     group = GlobalGroupManager.CreateGroup(player);
+                    group.IsInstance = true;
                 }
                 // Not party leader trying to invite? Sneaky!
                 else if (!player.GroupMember.CanInvite)
@@ -128,6 +129,8 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 return;
 
             var group = invite.Group;
+            if (group.Id != clientGroupInviteResponse.GroupId)
+                return;
 
             // Declined
             if (clientGroupInviteResponse.Response == InviteResponseResult.Declined)
@@ -232,8 +235,8 @@ namespace NexusForever.WorldServer.Network.Message.Handler
             {
                 JoinedPlayer = BuildTargetPlayerIdentity(member),
                 GroupId = group.Id,
-                GroupType = GroupTypeFlags.OpenWorld,
-                MaxSize = 5,
+                GroupType = group.Flags,
+                MaxSize = group.MaxSize,
                 LootRuleNormal = LootRule.NeedBeforeGreed,         // Under LootThreshold rarity (For Raid)
                 LootRuleThreshold = LootRule.RoundRobin,              // This is the selection for Loot Rules in the UI / Over LootTreshold rarity (For Raid)
                 LootThreshold = LootThreshold.Excellent,
@@ -270,6 +273,8 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 return;
 
             var group = member.Group;
+            if (group.Id != request.GroupId)
+                return;
 
             // party leader disbanded
             if (request.Scope == GroupLeaveScope.Disband)
@@ -358,6 +363,8 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 return;
 
             var group = member.Group;
+            if (group.Id != request.GroupId)
+                return;
 
             // not a party leader?
             if (!member.IsPartyLeader)
@@ -412,7 +419,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
 
         #endregion
 
-        #region UpdatePlayerRole
+        #region Update Roles
 
         [MessageHandler(GameMessageOpcode.ClientGroupSetRole)]
         public static void HandleGroupSetRole(WorldSession session, ClientGroupSetRole request)
@@ -424,6 +431,8 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 return;
 
             var group = member.Group;
+            if (group.Id != request.GroupId)
+                return;
 
             // not allowed?
             if (!member.IsPartyLeader)
@@ -442,6 +451,32 @@ namespace NexusForever.WorldServer.Network.Message.Handler
             var updateFlags = BuildServerGroupMemberFlagsChanged(group, targetPlayer, false);
             targetPlayer.Player.Session.EnqueueMessageEncrypted(updateFlags);
             member.Player.Session.EnqueueMessageEncrypted(updateFlags);
+        }
+
+        #endregion
+
+        #region Ready Check
+
+        [MessageHandler(GameMessageOpcode.ClientGroupSendReadyCheck)]
+        public static void HandleGroupSendReadyCheck(WorldSession session, ClientGroupSendReadyCheck request)
+        {
+            var player = session.Player;
+
+            var member = player.GroupMember;
+            if (member == null)
+                return;
+
+            var group = member.Group;
+            if (group.Id != request.GroupId)
+                return;
+
+            var readyCheck = new ServerGroupSendReadyCheck
+            {
+                GroupId = group.Id,
+                SenderIdentity = BuildTargetPlayerIdentity(member),
+                Message = request.Message
+            };
+            group.Members.ForEach(m => m.Player.Session.EnqueueMessageEncrypted(readyCheck));
         }
 
         #endregion

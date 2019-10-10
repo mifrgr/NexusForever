@@ -1,12 +1,21 @@
 ﻿using NexusForever.WorldServer.Game.Entity;
 using NexusForever.WorldServer.Game.Group.Static;
-using NexusForever.WorldServer.Network;
 using System.Collections.Generic;
 
 namespace NexusForever.WorldServer.Game.Group
 {
     public class Group
     {
+        /// <summary>
+        /// Maxoimum size party (non raid) group can be
+        /// </summary>
+        public const uint MaxPartySize = 5;
+
+        /// <summary>
+        /// Maximum size raid group can be
+        /// </summary>
+        public const uint MaxRaidSize = 20;
+
         /// <summary>
         /// Unique Group ID
         /// </summary>
@@ -47,6 +56,64 @@ namespace NexusForever.WorldServer.Game.Group
         public List<GroupInvite> Invites { get; } = new List<GroupInvite>();
 
         /// <summary>
+        /// Is this open world (non instance) group
+        /// </summary>
+        public bool IsOpenWorld
+        {
+            get { return (Flags & GroupTypeFlags.OpenWorld) != 0; }
+            set
+            {
+                if (value)
+                    Flags |= GroupTypeFlags.OpenWorld;
+                else
+                    Flags &= ~GroupTypeFlags.OpenWorld;
+            }
+        }
+
+        /// <summary>
+        /// Is this an instance group?
+        /// </summary>
+        public bool IsInstance
+        {
+            get { return !IsOpenWorld; }
+            set { IsOpenWorld = !value;  }
+        }
+
+        /// <summary>
+        /// Is this a raid group?
+        /// </summary>
+        public bool IsRaid
+        {
+            get { return (Flags & GroupTypeFlags.Raid) != 0; }
+            set
+            {
+                if (value)
+                    Flags |= GroupTypeFlags.Raid;
+                else
+                    Flags &= ~GroupTypeFlags.Raid;
+            }
+        }
+
+        /// <summary>
+        /// Is this a normal party group
+        /// </summary>
+        public bool IsParty
+        {
+            get { return !IsRaid; }
+            set { IsRaid = !value; }
+        }
+
+        /// <summary>
+        /// Max size for this group type
+        /// </summary>
+        public uint MaxSize => IsParty ? MaxPartySize : MaxRaidSize;
+
+        /// <summary>
+        /// Group flags that can be sent to the client
+        /// </summary>
+        public GroupTypeFlags Flags { get; private set; }
+
+        /// <summary>
         /// Create new Group
         /// </summary>
         /// <param name="id"></param>
@@ -55,6 +122,7 @@ namespace NexusForever.WorldServer.Game.Group
         {
             Id = id;
             SetPartyLeader(CreateMember(player));
+            IsOpenWorld = true;
         }
 
         /// <summary>
