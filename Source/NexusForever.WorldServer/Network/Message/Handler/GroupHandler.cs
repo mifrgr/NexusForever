@@ -3,6 +3,7 @@ using NexusForever.Shared.Network;
 using NexusForever.Shared.Network.Message;
 using NexusForever.WorldServer.Database.Character;
 using NexusForever.WorldServer.Database.Character.Model;
+using NexusForever.WorldServer.Game.Entity;
 using NexusForever.WorldServer.Game.Group;
 using NexusForever.WorldServer.Game.Group.Static;
 using NexusForever.WorldServer.Network.Message.Model;
@@ -266,15 +267,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         [MessageHandler(GameMessageOpcode.ClientGroupLeave)]
         public static void HandleGroupLeave(WorldSession session, ClientGroupLeave request)
         {
-            var player = session.Player;
-
-            var member = player.GroupMember;
-            if (member == null)
-                return;
-
-            var group = member.Group;
-            if (group.Id != request.GroupId)
-                return;
+            var (player, member, group) = ValidateGroupMembership(session, request.GroupId);
 
             // party leader disbanded
             if (request.Scope == GroupLeaveScope.Disband)
@@ -356,15 +349,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         [MessageHandler(GameMessageOpcode.ClientGroupPromote)]
         public static void HandleGroupPromote(WorldSession session, ClientGroupPromote request)
         {
-            var player = session.Player;
-
-            var member = player.GroupMember;
-            if (member == null)
-                return;
-
-            var group = member.Group;
-            if (group.Id != request.GroupId)
-                return;
+            var (player, member, group) = ValidateGroupMembership(session, request.GroupId);
 
             // not a party leader?
             if (!member.IsPartyLeader)
@@ -424,15 +409,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         [MessageHandler(GameMessageOpcode.ClientGroupSetRole)]
         public static void HandleGroupSetRole(WorldSession session, ClientGroupSetRole request)
         {
-            var player = session.Player;
-
-            var member = player.GroupMember;
-            if (member == null)
-                return;
-
-            var group = member.Group;
-            if (group.Id != request.GroupId)
-                return;
+            var (player, member, group) = ValidateGroupMembership(session, request.GroupId);
 
             // not allowed?
             if (!member.IsPartyLeader)
@@ -460,15 +437,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         [MessageHandler(GameMessageOpcode.ClientGroupSendReadyCheck)]
         public static void HandleGroupSendReadyCheck(WorldSession session, ClientGroupSendReadyCheck request)
         {
-            var player = session.Player;
-
-            var member = player.GroupMember;
-            if (member == null)
-                return;
-
-            var group = member.Group;
-            if (group.Id != request.GroupId)
-                return;
+            var (player, member, group) = ValidateGroupMembership(session, request.GroupId);
 
             var readyCheck = new ServerGroupSendReadyCheck
             {
@@ -491,6 +460,25 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 RealmId = WorldServer.RealmId,
                 CharacterId = member.Player.CharacterId
             };
+        }
+
+        /// <summary>
+        /// Validate that current player is in a group with given group ID
+        /// </summary>
+        /// <returns>Tuple containing Player, GroupMember and Group objects</returns>
+        private static (Player, GroupMember, Group) ValidateGroupMembership(WorldSession session, ulong groupId)
+        {
+            var player = session.Player;
+            
+            var member = player.GroupMember;
+            if (member == null)
+                throw new InvalidPacketValueException();
+
+            var group = member.Group;
+            if (group == null || group.Id != groupId)
+                throw new InvalidPacketValueException();
+
+            return (player, member, group);
         }
 
         #endregion
