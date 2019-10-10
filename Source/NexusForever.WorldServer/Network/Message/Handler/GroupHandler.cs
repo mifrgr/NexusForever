@@ -18,105 +18,109 @@ namespace NexusForever.WorldServer.Network.Message.Handler
     {
         private static readonly ILogger log = LogManager.GetCurrentClassLogger();
 
-
         [MessageHandler(GameMessageOpcode.ClientGroupInvite)]
         public static void HandleGroupInvite(WorldSession session, ClientGroupInvite request)
         {
             session.EnqueueEvent(new TaskGenericEvent<Character>(CharacterDatabase.GetCharacterByName(request.PlayerName), character =>
             {
-                void sendGroupInviteResult(InviteResult result, ulong groupId = 0)
-                {
-                    session.EnqueueMessageEncrypted(new ServerGroupInviteResult
-                    {
-                        GroupId = groupId,
-                        PlayerName = request.PlayerName,
-                        Result = result
-                    });
-                }
-
-                log.Info($"{session.Player.Name} has invited {request.PlayerName} to group");
-
-                // Invalid character?
-                if (character == null)
-                {
-                    sendGroupInviteResult(InviteResult.PlayerNotFound);
-                    return;
-                }
-
-                // Player not online?
-                var targetSession = NetworkManager<WorldSession>.GetSession(s => s.Player?.CharacterId == character.Id);
-                if (targetSession == null)
-                {
-                    sendGroupInviteResult(InviteResult.PlayerNotFound);
-                    return;
-                }
-
-                var player = session.Player;
-                var targetPlayer = targetSession.Player;
-
-                // Player already in the group?
-                if (targetPlayer.GroupMember != null)
-                {
-                    sendGroupInviteResult(InviteResult.PlayerAlreadyInGroup);
-                    return;
-                }
-
-                // Player already has a pending invite
-                if (targetPlayer.GroupInvite != null)
-                {
-                    sendGroupInviteResult(InviteResult.PlayerAlreadyInvited);
-                    return;
-                }
-
-                // Inviting yourself?
-                if (player.Guid == targetPlayer.Guid)
-                {
-                    sendGroupInviteResult(InviteResult.CannotInviteYourself);
-                    return;
-                }
-
-                // are we creating a new group, or inviting into
-                // existing one?
-                var group = player.GroupMember?.Group;
-                if (group == null)
-                {
-                    log.Info($"Creating a new group");
-                    group = GlobalGroupManager.CreateGroup(player);
-                    group.IsRaid = true;
-                }
-                // Trying to invite without permission!
-                else if (!player.GroupMember.CanInvite)
-                {
-                    sendGroupInviteResult(InviteResult.NotPermitted);
-                    return;
-                }
-
-                log.Info($"Creating invite");
-                group.CreateInvite(player.GroupMember, targetPlayer);
-                
-                sendGroupInviteResult(InviteResult.Sent, group.Id);
-
-                var groupMembers = new List<Member>();
-                foreach (var member in group.Members)
-                {
-                    groupMembers.Add(new Member
-                    {
-                        Name = member.Player.Name,
-                        Faction = member.Player.Faction1,
-                        Race = member.Player.Race,
-                        Class = member.Player.Class,
-                        Sex = member.Player.Sex,
-                        Path = member.Player.Path,
-                        Level = (byte)member.Player.Level,
-                        GroupMemberId = member.Id
-                    });
-                }
-                targetSession.EnqueueMessageEncrypted(new ServerGroupInviteReceived
-                {
-                    GroupId = group.Id,
-                    GroupMembers = groupMembers
-                });
+                HandleGroupInvite(session, request, character);
             }));
+        }
+
+        private static void HandleGroupInvite(WorldSession session, ClientGroupInvite request, Character character)
+        {
+            void sendGroupInviteResult(InviteResult result, ulong groupId = 0)
+            {
+                session.EnqueueMessageEncrypted(new ServerGroupInviteResult
+                {
+                    GroupId = groupId,
+                    PlayerName = request.PlayerName,
+                    Result = result
+                });
+            }
+
+            log.Info($"{session.Player.Name} has invited {request.PlayerName} to group");
+
+            // Invalid character?
+            if (character == null)
+            {
+                sendGroupInviteResult(InviteResult.PlayerNotFound);
+                return;
+            }
+
+            // Player not online?
+            var targetSession = NetworkManager<WorldSession>.GetSession(s => s.Player?.CharacterId == character.Id);
+            if (targetSession == null)
+            {
+                sendGroupInviteResult(InviteResult.PlayerNotFound);
+                return;
+            }
+
+            var player = session.Player;
+            var targetPlayer = targetSession.Player;
+
+            // Player already in the group?
+            if (targetPlayer.GroupMember != null)
+            {
+                sendGroupInviteResult(InviteResult.PlayerAlreadyInGroup);
+                return;
+            }
+
+            // Player already has a pending invite
+            if (targetPlayer.GroupInvite != null)
+            {
+                sendGroupInviteResult(InviteResult.PlayerAlreadyInvited);
+                return;
+            }
+
+            // Inviting yourself?
+            if (player.Guid == targetPlayer.Guid)
+            {
+                sendGroupInviteResult(InviteResult.CannotInviteYourself);
+                return;
+            }
+
+            // are we creating a new group, or inviting into
+            // existing one?
+            var group = player.GroupMember?.Group;
+            if (group == null)
+            {
+                log.Info($"Creating a new group");
+                group = GlobalGroupManager.CreateGroup(player);
+                group.IsRaid = true;
+            }
+            // Trying to invite without permission!
+            else if (!player.GroupMember.CanInvite)
+            {
+                sendGroupInviteResult(InviteResult.NotPermitted);
+                return;
+            }
+
+            log.Info($"Creating invite");
+            group.CreateInvite(player.GroupMember, targetPlayer);
+
+            sendGroupInviteResult(InviteResult.Sent, group.Id);
+
+            var groupMembers = new List<Member>();
+            foreach (var member in group.Members)
+            {
+                groupMembers.Add(new Member
+                {
+                    Name = member.Player.Name,
+                    Faction = member.Player.Faction1,
+                    Race = member.Player.Race,
+                    Class = member.Player.Class,
+                    Sex = member.Player.Sex,
+                    Path = member.Player.Path,
+                    Level = (byte)member.Player.Level,
+                    GroupMemberId = member.Id
+                });
+            }
+            targetSession.EnqueueMessageEncrypted(new ServerGroupInviteReceived
+            {
+                GroupId = group.Id,
+                GroupMembers = groupMembers
+            });
         }
         
         [MessageHandler(GameMessageOpcode.ClientGroupInviteResponse)]
