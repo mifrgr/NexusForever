@@ -6,7 +6,7 @@ namespace NexusForever.WorldServer.Game.Group
     /// <summary>
     /// Represent player that is part of the group
     /// </summary>
-    public class GroupMember
+    public partial class GroupMember
     {
         /// <summary>
         /// Unique member ID

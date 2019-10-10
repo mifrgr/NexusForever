@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace NexusForever.WorldServer.Game.Group
 {
-    public class Group
+    public partial class Group
     {
         /// <summary>
         /// Maxoimum size party (non raid) group can be
