@@ -389,7 +389,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         [MessageHandler(GameMessageOpcode.ClientGroupSetRole)]
         public static void HandleGroupSetRole(WorldSession session, ClientGroupSetRole request)
         {
-            log.Info($"{session.Player.Name} in group#{request.GroupId} changing member flags");
+            log.Info($"{session.Player.Name} in group#{request.GroupId} changing member flag {request.ChangedFlag}");
             var (member, group) = ValidateGroupMembership(session, request.GroupId);
 
             // player whose flags will change
@@ -403,7 +403,10 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 if (member.Id != targetPlayer.Id)
                     return;
 
-                if ((request.ChangedFlag & GroupMemberInfoFlags.RoleFlags) != request.ChangedFlag)
+                var allowedFlags = GroupMemberInfoFlags.RoleFlags
+                                 | GroupMemberInfoFlags.HasSetReady
+                                 | GroupMemberInfoFlags.Ready;
+                if ((request.ChangedFlag & allowedFlags) != request.ChangedFlag)
                     return;
             }
 
@@ -426,13 +429,26 @@ namespace NexusForever.WorldServer.Network.Message.Handler
             log.Info($"{session.Player.Name} in group#{request.GroupId} initiates ready check");
             var (member, group) = ValidateGroupMembership(session, request.GroupId);
 
-            log.Info($"Send reacy check to the group#{group.Id}");
-            Broadcast(group, new ServerGroupSendReadyCheck
+            if (!member.CanReadyCheck)
+                return;
+
+            member.PrepareForReadyCheck();
+            member.SetFlags(GroupMemberInfoFlags.HasSetReady | GroupMemberInfoFlags.Ready, true);
+            
+            group.Members.ForEach(groupMember =>
+            {
+                if (member.Id != groupMember.Id)
+                    groupMember.PrepareForReadyCheck();
+                Broadcast(group, BuildServerGroupMemberFlagsChanged(group, groupMember, false));
+            });
+
+            var readyCheck = new ServerGroupSendReadyCheck
             {
                 GroupId = group.Id,
                 SenderIdentity = BuildTargetPlayerIdentity(member),
                 Message = request.Message
-            });
+            };
+            Broadcast(group, m => m.Id == member.Id ? null : readyCheck);
         }
 
         #endregion

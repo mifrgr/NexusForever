@@ -96,12 +96,26 @@ namespace NexusForever.WorldServer.Game.Group
         }
 
         /// <summary>
+        /// Clear ready check related flags
+        /// </summary>
+        public void PrepareForReadyCheck()
+        {
+            var flags = GroupMemberInfoFlags.HasSetReady
+                      | GroupMemberInfoFlags.Ready;
+            _flags &= ~flags;
+            _flags |= GroupMemberInfoFlags.Pending;
+        }
+
+        /// <summary>
         /// Toggle flags on/off.
         /// </summary>
         public void SetFlags(GroupMemberInfoFlags flags, bool value)
         {
             if (value && (flags & GroupMemberInfoFlags.RoleFlags) != 0)
                 _flags &= ~GroupMemberInfoFlags.RoleFlags;
+
+            if (value && (flags & GroupMemberInfoFlags.HasSetReady) != 0)
+                _flags &= ~GroupMemberInfoFlags.Pending;
 
             if (value)
                 _flags |= flags;
