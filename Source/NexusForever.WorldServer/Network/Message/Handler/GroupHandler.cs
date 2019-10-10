@@ -466,7 +466,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         /// Validate that current player is in a group with given group ID
         /// </summary>
         /// <returns>Tuple containing Player, GroupMember and Group objects</returns>
-        private static (Player, GroupMember, Group) ValidateGroupMembership(WorldSession session, ulong groupId)
+        private static (Player player, GroupMember member, Group group) ValidateGroupMembership(WorldSession session, ulong groupId)
         {
             var player = session.Player;
             
