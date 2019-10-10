@@ -1,5 +1,6 @@
 ﻿using NexusForever.WorldServer.Game.Entity;
 using NexusForever.WorldServer.Game.Group.Static;
+using NexusForever.WorldServer.Network.Message.Model.Shared;
 using System.Collections.Generic;
 
 namespace NexusForever.WorldServer.Game.Group
@@ -189,6 +190,14 @@ namespace NexusForever.WorldServer.Game.Group
             {
                 SetPartyLeader(null);
             }
+        }
+
+        /// <summary>
+        /// Find member in the group
+        /// </summary>
+        public GroupMember FindMember(TargetPlayerIdentity target)
+        {
+            return Members.Find(m => m.Player.CharacterId == target.CharacterId);
         }
 
         /// <summary>

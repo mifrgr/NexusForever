@@ -343,7 +343,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 return;
 
             // next group lead
-            var newLeader = group.Members.Find(m => m.Player.CharacterId == request.PlayerIdentity.CharacterId);
+            var newLeader = group.FindMember(request.PlayerIdentity);
             if (newLeader == null)
                 return;
 
@@ -389,11 +389,11 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         [MessageHandler(GameMessageOpcode.ClientGroupSetRole)]
         public static void HandleGroupSetRole(WorldSession session, ClientGroupSetRole request)
         {
-            log.Info($"{session.Player.Name} in group#{request.GroupId} changing member flag {request.ChangedFlag}");
+            log.Info($"{session.Player.Name} in group#{request.GroupId} changing member flags: {request.ChangedFlag}");
             var (member, group) = ValidateGroupMembership(session, request.GroupId);
 
             // player whose flags will change
-            var targetPlayer = group.Members.Find(m => m.Player.CharacterId == request.PlayerIdentity.CharacterId);
+            var targetPlayer = group.FindMember(request.PlayerIdentity);
             if (targetPlayer == null)
                 return;
 
@@ -432,13 +432,9 @@ namespace NexusForever.WorldServer.Network.Message.Handler
             if (!member.CanReadyCheck)
                 return;
 
-            member.PrepareForReadyCheck();
-            member.SetFlags(GroupMemberInfoFlags.HasSetReady | GroupMemberInfoFlags.Ready, true);
-            
             group.Members.ForEach(groupMember =>
             {
-                if (member.Id != groupMember.Id)
-                    groupMember.PrepareForReadyCheck();
+                groupMember.PrepareForReadyCheck();
                 Broadcast(group, BuildServerGroupMemberFlagsChanged(group, groupMember, false));
             });
 
@@ -448,7 +444,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 SenderIdentity = BuildTargetPlayerIdentity(member),
                 Message = request.Message
             };
-            Broadcast(group, m => m.Id == member.Id ? null : readyCheck);
+            Broadcast(group, readyCheck);
         }
 
         #endregion
