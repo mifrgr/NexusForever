@@ -17,7 +17,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// <param name="callback">callback to generate message per every member</param>
         public void Broadcast(BroadcastCallback callback)
         {
-            Members.ForEach(member => {
+            members.ForEach(member => {
                 var value = callback(member);
                 if (value != null)
                     member.Send(value);
@@ -30,7 +30,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// <param name="message"></param>
         public void Broadcast(IWritable message)
         {
-            Members.ForEach(m => m.Send(message));
+            members.ForEach(m => m.Send(message));
         }
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace NexusForever.WorldServer.Game.Group
         {
             uint groupIndex = 1;
             var groupMembers = new List<ServerGroupJoin.GroupMemberInfo>();
-            foreach (var groupMember in Members)
+            foreach (var groupMember in members)
             {
                 groupMembers.Add(groupMember.BuildGroupMemberInfo(groupIndex++));
             }
@@ -68,7 +68,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         public ServerGroupMemberAdd BuildServerGroupMemberAdd(GroupMember member)
         {
-            var groupIndex = (uint)Members.IndexOf(member) + 1;
+            var groupIndex = (uint)members.IndexOf(member) + 1;
             var memberInfo = member.BuildGroupMemberInfo(groupIndex);
             return new ServerGroupMemberAdd
             {
@@ -108,7 +108,7 @@ namespace NexusForever.WorldServer.Game.Group
         public ServerGroupInviteReceived BuildServerGroupInviteReceived()
         {
             var groupMembers = new List<Member>();
-            Members.ForEach(m => groupMembers.Add(m.BuildGroupMember()));
+            members.ForEach(m => groupMembers.Add(m.BuildGroupMember()));
             return new ServerGroupInviteReceived
             {
                 GroupId = Id,

@@ -26,7 +26,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// <summary>
         /// Member flags. Use Flags accessor to get correct flags
         /// </summary>
-        private GroupMemberInfoFlags _flags;
+        private GroupMemberInfoFlags flags;
 
         /// <summary>
         /// Is this member a party leader
@@ -61,7 +61,7 @@ namespace NexusForever.WorldServer.Game.Group
         {
             get
             {
-                var flags = _flags;
+                var flags = this.flags;
                 if (IsPartyLeader)
                     flags |= GroupMemberInfoFlags.GroupAdminFlags;
                 else
@@ -92,7 +92,7 @@ namespace NexusForever.WorldServer.Game.Group
             Id = id;
             Group = group;
             Player = player;
-            _flags = 0;
+            flags = 0;
         }
 
         /// <summary>
@@ -125,8 +125,8 @@ namespace NexusForever.WorldServer.Game.Group
         {
             var flags = GroupMemberInfoFlags.HasSetReady
                       | GroupMemberInfoFlags.Ready;
-            _flags &= ~flags;
-            _flags |= GroupMemberInfoFlags.Pending;
+            this.flags &= ~flags;
+            this.flags |= GroupMemberInfoFlags.Pending;
         }
 
         /// <summary>
@@ -135,15 +135,15 @@ namespace NexusForever.WorldServer.Game.Group
         public void SetFlags(GroupMemberInfoFlags flags, bool value)
         {
             if (value && (flags & GroupMemberInfoFlags.RoleFlags) != 0)
-                _flags &= ~GroupMemberInfoFlags.RoleFlags;
+                this.flags &= ~GroupMemberInfoFlags.RoleFlags;
 
             if (value && (flags & GroupMemberInfoFlags.HasSetReady) != 0)
-                _flags &= ~GroupMemberInfoFlags.Pending;
+                this.flags &= ~GroupMemberInfoFlags.Pending;
 
             if (value)
-                _flags |= flags;
+                this.flags |= flags;
             else
-                _flags &= ~flags;
+                this.flags &= ~flags;
         }
     }
 }

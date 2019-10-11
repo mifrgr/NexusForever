@@ -256,7 +256,7 @@ namespace NexusForever.WorldServer.Game.Group
             if (!member.CanReadyCheck)
                 return;
 
-            Members.ForEach(member =>
+            members.ForEach(member =>
             {
                 member.PrepareForReadyCheck();
                 Broadcast(member.BuildServerGroupMemberFlagsChanged(false));
@@ -279,13 +279,13 @@ namespace NexusForever.WorldServer.Game.Group
         public void Disband()
         {
             var serverLeave = BuildServerGroupLeave(RemoveReason.Disband);
-            Members.ToList().ForEach(member =>
+            members.ToList().ForEach(member =>
             {
                 member.Send(serverLeave);
                 RemoveMember(member);
             });
 
-            Invites.ToList().ForEach(i => RemoveInvite(i));
+            invites.ToList().ForEach(i => RemoveInvite(i));
 
             GlobalGroupManager.RemoveGroup(this);
         }
@@ -302,7 +302,7 @@ namespace NexusForever.WorldServer.Game.Group
             var y = player.Position.Y;
             var z = player.Position.Z;
 
-            foreach (var member in Members)
+            foreach (var member in members)
             {
                 if (member.Player.Guid == player.Guid)
                     continue;
@@ -315,7 +315,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         public void Teleport(ushort worldId, float x, float y, float z)
         {
-            foreach (var member in Members)
+            foreach (var member in members)
                 member.Player.TeleportTo(worldId, x, y, z);
         }
 

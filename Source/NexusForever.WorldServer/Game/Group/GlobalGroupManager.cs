@@ -11,7 +11,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// <summary>
         /// List of active groups
         /// </summary>
-        private static List<Group> Groups = new List<Group>();
+        private readonly static List<Group> groups = new List<Group>();
 
         /// <summary>
         /// Unique ID for the next new group
@@ -50,7 +50,7 @@ namespace NexusForever.WorldServer.Game.Group
         public static Group CreateGroup(Player partyLeader)
         {
             var group = new Group(NextGroupId, partyLeader);
-            Groups.Add(group);
+            groups.Add(group);
             return group;
         }
 
@@ -59,7 +59,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         public static void RemoveGroup(Group group)
         {
-            Groups.Remove(group);
+            groups.Remove(group);
         }
     }
 }

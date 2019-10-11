@@ -25,13 +25,13 @@ namespace NexusForever.WorldServer.Game.Group
         /// <summary>
         /// True of group has no other members aside from party leader in it and
         /// </summary>
-        public bool IsEmpty => Members.Count <= 1;
+        public bool IsEmpty => members.Count <= 1;
 
         /// <summary>
         /// Group can be dismissed if it has no members aside from group leader
         /// and no pending invites
         /// </summary>
-        public bool ShouldDisband => IsEmpty && Invites.Count == 0;
+        public bool ShouldDisband => IsEmpty && invites.Count == 0;
 
         /// <summary>
         /// Current party leader
@@ -46,21 +46,11 @@ namespace NexusForever.WorldServer.Game.Group
             {
                 if (PartyLeader == null)
                 {
-                    return Members[0];
+                    return members[0];
                 }
-                return Members.Find(member => member.Id != PartyLeader.Id);
+                return members.Find(member => member.Id != PartyLeader.Id);
             }
         }
-
-        /// <summary>
-        /// Group members
-        /// </summary>
-        private List<GroupMember> Members = new List<GroupMember>();
-
-        /// <summary>
-        /// Players who have been invited or who have request to join the group
-        /// </summary>
-        private List<GroupInvite> Invites = new List<GroupInvite>();
 
         /// <summary>
         /// Is this open world (non instance) group
@@ -83,7 +73,7 @@ namespace NexusForever.WorldServer.Game.Group
         public bool IsInstance
         {
             get { return !IsOpenWorld; }
-            set { IsOpenWorld = !value;  }
+            set { IsOpenWorld = !value; }
         }
 
         /// <summary>
@@ -126,6 +116,16 @@ namespace NexusForever.WorldServer.Game.Group
         public bool IsNewGroup { get; private set; }
 
         /// <summary>
+        /// Group members for private usage
+        /// </summary>
+        private readonly List<GroupMember> members = new List<GroupMember>();
+
+        /// <summary>
+        /// Players who have been invited or who have request to join the group
+        /// </summary>
+        private readonly List<GroupInvite> invites = new List<GroupInvite>();
+
+        /// <summary>
         /// Create new Group
         /// </summary>
         /// <param name="id"></param>
@@ -146,7 +146,7 @@ namespace NexusForever.WorldServer.Game.Group
         private GroupInvite CreateInvite(GroupMember inviter, Player invitee)
         {
             var invite = new GroupInvite(this, invitee, inviter);
-            Invites.Add(invite);
+            invites.Add(invite);
             invitee.GroupInvite = invite;
             return invite;
         }
@@ -157,7 +157,7 @@ namespace NexusForever.WorldServer.Game.Group
         private void RemoveInvite(GroupInvite invite)
         {
             invite.Player.GroupInvite = null;
-            Invites.Remove(invite);
+            invites.Remove(invite);
         }
 
         /// <summary>
@@ -166,7 +166,7 @@ namespace NexusForever.WorldServer.Game.Group
         private GroupMember CreateMember(Player player)
         {
             var member = new GroupMember(GlobalGroupManager.NextGroupMemberId, this, player);
-            Members.Add(member);
+            members.Add(member);
             player.GroupMember = member;
             return member;
         }
@@ -176,7 +176,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         private void RemoveMember(GroupMember member)
         {
-            Members.Remove(member);
+            members.Remove(member);
             member.Player.GroupMember = null;
             if (PartyLeader?.Id == member.Id)
                 PartyLeader = null;
@@ -187,7 +187,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         private GroupMember FindMember(TargetPlayerIdentity target)
         {
-            return Members.Find(m => m.Player.CharacterId == target.CharacterId);
+            return members.Find(m => m.Player.CharacterId == target.CharacterId);
         }
     }
 }
