@@ -23,9 +23,10 @@ namespace NexusForever.WorldServer.Game.Group
         public readonly ulong Id;
 
         /// <summary>
-        /// True of group has no other members aside from party leader in it
+        /// True of group has no other members aside from party leader in it and
+        /// no pending invites
         /// </summary>
-        public bool IsEmpty => Members.Count <= 1;
+        public bool IsEmpty => Members.Count <= 1 && Invites.Count == 0;
 
         /// <summary>
         /// Current party leader

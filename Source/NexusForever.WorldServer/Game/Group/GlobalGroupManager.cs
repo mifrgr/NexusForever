@@ -58,13 +58,18 @@ namespace NexusForever.WorldServer.Game.Group
         }
 
         /// <summary>
-        /// Disband the group and remove all members from it
+        /// Disband the group, remove all members and invites from it
         /// </summary>
         public static void DisbandGroup(Group group)
         {
             var members = group.Members.ToList();
             foreach (var member in members)
                 group.RemoveMember(member);
+
+            var invites = group.Invites.ToList();
+            foreach (var invite in invites)
+                group.DismissInvite(invite);
+
             Groups.Remove(group);
         }
     }
