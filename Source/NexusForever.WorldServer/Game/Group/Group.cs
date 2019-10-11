@@ -178,10 +178,6 @@ namespace NexusForever.WorldServer.Game.Group
         {
             Members.Remove(member);
             member.Player.GroupMember = null;
-            if (PartyLeader?.Id == member.Id)
-            {
-                SetPartyLeader(null);
-            }
         }
 
         /// <summary>

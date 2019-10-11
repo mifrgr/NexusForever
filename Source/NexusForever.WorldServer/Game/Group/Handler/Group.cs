@@ -194,6 +194,7 @@ namespace NexusForever.WorldServer.Game.Group
         {
             var member = ValidatePlayer(player);
 
+            var wasPartyLeader = member.IsPartyLeader;
             RemoveMember(member);
             member.Send(BuildServerGroupLeave(reason));
             Broadcast(member.BuildServerGroupRemove(reason));
@@ -204,7 +205,7 @@ namespace NexusForever.WorldServer.Game.Group
                 return;
             }
 
-            if (member.IsPartyLeader)
+            if (wasPartyLeader)
             {
                 Promote(NextPartyLeaderCandidate.Player);
             }
