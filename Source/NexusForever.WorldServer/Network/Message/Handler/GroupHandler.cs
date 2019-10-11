@@ -87,7 +87,6 @@ namespace NexusForever.WorldServer.Network.Message.Handler
             {
                 log.Info($"Creating a new group");
                 group = GlobalGroupManager.CreateGroup(player);
-                group.IsRaid = true;
             }
             // Trying to invite without permission!
             else if (!player.GroupMember.CanInvite)
@@ -308,6 +307,13 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 Message = request.Message
             };
             group.Broadcast(readyCheck);
+        }
+
+        [MessageHandler(GameMessageOpcode.ClientGroupFlagsChanged)]
+        public static void HandleGroupFlagsChanged(WorldSession session, ClientGroupFlags request)
+        {
+            // change group flags
+            // broadcast to all players
         }
 
         /// <summary>

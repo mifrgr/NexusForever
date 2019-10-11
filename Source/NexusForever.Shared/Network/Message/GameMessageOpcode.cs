@@ -125,6 +125,7 @@ namespace NexusForever.Shared.Network.Message
         ServerRealmBroadcast            = 0x03E1,
         ClientItemGenericUnlock         = 0x0400,
         ServerGroupMemberAdd            = 0x0405,
+        ClientGroupFlagsChanged         = 0x0406,
         ClientGroupSetRole              = 0x0408,
         ServerGroupFlagsChanged         = 0x0410,
         ClientQuestShareResult          = 0x045E,
