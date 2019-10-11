@@ -1,16 +1,9 @@
-﻿using NexusForever.Shared.Game.Events;
-using NexusForever.Shared.Network;
+﻿using NexusForever.Shared.Network;
 using NexusForever.Shared.Network.Message;
-using NexusForever.WorldServer.Database.Character;
-using NexusForever.WorldServer.Database.Character.Model;
 using NexusForever.WorldServer.Game.Entity;
 using NexusForever.WorldServer.Game.Group;
-using NexusForever.WorldServer.Game.Group.Static;
 using NexusForever.WorldServer.Network.Message.Model;
-using NexusForever.WorldServer.Network.Message.Model.Shared;
 using NLog;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace NexusForever.WorldServer.Network.Message.Handler
 {
@@ -23,6 +16,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         {
             var player = session.Player;
             var group = player.GroupMember?.Group ?? GlobalGroupManager.CreateGroup(player);
+            group.IsRaid = true;
             group.Invite(player, request.PlayerName);            
         }
                 

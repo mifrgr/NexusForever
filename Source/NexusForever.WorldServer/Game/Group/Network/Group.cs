@@ -2,9 +2,7 @@
 using NexusForever.WorldServer.Game.Group.Static;
 using NexusForever.WorldServer.Network.Message.Model;
 using NexusForever.WorldServer.Network.Message.Model.Shared;
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace NexusForever.WorldServer.Game.Group
 {
