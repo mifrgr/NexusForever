@@ -280,14 +280,15 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         public void Disband()
         {
-            // notify any remaining members
-            Broadcast(BuildServerGroupLeave(RemoveReason.Disband));
-            Members.Clear();
+            var serverLeave = BuildServerGroupLeave(RemoveReason.Disband);
+            Members.ToList().ForEach(member =>
+            {
+                member.Send(serverLeave);
+                RemoveMember(member);
+            });
 
-            // dismiss invites
             Invites.ToList().ForEach(i => RemoveInvite(i));
 
-            // Remove this group
             GlobalGroupManager.RemoveGroup(this);
         }
 
