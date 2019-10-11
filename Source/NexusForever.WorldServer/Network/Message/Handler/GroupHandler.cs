@@ -16,7 +16,6 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         {
             var player = session.Player;
             var group = player.GroupMember?.Group ?? GlobalGroupManager.CreateGroup(player);
-            group.IsRaid = true;
             group.Invite(player, request.PlayerName);            
         }
                 
