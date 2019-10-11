@@ -24,9 +24,14 @@ namespace NexusForever.WorldServer.Game.Group
 
         /// <summary>
         /// True of group has no other members aside from party leader in it and
-        /// no pending invites
         /// </summary>
-        public bool IsEmpty => Members.Count <= 1 && Invites.Count == 0;
+        public bool IsEmpty => Members.Count <= 1;
+
+        /// <summary>
+        /// Group can be dismissed if it has no members aside from group leader
+        /// and no pending invites
+        /// </summary>
+        public bool CanDismiss => !IsEmpty && Invites.Count == 0;
 
         /// <summary>
         /// Current party leader

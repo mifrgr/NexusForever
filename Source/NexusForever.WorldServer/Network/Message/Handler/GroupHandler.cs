@@ -150,7 +150,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 });
 
                 // Remove Group and Members
-                if (group.IsEmpty)
+                if (group.CanDismiss)
                     GlobalGroupManager.DisbandGroup(group);
 
                 return;
