@@ -106,7 +106,7 @@ namespace NexusForever.WorldServer.Game.Group
             if (IsPartyLeader)
                 return true;
 
-            if ((Flags & GroupMemberInfoFlags.RaidAssistant) != 0)
+            if ((flags & GroupMemberInfoFlags.RaidAssistant) != 0)
                 return true;
 
             if (other.Id != Id)
