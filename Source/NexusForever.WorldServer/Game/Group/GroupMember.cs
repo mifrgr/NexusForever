@@ -31,7 +31,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// <summary>
         /// Is this member a party leader
         /// </summary>
-        public bool IsPartyLeader => Group.PartyLeader.Id == Id;
+        public bool IsPartyLeader => Group.PartyLeader?.Id == Id;
 
         /// <summary>
         /// Allow memmber to kick

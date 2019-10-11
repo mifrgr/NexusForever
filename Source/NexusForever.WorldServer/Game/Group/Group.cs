@@ -133,7 +133,7 @@ namespace NexusForever.WorldServer.Game.Group
         public Group(ulong id, Player player)
         {
             Id = id;
-            SetPartyLeader(CreateMember(player));
+            PartyLeader = CreateMember(player);
             IsOpenWorld = true;
             IsNewGroup = true;
         }
@@ -178,6 +178,8 @@ namespace NexusForever.WorldServer.Game.Group
         {
             Members.Remove(member);
             member.Player.GroupMember = null;
+            if (PartyLeader?.Id == member.Id)
+                PartyLeader = null;
         }
 
         /// <summary>
@@ -186,14 +188,6 @@ namespace NexusForever.WorldServer.Game.Group
         private GroupMember FindMember(TargetPlayerIdentity target)
         {
             return Members.Find(m => m.Player.CharacterId == target.CharacterId);
-        }
-
-        /// <summary>
-        /// Set member as party leader
-        /// </summary>
-        private void SetPartyLeader(GroupMember member)
-        {
-            PartyLeader = member;
         }
     }
 }

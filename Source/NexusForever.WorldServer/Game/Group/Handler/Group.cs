@@ -153,7 +153,7 @@ namespace NexusForever.WorldServer.Game.Group
             var member = ValidatePlayer(player);
 
             var oldLeader = PartyLeader;
-            SetPartyLeader(member);
+            PartyLeader = member;
 
             Broadcast(member.BuildServerGroupPromote());
 
