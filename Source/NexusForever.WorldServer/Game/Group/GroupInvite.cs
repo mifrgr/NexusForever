@@ -13,16 +13,26 @@ namespace NexusForever.WorldServer.Game.Group
         /// <summary>
         /// Group that this invite belongs to
         /// </summary>
-        public Group Group;
+        public readonly Group Group;
 
         /// <summary>
         /// Player being invited
         /// </summary>
-        public Player Player;
+        public readonly Player Player;
 
         /// <summary>
         /// Member who invited
         /// </summary>
-        public GroupMember Inviter;
+        public readonly GroupMember Inviter;
+
+        /// <summary>
+        /// Create invite to group
+        /// </summary>
+        public GroupInvite(Group group, Player player, GroupMember inviter)
+        {
+            Group = group;
+            Player = player;
+            Inviter = inviter;
+        }
     }
 }

@@ -145,12 +145,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// <param name="invitee">player being invited</param>
         private GroupInvite CreateInvite(GroupMember inviter, Player invitee)
         {
-            var invite = new GroupInvite
-            {
-                Group = this,
-                Player = invitee,
-                Inviter = inviter
-            };
+            var invite = new GroupInvite(this, invitee, inviter);
             Invites.Add(invite);
             invitee.GroupInvite = invite;
             return invite;
@@ -170,13 +165,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         private GroupMember CreateMember(Player player)
         {
-            var member = new GroupMember
-            {
-                Id = GlobalGroupManager.NextGroupMemberId,
-                Group = this,
-                Player = player
-            };
-            member.SetIsPartyLeader(false);
+            var member = new GroupMember(GlobalGroupManager.NextGroupMemberId, this, player);
             Members.Add(member);
             player.GroupMember = member;
             return member;
@@ -208,13 +197,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         private void SetPartyLeader(GroupMember member)
         {
-            if (PartyLeader != null)
-                PartyLeader.SetIsPartyLeader(false);
-
             PartyLeader = member;
-
-            if (PartyLeader != null)
-                PartyLeader.SetIsPartyLeader(true);
         }
     }
 }
