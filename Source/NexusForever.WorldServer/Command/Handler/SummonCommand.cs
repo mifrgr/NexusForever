@@ -23,18 +23,7 @@ namespace NexusForever.WorldServer.Command.Handler
                 await context.SendMessageAsync($"You are not in a group");
                 return;
             }
-
-            var worldId = (ushort)context.Session.Player.Map.Entry.Id;
-            var x = context.Session.Player.Position.X;
-            var y = context.Session.Player.Position.Y;
-            var z = context.Session.Player.Position.Z;
-
-            foreach (var groupMember in member.Group.Members)
-            {
-                if (groupMember.Id == member.Id)
-                    continue;
-                groupMember.Player.TeleportTo(worldId, x, y, z);
-            }
+            member.Group.Teleport(member.Player);
         }
     }
 }

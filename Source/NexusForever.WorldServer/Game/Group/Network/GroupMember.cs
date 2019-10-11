@@ -2,9 +2,6 @@
 using NexusForever.WorldServer.Game.Group.Static;
 using NexusForever.WorldServer.Network.Message.Model;
 using NexusForever.WorldServer.Network.Message.Model.Shared;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using static NexusForever.WorldServer.Network.Message.Model.ServerGroupJoin;
 
 namespace NexusForever.WorldServer.Game.Group
@@ -40,27 +37,35 @@ namespace NexusForever.WorldServer.Game.Group
             {
                 MemberIdentity = BuildTargetPlayerIdentity(),
                 Flags = Flags,
-                GroupMember = new Member
-                {
-                    Name = Player.Name,
-                    Faction = Player.Faction1,
-                    Race = Player.Race,
-                    Class = Player.Class,
-                    Sex = Player.Sex,
-                    Level = (byte)Player.Level,
-                    EffectiveLevel = (byte)Player.Level,
-                    Path = Player.Path,
-                    GroupMemberId = Id,
-                    Unknown8 = 1, // Something to do with Mentoring, Sets mentoring of first player that isn't you
-                    Unknown9 = 1, // This and Unknown8 have to both be 1
-                    Unknown10 = 1,
-                    Realm = WorldServer.RealmId,
-                    WorldZoneId = (ushort)Player.Zone.Id,
-                    Unknown25 = 1873,
-                    Unknown26 = 1,
-                    SyncedToGroup = true
-                },
+                GroupMember = BuildGroupMember(),
                 GroupIndex = groupIndex
+            };
+        }
+
+        /// <summary>
+        /// Build Member object that is sendable to the client
+        /// </summary>
+        public Member BuildGroupMember()
+        {
+            return new Member
+            {
+                Name = Player.Name,
+                Faction = Player.Faction1,
+                Race = Player.Race,
+                Class = Player.Class,
+                Sex = Player.Sex,
+                Level = (byte)Player.Level,
+                EffectiveLevel = (byte)Player.Level,
+                Path = Player.Path,
+                GroupMemberId = Id,
+                Unknown8 = 1, // Something to do with Mentoring, Sets mentoring of first player that isn't you
+                Unknown9 = 1, // This and Unknown8 have to both be 1
+                Unknown10 = 1,
+                Realm = WorldServer.RealmId,
+                WorldZoneId = (ushort)Player.Zone.Id,
+                Unknown25 = 1873,
+                Unknown26 = 1,
+                SyncedToGroup = true
             };
         }
 

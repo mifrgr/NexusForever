@@ -11,14 +11,14 @@ namespace NexusForever.WorldServer.Network.Message.Model
         public ulong GroupId { get; set; }
         public TargetPlayerIdentity PlayerIdentity { get; set; } = new TargetPlayerIdentity();
         public GroupMemberInfoFlags Flags { get; set; }
-        public GroupMemberInfoFlags ChangedFlag { get; set; }
+        public GroupMemberInfoFlags ChangedFlags { get; set; }
 
         public void Read(GamePacketReader reader)
         {
             GroupId = reader.ReadULong();
             PlayerIdentity.Read(reader);
             Flags = (GroupMemberInfoFlags)reader.ReadUInt();
-            ChangedFlag = (GroupMemberInfoFlags)reader.ReadUInt();
+            ChangedFlags = (GroupMemberInfoFlags)reader.ReadUInt();
         }
     }
 }

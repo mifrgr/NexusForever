@@ -31,7 +31,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// Group can be dismissed if it has no members aside from group leader
         /// and no pending invites
         /// </summary>
-        public bool CanDismiss => !IsEmpty && Invites.Count == 0;
+        public bool ShouldDisband => !IsEmpty && Invites.Count == 0;
 
         /// <summary>
         /// Current party leader
@@ -55,12 +55,12 @@ namespace NexusForever.WorldServer.Game.Group
         /// <summary>
         /// Group members
         /// </summary>
-        public List<GroupMember> Members { get; } = new List<GroupMember>();
+        private List<GroupMember> Members = new List<GroupMember>();
 
         /// <summary>
         /// Players who have been invited or who have request to join the group
         /// </summary>
-        public List<GroupInvite> Invites { get; } = new List<GroupInvite>();
+        private List<GroupInvite> Invites = new List<GroupInvite>();
 
         /// <summary>
         /// Is this open world (non instance) group
@@ -121,6 +121,11 @@ namespace NexusForever.WorldServer.Game.Group
         public GroupTypeFlags Flags { get; private set; }
 
         /// <summary>
+        /// Group is new if member info has not been sent to the client yet
+        /// </summary>
+        public bool IsNewGroup { get; private set; }
+
+        /// <summary>
         /// Create new Group
         /// </summary>
         /// <param name="id"></param>
@@ -130,30 +135,31 @@ namespace NexusForever.WorldServer.Game.Group
             Id = id;
             SetPartyLeader(CreateMember(player));
             IsOpenWorld = true;
+            IsNewGroup = true;
         }
 
         /// <summary>
         /// Create invite for the given player
         /// </summary>
-        /// <param name="member">group member who is inviting</param>
-        /// <param name="player">player being invited</param>
-        public GroupInvite CreateInvite(GroupMember member, Player player)
+        /// <param name="inviter">group member who is inviting</param>
+        /// <param name="invitee">player being invited</param>
+        private GroupInvite CreateInvite(GroupMember inviter, Player invitee)
         {
             var invite = new GroupInvite
             {
                 Group = this,
-                Player = player,
-                Inviter = member
+                Player = invitee,
+                Inviter = inviter
             };
             Invites.Add(invite);
-            player.GroupInvite = invite;
+            invitee.GroupInvite = invite;
             return invite;
         }
 
         /// <summary>
         /// Invite wasn't accepted or timed out
         /// </summary>
-        public void DismissInvite(GroupInvite invite)
+        private void RemoveInvite(GroupInvite invite)
         {
             invite.Player.GroupInvite = null;
             Invites.Remove(invite);
@@ -162,16 +168,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// <summary>
         /// Add new member to the group
         /// </summary>
-        public GroupMember AcceptInvite(GroupInvite invite)
-        {
-            DismissInvite(invite);
-            return CreateMember(invite.Player);
-        }
-
-        /// <summary>
-        /// Add new member to the group
-        /// </summary>
-        public GroupMember CreateMember(Player player)
+        private GroupMember CreateMember(Player player)
         {
             var member = new GroupMember
             {
@@ -188,7 +185,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// <summary>
         /// Remove member from the group
         /// </summary>
-        public void RemoveMember(GroupMember member)
+        private void RemoveMember(GroupMember member)
         {
             Members.Remove(member);
             member.Player.GroupMember = null;
@@ -201,7 +198,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// <summary>
         /// Find member in the group
         /// </summary>
-        public GroupMember FindMember(TargetPlayerIdentity target)
+        private GroupMember FindMember(TargetPlayerIdentity target)
         {
             return Members.Find(m => m.Player.CharacterId == target.CharacterId);
         }
@@ -209,7 +206,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// <summary>
         /// Set member as party leader
         /// </summary>
-        public void SetPartyLeader(GroupMember member)
+        private void SetPartyLeader(GroupMember member)
         {
             if (PartyLeader != null)
                 PartyLeader.SetIsPartyLeader(false);

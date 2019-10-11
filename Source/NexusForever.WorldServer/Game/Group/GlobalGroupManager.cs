@@ -1,8 +1,5 @@
 ﻿using NexusForever.WorldServer.Game.Entity;
-using NexusForever.WorldServer.Game.Group.Static;
-using NexusForever.WorldServer.Network;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace NexusForever.WorldServer.Game.Group
 {
@@ -14,12 +11,12 @@ namespace NexusForever.WorldServer.Game.Group
         /// <summary>
         /// List of active groups
         /// </summary>
-        public static List<Group> Groups = new List<Group>();
+        private static List<Group> Groups = new List<Group>();
 
         /// <summary>
         /// Unique ID for the next new group
         /// </summary>
-        public static ulong NextGroupId => nextGroupId++;
+        private static ulong NextGroupId => nextGroupId++;
 
         /// <summary>
         /// Unique ID for the next new group member
@@ -60,16 +57,8 @@ namespace NexusForever.WorldServer.Game.Group
         /// <summary>
         /// Disband the group, remove all members and invites from it
         /// </summary>
-        public static void DisbandGroup(Group group)
+        public static void RemoveGroup(Group group)
         {
-            var members = group.Members.ToList();
-            foreach (var member in members)
-                group.RemoveMember(member);
-
-            var invites = group.Invites.ToList();
-            foreach (var invite in invites)
-                group.DismissInvite(invite);
-
             Groups.Remove(group);
         }
     }

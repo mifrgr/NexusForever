@@ -1,6 +1,7 @@
 ﻿using NexusForever.Shared.Network.Message;
 using NexusForever.WorldServer.Game.Group.Static;
 using NexusForever.WorldServer.Network.Message.Model;
+using NexusForever.WorldServer.Network.Message.Model.Shared;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -78,7 +79,6 @@ namespace NexusForever.WorldServer.Game.Group
             };
         }
 
-
         /// <summary>
         /// Build Group Leave packet with the given reason
         /// </summary>
@@ -88,6 +88,46 @@ namespace NexusForever.WorldServer.Game.Group
             {
                 GroupId = Id,
                 Reason = reason
+            };
+        }
+
+        /// <summary>
+        /// Build invite result
+        /// </summary>
+        public ServerGroupInviteResult BuildServerGroupInviteResult(string playerName, InviteResult result)
+        {
+            return new ServerGroupInviteResult
+            {
+                GroupId = Id,
+                PlayerName = playerName,
+                Result = result
+            };
+        }
+
+        /// <summary>
+        /// Build group invite response that is sent to the invitee
+        /// </summary>
+        public ServerGroupInviteReceived BuildServerGroupInviteReceived()
+        {
+            var groupMembers = new List<Member>();
+            Members.ForEach(m => groupMembers.Add(m.BuildGroupMember()));
+            return new ServerGroupInviteReceived
+            {
+                GroupId = Id,
+                GroupMembers = groupMembers
+            };
+        }
+
+        /// <summary>
+        /// Build ready check packet
+        /// </summary>
+        public ServerGroupSendReadyCheck BuildServerGroupSendReadyCheck(GroupMember member, string message)
+        {
+            return new ServerGroupSendReadyCheck
+            {
+                GroupId = Id,
+                SenderIdentity = member.BuildTargetPlayerIdentity(),
+                Message = message
             };
         }
     }
