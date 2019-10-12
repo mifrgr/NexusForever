@@ -123,7 +123,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// <summary>
         /// Handle expired invite and clear the state
         /// </summary>
-        public void ExpireInvite(GroupInvite invite, bool notifyInviter = true)
+        public void ExpireInvite(GroupInvite invite)
         {
             RemoveInvite(invite);
             invite.Inviter.Send(BuildServerGroupInviteResult(invite.Player.Name, InviteResult.PlayerInvitateHasExpired));
