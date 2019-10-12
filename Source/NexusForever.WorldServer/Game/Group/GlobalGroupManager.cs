@@ -54,8 +54,15 @@ namespace NexusForever.WorldServer.Game.Group
                 timeToClearInvites = ClearInvitesInterval;
                 var now = DateTime.UtcNow;
                 foreach (var group in groups)
+                {
                     if (group.HasPendingInvites)
-                        group.ClearExpiredInvites(now);
+                    {
+                        lock (group)
+                        {
+                            group.ClearExpiredInvites(now);
+                        }
+                    }
+                }
             }
 
             while (pendingAdd.TryDequeue(out Group group))

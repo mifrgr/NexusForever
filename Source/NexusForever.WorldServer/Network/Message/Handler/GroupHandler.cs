@@ -16,7 +16,10 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         {
             var player = session.Player;
             var group = player.GroupMember?.Group ?? GlobalGroupManager.CreateGroup(player);
-            group.Invite(player, request.PlayerName);            
+            lock (group)
+            {
+                group.Invite(player, request.PlayerName);
+            }
         }
                 
         [MessageHandler(GameMessageOpcode.ClientGroupInviteResponse)]
@@ -28,49 +31,70 @@ namespace NexusForever.WorldServer.Network.Message.Handler
             if (invite == null)
                 return;
 
-            invite.Group.HandleInvite(invite, request.Response);
+            lock (invite.Group)
+            {
+                invite.Group.HandleInvite(invite, request.Response);
+            }
         }
 
         [MessageHandler(GameMessageOpcode.ClientGroupLeave)]
         public static void HandleGroupLeave(WorldSession session, ClientGroupLeave request)
         {
             var (group, player) = ValidateGroupMembership(session, request.GroupId);
-            group.Leave(player, request.Scope);
+            lock (group)
+            {
+                group.Leave(player, request.Scope);
+            }
         }
 
         [MessageHandler(GameMessageOpcode.ClientGroupPromote)]
         public static void HandleGroupPromote(WorldSession session, ClientGroupPromote request)
         {
             var (group, player) = ValidateGroupMembership(session, request.GroupId);
-            group.Promote(player, request.PlayerIdentity);
+            lock (group)
+            {
+                group.Promote(player, request.PlayerIdentity);
+            }
         }
 
         [MessageHandler(GameMessageOpcode.ClientGroupSetRole)]
         public static void HandleGroupSetRole(WorldSession session, ClientGroupSetRole request)
         {
             var (group, player) = ValidateGroupMembership(session, request.GroupId);
-            group.UpdateFlags(player, request.PlayerIdentity, request.ChangedFlags, request.Flags);
+            lock (group)
+            {
+                group.UpdateFlags(player, request.PlayerIdentity, request.ChangedFlags, request.Flags);
+            }
         }
 
         [MessageHandler(GameMessageOpcode.ClientGroupSendReadyCheck)]
         public static void HandleGroupSendReadyCheck(WorldSession session, ClientGroupSendReadyCheck request)
         {
             var (group, player) = ValidateGroupMembership(session, request.GroupId);
-            group.ReadyCheck(player, request.Message);
+            lock (group)
+            {
+                group.ReadyCheck(player, request.Message);
+            }
         }
 
         [MessageHandler(GameMessageOpcode.ClientGroupFlagsChanged)]
         public static void HandleGroupFlagsChanged(WorldSession session, ClientGroupFlags request)
         {
             var (group, player) = ValidateGroupMembership(session, request.GroupId);
-            group.UpdateFlags(player, request.Flag);
+            lock (group)
+            {
+                group.UpdateFlags(player, request.Flag);
+            }
         }
 
         [MessageHandler(GameMessageOpcode.ClientGroupKick)]
         public static void HandleGroupKick(WorldSession session, ClientGroupKick request)
         {
             var (group, player) = ValidateGroupMembership(session, request.GroupId);
-            group.Kick(player, request.PlayerIdentity);
+            lock (group)
+            {
+                group.Kick(player, request.PlayerIdentity);
+            }
         }
 
         // <summary>
