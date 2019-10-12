@@ -301,12 +301,16 @@ namespace NexusForever.WorldServer.Game.Group
         /// <param name="flags">flag that is being changed</param>
         public void SetFlags(GroupFlags flags)
         {
-            Flags = flags;
+            if ((flags & (GroupFlags.Raid)) != 0)
+                Flags = GroupFlags.Raid;
+            else
+                Flags = flags;
 
-            var wasRaidAlready = IsRaid;
+            log.Info($"{Flags}");
 
             Broadcast(BuildServerGroupFlagsChanged());
 
+            var wasRaidAlready = IsRaid;
             if (!wasRaidAlready && IsRaid)
                 Broadcast(BuildServerGroupMaxSizeChange());
         }
