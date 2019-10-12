@@ -59,12 +59,13 @@ namespace NexusForever.WorldServer.Network.Message.Handler
             group.ReadyCheck(player, request.Message);
         }
 
-        //[MessageHandler(GameMessageOpcode.ClientGroupFlagsChanged)]
-        //public static void HandleGroupFlagsChanged(WorldSession session, ClientGroupFlags request)
-        //{
-        //    // change group flags
-        //    // broadcast to all players
-        //}
+        [MessageHandler(GameMessageOpcode.ClientGroupFlagsChanged)]
+        public static void HandleGroupFlagsChanged(WorldSession session, ClientGroupFlags request)
+        {
+            // change group flags
+            log.Info($"{request.Id}, ${request.Flags}");
+            // broadcast to all players
+        }
 
         // <summary>
         // Validate that current player is in a group with given group ID
