@@ -1,5 +1,6 @@
 ﻿using NexusForever.WorldServer.Game.Entity;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 namespace NexusForever.WorldServer.Game.Group
@@ -23,19 +24,14 @@ namespace NexusForever.WorldServer.Game.Group
         private static ulong nextGroupId;
 
         /// <summary>
-        /// Indicates if currently is in the update cycle.
-        /// </summary>
-        private static bool inUpdateCycle;
-
-        /// <summary>
         /// Used for throttling the cleanup rate
         /// </summary>
         private static double timeToClearInvites = ClearInvitesInterval;
 
-        /// <summary>
-        /// Collect groups that need to be removed during update cycle
-        /// </summary>
-        private readonly static List<Group> removeGroups = new List<Group>();
+        private static readonly ConcurrentQueue<Group> pendingAdd = new ConcurrentQueue<Group>();
+        private static readonly ConcurrentQueue<Group> pendingRemove = new ConcurrentQueue<Group>();
+
+        private static readonly object groupLock = new object();
 
         /// <summary>
         /// Set things up
@@ -43,7 +39,6 @@ namespace NexusForever.WorldServer.Game.Group
         public static void Initialise()
         {
             nextGroupId = 1;
-            inUpdateCycle = false;
         }
 
         /// <summary>
@@ -56,17 +51,17 @@ namespace NexusForever.WorldServer.Game.Group
             if (timeToClearInvites <= 0d)
             {
                 timeToClearInvites = ClearInvitesInterval;
-
-                inUpdateCycle = true;
                 var now = DateTime.UtcNow;
                 foreach (var group in groups)
                     if (group.HasPendingInvites)
                         group.ClearExpiredInvites(now);
-                inUpdateCycle = false;
-
-                removeGroups.ForEach(g => groups.Remove(g));
-                removeGroups.Clear();
             }
+
+            while (pendingRemove.TryDequeue(out Group group))
+                groups.Remove(group);
+
+            while (pendingAdd.TryDequeue(out Group group))
+                groups.Add(group);
         }
 
         /// <summary>
@@ -74,9 +69,12 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         public static Group CreateGroup(Player partyLeader)
         {
-            var group = new Group(nextGroupId++, partyLeader);
-            groups.Add(group);
-            return group;
+            lock (groupLock)
+            {
+                var group = new Group(nextGroupId++, partyLeader);
+                pendingAdd.Enqueue(group);
+                return group;
+            }
         }
 
         /// <summary>
@@ -84,10 +82,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         public static void RemoveGroup(Group group)
         {
-            if (inUpdateCycle)
-                removeGroups.Add(group);
-            else
-                groups.Remove(group);
+            pendingRemove.Enqueue(group);
         }
     }
 }
