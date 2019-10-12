@@ -1,4 +1,5 @@
 ﻿using NexusForever.WorldServer.Game.Entity;
+using System;
 
 namespace NexusForever.WorldServer.Game.Group
 {
@@ -10,6 +11,11 @@ namespace NexusForever.WorldServer.Game.Group
     /// </summary>
     public class GroupInvite
     {
+        /// <summary>
+        /// Invite timeout duration
+        /// </summary>
+        public const double InviteTimeout = 30d;
+
         /// <summary>
         /// Group that this invite belongs to
         /// </summary>
@@ -24,6 +30,11 @@ namespace NexusForever.WorldServer.Game.Group
         /// Member who invited
         /// </summary>
         public readonly GroupMember Inviter;
+
+        /// <summary>
+        /// Time when this invite expires
+        /// </summary>
+        public readonly DateTime ExpirationTime = DateTime.UtcNow.AddSeconds(InviteTimeout);
 
         /// <summary>
         /// Create invite to group

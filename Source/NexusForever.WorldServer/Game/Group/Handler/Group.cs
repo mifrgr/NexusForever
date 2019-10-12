@@ -110,6 +110,17 @@ namespace NexusForever.WorldServer.Game.Group
         }
 
         /// <summary>
+        /// Handle expired invite and clear the state
+        /// </summary>
+        public void ExpireInvite(GroupInvite invite)
+        {
+            RemoveInvite(invite);
+            invite.Inviter.Send(BuildServerGroupInviteResult(invite.Player.Name, InviteResult.PlayerInvitateHasExpired));
+            invite.Player.Session.EnqueueMessageEncrypted(BuildServerGroupInviteResult(invite.Player.Name, InviteResult.InviteExpired));
+            if (ShouldDisband) Disband();
+        }
+
+        /// <summary>
         /// Player is leaving the group
         /// </summary>
         /// <param name="scope">Party leader can also disband</param>
@@ -285,7 +296,10 @@ namespace NexusForever.WorldServer.Game.Group
                 RemoveMember(member);
             });
 
-            invites.ToList().ForEach(i => RemoveInvite(i));
+            invites.ToList().ForEach(invite => {
+                invite.Player.Session.EnqueueMessageEncrypted(BuildServerGroupInviteResult(invite.Player.Name, InviteResult.InviteExpired));
+                RemoveInvite(invite);
+            });
 
             GlobalGroupManager.RemoveGroup(this);
         }

@@ -1,7 +1,10 @@
 ﻿using NexusForever.WorldServer.Game.Entity;
 using NexusForever.WorldServer.Game.Group.Static;
 using NexusForever.WorldServer.Network.Message.Model.Shared;
+using NLog;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace NexusForever.WorldServer.Game.Group
 {
@@ -32,6 +35,11 @@ namespace NexusForever.WorldServer.Game.Group
         /// and no pending invites
         /// </summary>
         public bool ShouldDisband => IsEmpty && invites.Count == 0;
+
+        /// <summary>
+        /// True if this group has pending invites
+        /// </summary>
+        public bool HasPendingInvites => invites.Count > 0;
 
         /// <summary>
         /// Current party leader
@@ -116,6 +124,11 @@ namespace NexusForever.WorldServer.Game.Group
         public bool IsNewGroup { get; private set; }
 
         /// <summary>
+        /// Logger for the groups
+        /// </summary>
+        private static readonly ILogger log = LogManager.GetCurrentClassLogger();
+
+        /// <summary>
         /// Group members for private usage
         /// </summary>
         private readonly List<GroupMember> members = new List<GroupMember>();
@@ -124,6 +137,16 @@ namespace NexusForever.WorldServer.Game.Group
         /// Players who have been invited or who have request to join the group
         /// </summary>
         private readonly List<GroupInvite> invites = new List<GroupInvite>();
+
+        /// <summary>
+        /// Unique group member ID
+        /// </summary>
+        private static ushort nextGroupMemberId;
+
+        static Group()
+        {
+            nextGroupMemberId = 1;
+        }
 
         /// <summary>
         /// Create new Group
@@ -136,6 +159,23 @@ namespace NexusForever.WorldServer.Game.Group
             PartyLeader = CreateMember(player);
             IsOpenWorld = true;
             IsNewGroup = true;
+        }
+
+        /// <summary>
+        /// Clear out pending invites that have expired
+        /// </summary>
+        public void PurgePendingUpdates(DateTime now)
+        {
+            while (HasPendingInvites)
+            {
+                var invite = invites[0];
+                if (invite.ExpirationTime <= now)
+                {
+                    log.Info($"Invite for {invite.Player.Name} has expired");
+                    ExpireInvite(invite);
+                }
+                else return;
+            }
         }
 
         /// <summary>
@@ -165,7 +205,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         private GroupMember CreateMember(Player player)
         {
-            var member = new GroupMember(GlobalGroupManager.NextGroupMemberId, this, player);
+            var member = new GroupMember(nextGroupMemberId, this, player);
             members.Add(member);
             player.GroupMember = member;
             return member;
