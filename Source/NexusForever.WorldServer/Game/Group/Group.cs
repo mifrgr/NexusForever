@@ -5,15 +5,17 @@ using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace NexusForever.WorldServer.Game.Group
 {
     public partial class Group
     {
         /// <summary>
-        /// Unique group member ID
+        /// Generate next unique group member ID
         /// </summary>
-        private static ushort nextGroupMemberId;
+        private static ushort NextGroupMemberId => (ushort)Interlocked.Increment(ref nextGroupMemberId);
+        private static int nextGroupMemberId;
 
         static Group()
         {
@@ -190,7 +192,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         private GroupMember CreateMember(Player player)
         {
-            var member = new GroupMember(nextGroupMemberId++, this, player);
+            var member = new GroupMember(NextGroupMemberId, this, player);
             members.Add(member);
             player.GroupMember = member;
             return member;

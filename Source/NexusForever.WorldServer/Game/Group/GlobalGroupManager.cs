@@ -45,7 +45,9 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         public static void Update(double lastTick)
         {
-            // clear pending invites.
+            while (pendingRemove.TryDequeue(out Group group))
+                groups.Remove(group);
+
             timeToClearInvites -= lastTick;
             if (timeToClearInvites <= 0d)
             {
@@ -55,9 +57,6 @@ namespace NexusForever.WorldServer.Game.Group
                     if (group.HasPendingInvites)
                         group.ClearExpiredInvites(now);
             }
-
-            while (pendingRemove.TryDequeue(out Group group))
-                groups.Remove(group);
 
             while (pendingAdd.TryDequeue(out Group group))
                 groups.Add(group);
