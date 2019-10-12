@@ -66,6 +66,13 @@ namespace NexusForever.WorldServer.Network.Message.Handler
             group.UpdateGroupFlags(request.Flag);
         }
 
+        [MessageHandler(GameMessageOpcode.ClientGroupKick)]
+        public static void HandleGroupKick(WorldSession session, ClientGroupKick request)
+        {
+            var (group, player) = ValidateGroupMembership(session, request.GroupId);
+            group.Kick(player, request.PlayerIdentity);
+        }
+
         // <summary>
         // Validate that current player is in a group with given group ID
         // </summary>

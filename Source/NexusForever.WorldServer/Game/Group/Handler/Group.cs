@@ -212,6 +212,28 @@ namespace NexusForever.WorldServer.Game.Group
         }
 
         /// <summary>
+        /// Kick given player from the group
+        /// </summary>
+        /// <param name="player">player who initiated the kick</param>
+        /// <param name="identity">target player to remove</param>
+        public void Kick(Player player, TargetPlayerIdentity identity)
+        {
+            var member = ValidatePlayer(player);
+
+            if (!member.CanKick)
+                return;
+
+            var kickedMember = FindMember(identity);
+            if (kickedMember == null)
+                return;
+
+            if (kickedMember.IsPartyLeader)
+                return;
+
+            Remove(kickedMember.Player, RemoveReason.Kicked);
+        }
+
+        /// <summary>
         /// Remove given player from the group
         /// </summary>
         public void Remove(Player player, RemoveReason reason)
