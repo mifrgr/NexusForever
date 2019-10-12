@@ -49,7 +49,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// Group can be dismissed if it has no members aside from group leader
         /// and no pending invites
         /// </summary>
-        public bool ShouldDisband => IsEmpty && invites.Count == 0;
+        public bool ShouldDisband => (members.Count == 0) || (IsEmpty && invites.Count == 0);
 
         /// <summary>
         /// True if this group has pending invites

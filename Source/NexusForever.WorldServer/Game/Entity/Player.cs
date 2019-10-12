@@ -581,6 +581,7 @@ namespace NexusForever.WorldServer.Game.Entity
                 Save(() =>
                 {
                     RemoveFromMap();
+                    RemoveFromGroups();
                     Session.Player = null;
                 });
             }
@@ -588,6 +589,18 @@ namespace NexusForever.WorldServer.Game.Entity
             {
                 CleanupManager.Untrack(Session.Account);
             }
+        }
+
+        /// <summary>
+        /// Remove player from any group
+        /// </summary>
+        private void RemoveFromGroups()
+        {
+            if (GroupMember != null)
+                GroupMember.Group.Remove(this, Group.Static.RemoveReason.Disconnected);
+
+            if (GroupInvite != null)
+                GroupMember.Group.ExpireInvite(GroupInvite);
         }
 
         /// <summary>
