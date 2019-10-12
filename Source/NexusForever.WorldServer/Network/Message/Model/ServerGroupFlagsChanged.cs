@@ -1,7 +1,6 @@
 ﻿using NexusForever.Shared.Network;
 using NexusForever.Shared.Network.Message;
 using NexusForever.WorldServer.Game.Group.Static;
-using NexusForever.WorldServer.Network.Message.Model.Shared;
 
 namespace NexusForever.WorldServer.Network.Message.Model
 {
@@ -9,7 +8,7 @@ namespace NexusForever.WorldServer.Network.Message.Model
     public class ServerGroupFlagsChanged : IWritable
     {
         public ulong GroupId { get; set; }
-        public ulong Flags { get; set; }
+        public GroupFlags Flags { get; set; }
         public ulong Unknown1 { get; set; }
 
         public void Write(GamePacketWriter writer)

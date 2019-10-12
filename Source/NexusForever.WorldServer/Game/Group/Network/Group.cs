@@ -51,7 +51,7 @@ namespace NexusForever.WorldServer.Game.Group
             {
                 JoinedPlayer = member.BuildTargetPlayerIdentity(),
                 GroupId = Id,
-                GroupType = Flags,
+                GroupFlags = Flags,
                 MaxSize = MaxSize,
                 LootRuleNormal = LootRule.NeedBeforeGreed,         // Under LootThreshold rarity (For Raid)
                 LootRuleThreshold = LootRule.RoundRobin,              // This is the selection for Loot Rules in the UI / Over LootTreshold rarity (For Raid)

@@ -65,13 +65,13 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         public bool IsOpenWorld
         {
-            get { return (Flags & GroupTypeFlags.OpenWorld) != 0; }
+            get { return (Flags & GroupFlags.OpenWorld) != 0; }
             set
             {
                 if (value)
-                    Flags |= GroupTypeFlags.OpenWorld;
+                    Flags |= GroupFlags.OpenWorld;
                 else
-                    Flags &= ~GroupTypeFlags.OpenWorld;
+                    Flags &= ~GroupFlags.OpenWorld;
             }
         }
 
@@ -89,13 +89,13 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         public bool IsRaid
         {
-            get { return (Flags & GroupTypeFlags.Raid) != 0; }
+            get { return (Flags & GroupFlags.Raid) != 0; }
             set
             {
                 if (value)
-                    Flags |= GroupTypeFlags.Raid;
+                    Flags |= GroupFlags.Raid;
                 else
-                    Flags &= ~GroupTypeFlags.Raid;
+                    Flags &= ~GroupFlags.Raid;
             }
         }
 
@@ -116,7 +116,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// <summary>
         /// Group flags that can be sent to the client
         /// </summary>
-        public GroupTypeFlags Flags { get; private set; }
+        public GroupFlags Flags { get; private set; }
 
         /// <summary>
         /// Group is new if member info has not been sent to the client yet

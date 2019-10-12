@@ -5,6 +5,7 @@ using NexusForever.WorldServer.Database.Character.Model;
 using NexusForever.WorldServer.Game.Entity;
 using NexusForever.WorldServer.Game.Group.Static;
 using NexusForever.WorldServer.Network;
+using NexusForever.WorldServer.Network.Message.Model;
 using NexusForever.WorldServer.Network.Message.Model.Shared;
 using System.Linq;
 
@@ -256,6 +257,22 @@ namespace NexusForever.WorldServer.Game.Group
         }
 
         /// <summary>
+        /// Update group flags
+        /// </summary>
+        /// <param name="flag">flag that is being changed</param>
+        public void UpdateGroupFlags(GroupFlags flag)
+        {
+            Flags |= flag;
+
+            Broadcast(new ServerGroupFlagsChanged
+            {
+                Flags = Flags,
+                GroupId = Id,
+                Unknown1 = 0
+            });
+        }
+
+        /// <summary>
         /// Initiate ready check from the given player
         /// </summary>
         /// <param name="player"></param>
@@ -274,13 +291,6 @@ namespace NexusForever.WorldServer.Game.Group
             });
 
             Broadcast(BuildServerGroupSendReadyCheck(member, message));
-        }
-
-        /// <summary>
-        /// Convert the group to raid
-        /// </summary>
-        public void ConvertToRaid()
-        {
         }
 
         /// <summary>
