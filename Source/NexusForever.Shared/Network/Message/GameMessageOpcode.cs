@@ -144,6 +144,7 @@ namespace NexusForever.Shared.Network.Message
         ClientGroupSendReadyCheck       = 0x044A,
         ServerGroupSendReadyCheck       = 0x044C,
         ServerGroupRemove               = 0x0450,
+        ServerGroupMaxSizeChange        = 0x0462,
         Server0497                      = 0x0497, // guild info
         ClientCastSpell                 = 0x04DB,
         ServerHousingResidenceDecor     = 0x04DE,

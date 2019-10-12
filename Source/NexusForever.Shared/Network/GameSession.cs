@@ -70,6 +70,26 @@ namespace NexusForever.Shared.Network
             log.Trace($"Sent packet {opcode}(0x{opcode:X}).");
         }
 
+        /// <summary>
+        /// Enqueue <see cref="IWritable"/> to be sent encrypted to the client.
+        /// </summary>
+        public void EnqueueMessageEncrypted(ushort opcode, IWritable message)
+        {
+            using (var stream = new MemoryStream())
+            using (var writer = new GamePacketWriter(stream))
+            {
+                writer.Write(opcode, 16);
+                message.Write(writer);
+                writer.FlushBits();
+
+                byte[] data = stream.ToArray();
+                byte[] encrypted = encryption.Encrypt(data, data.Length);
+                EnqueueMessage(BuildEncryptedMessage(encrypted));
+            }
+
+            log.Trace($"Sent packet {opcode}(0x{opcode:X}).");
+        }
+
         [Conditional("DEBUG")]
         public void EnqueueMessageEncrypted(uint opcode, string hex)
         {

@@ -128,5 +128,31 @@ namespace NexusForever.WorldServer.Game.Group
                 Message = message
             };
         }
+
+        /// <summary>
+        /// Build group flags changed packet
+        /// </summary>
+        /// <returns></returns>
+        public ServerGroupFlagsChanged BuildServerGroupFlagsChanged()
+        {
+            return new ServerGroupFlagsChanged
+            {
+                GroupId = Id,
+                Flags = Flags
+            };
+        }
+
+        /// <summary>
+        /// Build group size change packet
+        /// </summary>
+        public ServerGroupMaxSizeChange BuildServerGroupMaxSizeChange()
+        {
+            return new ServerGroupMaxSizeChange
+            {
+                GroupId = Id,
+                MaxSize = MaxSize,
+                Flags = Flags
+            };
+        }
     }
 }

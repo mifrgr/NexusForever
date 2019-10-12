@@ -56,31 +56,33 @@ namespace NexusForever.WorldServer.Game.Group
                 if (ShouldDisband) Disband();
             }
 
-            // Player already in the group?
             if (invitee.GroupMember != null)
             {
                 sendReply(InviteResult.PlayerAlreadyInGroup);
                 return;
             }
 
-            // Player already has a pending invite
             if (invitee.GroupInvite != null)
             {
                 sendReply(InviteResult.PlayerAlreadyInvited);
                 return;
             }
 
-            // Inviting yourself?
             if (inviter.Guid == invitee.Guid)
             {
                 sendReply(InviteResult.CannotInviteYourself);
                 return;
             }
 
-            // No permission to invite?
             if (!member.CanInvite)
             {
                 sendReply(InviteResult.NotPermitted);
+                return;
+            }
+
+            if (IsFull)
+            {
+                sendReply(InviteResult.GroupIsFull);
                 return;
             }
 
@@ -105,6 +107,14 @@ namespace NexusForever.WorldServer.Game.Group
                 return;
             }
 
+            if (IsFull)
+            {
+                var isFull = BuildServerGroupInviteResult(invite.Player.Name, InviteResult.GroupIsFull);
+                invite.Player.Session.EnqueueMessageEncrypted(isFull);
+                invite.Inviter.Send(isFull);
+                return;
+            }
+
             // Accept
             invite.Inviter.Send(BuildServerGroupInviteResult(invite.Player.Name, InviteResult.Accepted));
             Add(invite.Player);
@@ -113,7 +123,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// <summary>
         /// Handle expired invite and clear the state
         /// </summary>
-        public void ExpireInvite(GroupInvite invite)
+        public void ExpireInvite(GroupInvite invite, bool notifyInviter = true)
         {
             RemoveInvite(invite);
             invite.Inviter.Send(BuildServerGroupInviteResult(invite.Player.Name, InviteResult.PlayerInvitateHasExpired));
@@ -178,15 +188,14 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         public void Add(Player player)
         {
-            if (player.GroupMember != null || player.GroupInvite != null)
+            if (IsFull || player.GroupMember != null || player.GroupInvite != null)
                 return;
 
             var newMember = CreateMember(player);
 
-            // Send group info to members
-            if (IsNewGroup)
+            if (isNewGroup)
             {
-                IsNewGroup = false;
+                isNewGroup = false;
                 Broadcast(member => BuildServerGroupJoin(member));
             }
             else
@@ -194,6 +203,11 @@ namespace NexusForever.WorldServer.Game.Group
                 newMember.Send(BuildServerGroupJoin(newMember));
                 var addMember = BuildServerGroupMemberAdd(newMember);
                 Broadcast(member => member.Id == newMember.Id ? null : addMember);
+            }
+
+            if (IsFull)
+            {
+                invites.ToList().ForEach(i => ExpireInvite(i));
             }
         }
 
@@ -259,18 +273,21 @@ namespace NexusForever.WorldServer.Game.Group
         /// <summary>
         /// Update group flags
         /// </summary>
-        /// <param name="flag">flag that is being changed</param>
-        public void UpdateGroupFlags(GroupFlags flag)
+        /// <param name="flags">flag that is being changed</param>
+        public void UpdateGroupFlags(GroupFlags flags)
         {
-            Flags |= flag;
+            // Notes: Once group is set to raid it seems all
+            //        other group flags appear to be meaningless
+            //        and should probably be unset.
 
-            log.Info($"Update group flags: {Flags}");
-            Broadcast(new ServerGroupFlagsChanged
-            {
-                GroupId = Id,
-                Flags = Flags,
-                Unknown1 = MaxSize
-            });
+            var wasRaidAlready = IsRaid;
+
+            Flags = flags;
+
+            Broadcast(BuildServerGroupFlagsChanged());
+
+            if (!wasRaidAlready && IsRaid)
+                Broadcast(BuildServerGroupMaxSizeChange());
         }
 
         /// <summary>
