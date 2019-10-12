@@ -230,6 +230,9 @@ namespace NexusForever.WorldServer.Game.Group
             if (kickedMember.IsPartyLeader)
                 return;
 
+            if (kickedMember.Id == member.Id)
+                return;
+
             Remove(kickedMember.Player, RemoveReason.Kicked);
         }
 
