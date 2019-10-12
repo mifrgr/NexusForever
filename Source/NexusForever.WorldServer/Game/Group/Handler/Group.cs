@@ -299,7 +299,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// Change flags of group
         /// </summary>
         /// <param name="flags">flag that is being changed</param>
-        public void SetFlags(GroupFlags flags)
+        public void UpdateFlags(GroupFlags flags)
         {
             var wasRaidAlready = IsRaid;
 
@@ -319,13 +319,13 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         /// <param name="player">player doing the flag change</param>
         /// <param name="flags">flag that is being changed</param>
-        public void SetFlags(Player player, GroupFlags flags)
+        public void UpdateFlags(Player player, GroupFlags flags)
         {
             var member = ValidatePlayer(player);
             if (!member.IsPartyLeader)
                 return;
 
-            SetFlags(flags);
+            UpdateFlags(flags);
         }
 
         /// <summary>
