@@ -264,11 +264,12 @@ namespace NexusForever.WorldServer.Game.Group
         {
             Flags |= flag;
 
+            log.Info($"Update group flags: {Flags}");
             Broadcast(new ServerGroupFlagsChanged
             {
-                Flags = Flags,
                 GroupId = Id,
-                Unknown1 = 0
+                Flags = Flags,
+                Unknown1 = MaxSize
             });
         }
 

@@ -9,13 +9,13 @@ namespace NexusForever.WorldServer.Network.Message.Model
     {
         public ulong GroupId { get; set; }
         public GroupFlags Flags { get; set; }
-        public ulong Unknown1 { get; set; }
+        public uint Unknown1 { get; set; }
 
         public void Write(GamePacketWriter writer)
         {
             writer.Write(GroupId);
-            writer.Write(Flags);
             writer.Write(Unknown1);
+            writer.Write(Flags);
         }
     }
 }

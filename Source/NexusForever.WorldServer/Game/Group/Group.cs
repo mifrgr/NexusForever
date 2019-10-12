@@ -205,7 +205,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         private GroupMember CreateMember(Player player)
         {
-            var member = new GroupMember(nextGroupMemberId, this, player);
+            var member = new GroupMember(nextGroupMemberId++, this, player);
             members.Add(member);
             player.GroupMember = member;
             return member;
