@@ -306,8 +306,6 @@ namespace NexusForever.WorldServer.Game.Group
             else
                 Flags = flags;
 
-            log.Info($"{Flags}");
-
             Broadcast(BuildServerGroupFlagsChanged());
 
             var wasRaidAlready = IsRaid;
