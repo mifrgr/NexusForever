@@ -63,7 +63,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         public static void HandleGroupFlagsChanged(WorldSession session, ClientGroupFlags request)
         {
             var (group, player) = ValidateGroupMembership(session, request.GroupId);
-            group.UpdateGroupFlags(request.Flag);
+            group.SetFlags(request.Flag);
         }
 
         [MessageHandler(GameMessageOpcode.ClientGroupKick)]

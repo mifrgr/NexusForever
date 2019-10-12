@@ -299,15 +299,11 @@ namespace NexusForever.WorldServer.Game.Group
         /// Update group flags
         /// </summary>
         /// <param name="flags">flag that is being changed</param>
-        public void UpdateGroupFlags(GroupFlags flags)
+        public void SetFlags(GroupFlags flags)
         {
-            // Notes: Once group is set to raid it seems all
-            //        other group flags appear to be meaningless
-            //        and should probably be unset.
+            Flags = flags;
 
             var wasRaidAlready = IsRaid;
-
-            Flags = flags;
 
             Broadcast(BuildServerGroupFlagsChanged());
 
