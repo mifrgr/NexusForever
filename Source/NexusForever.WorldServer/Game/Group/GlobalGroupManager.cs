@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace NexusForever.WorldServer.Game.Group
 {
@@ -17,21 +18,19 @@ namespace NexusForever.WorldServer.Game.Group
         /// List of active groups
         /// </summary>
         private readonly static List<Group> groups = new List<Group>();
+        private static readonly ConcurrentQueue<Group> pendingAdd = new ConcurrentQueue<Group>();
+        private static readonly ConcurrentQueue<Group> pendingRemove = new ConcurrentQueue<Group>();
 
         /// <summary>
-        /// Next unique ID for a new group
+        /// Next unique ID for a new group.
         /// </summary>
-        private static ulong nextGroupId;
+        private static ulong NextGroupId => (uint)Interlocked.Increment(ref nextGroupId);
+        private static long nextGroupId;
 
         /// <summary>
         /// Used for throttling the cleanup rate
         /// </summary>
         private static double timeToClearInvites = ClearInvitesInterval;
-
-        private static readonly ConcurrentQueue<Group> pendingAdd = new ConcurrentQueue<Group>();
-        private static readonly ConcurrentQueue<Group> pendingRemove = new ConcurrentQueue<Group>();
-
-        private static readonly object groupLock = new object();
 
         /// <summary>
         /// Set things up
@@ -69,12 +68,9 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         public static Group CreateGroup(Player partyLeader)
         {
-            lock (groupLock)
-            {
-                var group = new Group(nextGroupId++, partyLeader);
-                pendingAdd.Enqueue(group);
-                return group;
-            }
+            var group = new Group(NextGroupId, partyLeader);
+            pendingAdd.Enqueue(group);
+            return group;
         }
 
         /// <summary>

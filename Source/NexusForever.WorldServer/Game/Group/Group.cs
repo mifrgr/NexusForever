@@ -157,11 +157,9 @@ namespace NexusForever.WorldServer.Game.Group
             {
                 var invite = invites[0];
                 if (invite.ExpirationTime <= now)
-                {
-                    log.Info($"Invite for {invite.Player.Name} has expired");
                     ExpireInvite(invite);
-                }
-                else return;
+                else
+                    return;
             }
         }
 
