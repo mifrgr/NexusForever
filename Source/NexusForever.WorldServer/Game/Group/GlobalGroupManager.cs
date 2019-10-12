@@ -15,6 +15,11 @@ namespace NexusForever.WorldServer.Game.Group
         private const double ClearInvitesInterval = 1d;
 
         /// <summary>
+        /// Used for throttling the cleanup rate
+        /// </summary>
+        private static double timeToClearInvites = ClearInvitesInterval;
+
+        /// <summary>
         /// List of active groups
         /// </summary>
         private readonly static List<Group> groups = new List<Group>();
@@ -26,11 +31,6 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         private static ulong NextGroupId => (uint)Interlocked.Increment(ref nextGroupId);
         private static long nextGroupId;
-
-        /// <summary>
-        /// Used for throttling the cleanup rate
-        /// </summary>
-        private static double timeToClearInvites = ClearInvitesInterval;
 
         /// <summary>
         /// Set things up
