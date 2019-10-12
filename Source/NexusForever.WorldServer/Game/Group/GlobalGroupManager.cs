@@ -10,7 +10,7 @@ namespace NexusForever.WorldServer.Game.Group
     public static class GlobalGroupManager
     {
         // TODO: move this to the config file
-        private const double CleanupDuration = 1d;
+        private const double ClearInvitesInterval = 1d;
 
         /// <summary>
         /// List of active groups
@@ -30,7 +30,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// <summary>
         /// Used for throttling the cleanup rate
         /// </summary>
-        private static double timeToCleanup = CleanupDuration;
+        private static double timeToClearInvites = ClearInvitesInterval;
 
         /// <summary>
         /// Collect groups that need to be removed during update cycle
@@ -51,20 +51,22 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         public static void Update(double lastTick)
         {
-            // throttle
-            timeToCleanup -= lastTick;
-            if (timeToCleanup > 0d) return;
-            timeToCleanup = CleanupDuration;
+            // clear pending invites.
+            timeToClearInvites -= lastTick;
+            if (timeToClearInvites <= 0d)
+            {
+                timeToClearInvites = ClearInvitesInterval;
 
-            inUpdateCycle = true;
-            var now = DateTime.UtcNow;
-            foreach (var group in groups)
-                if (group.HasPendingInvites)
-                    group.PurgePendingUpdates(now);
-            inUpdateCycle = false;
+                inUpdateCycle = true;
+                var now = DateTime.UtcNow;
+                foreach (var group in groups)
+                    if (group.HasPendingInvites)
+                        group.ClearExpiredInvites(now);
+                inUpdateCycle = false;
 
-            removeGroups.ForEach(g => groups.Remove(g));
-            removeGroups.Clear();
+                removeGroups.ForEach(g => groups.Remove(g));
+                removeGroups.Clear();
+            }
         }
 
         /// <summary>

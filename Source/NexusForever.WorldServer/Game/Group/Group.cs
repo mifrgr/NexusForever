@@ -151,7 +151,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// <summary>
         /// Clear out pending invites that have expired
         /// </summary>
-        public void PurgePendingUpdates(DateTime now)
+        public void ClearExpiredInvites(DateTime now)
         {
             while (HasPendingInvites)
             {
