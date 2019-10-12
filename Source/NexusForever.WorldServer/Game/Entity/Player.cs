@@ -597,10 +597,20 @@ namespace NexusForever.WorldServer.Game.Entity
         private void RemoveFromGroups()
         {
             if (GroupMember != null)
-                GroupMember.Group.Remove(this, Group.Static.RemoveReason.Disconnected);
+            {
+                lock (GroupMember.Group)
+                {
+                    GroupMember.Group.Remove(this, Group.Static.RemoveReason.Disconnected);
+                }
+            }
 
             if (GroupInvite != null)
-                GroupMember.Group.ExpireInvite(GroupInvite);
+            {
+                lock (GroupMember.Group)
+                {
+                    GroupMember.Group.ExpireInvite(GroupInvite);
+                }
+            }
         }
 
         /// <summary>
