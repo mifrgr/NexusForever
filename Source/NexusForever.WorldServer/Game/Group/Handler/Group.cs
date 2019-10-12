@@ -305,6 +305,8 @@ namespace NexusForever.WorldServer.Game.Group
             if (!member.IsPartyLeader)
                 return;
 
+            var wasRaidAlready = IsRaid;
+
             if ((flags & (GroupFlags.Raid)) != 0)
                 Flags = GroupFlags.Raid;
             else
@@ -312,7 +314,6 @@ namespace NexusForever.WorldServer.Game.Group
 
             Broadcast(BuildServerGroupFlagsChanged());
 
-            var wasRaidAlready = IsRaid;
             if (!wasRaidAlready && IsRaid)
                 Broadcast(BuildServerGroupMaxSizeChange());
         }
