@@ -296,6 +296,20 @@ namespace NexusForever.WorldServer.Game.Group
         }
 
         /// <summary>
+        /// Update group flags
+        /// </summary>
+        /// <param name="player">player doing the flag change</param>
+        /// <param name="flags">flag that is being changed</param>
+        public void UpdateFlags(Player player, GroupFlags flags)
+        {
+            var member = ValidatePlayer(player);
+            if (!member.IsPartyLeader)
+                return;
+
+            UpdateFlags(flags);
+        }
+
+        /// <summary>
         /// Change flags of group
         /// </summary>
         /// <param name="flags">flag that is being changed</param>
@@ -312,20 +326,6 @@ namespace NexusForever.WorldServer.Game.Group
 
             if (!wasRaidAlready && IsRaid)
                 Broadcast(BuildServerGroupMaxSizeChange());
-        }
-
-        /// <summary>
-        /// Update group flags
-        /// </summary>
-        /// <param name="player">player doing the flag change</param>
-        /// <param name="flags">flag that is being changed</param>
-        public void UpdateFlags(Player player, GroupFlags flags)
-        {
-            var member = ValidatePlayer(player);
-            if (!member.IsPartyLeader)
-                return;
-
-            UpdateFlags(flags);
         }
 
         /// <summary>
