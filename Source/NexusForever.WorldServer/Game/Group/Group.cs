@@ -81,11 +81,6 @@ namespace NexusForever.WorldServer.Game.Group
         private bool ShouldDisband => (members.Count == 0) || (IsEmpty && invites.Count == 0);
 
         /// <summary>
-        /// True if this group has pending invites
-        /// </summary>
-        private bool HasPendingInvites => invites.Count > 0;
-
-        /// <summary>
         /// Group is new if member info has not been sent to the client yet
         /// </summary>
         private bool isNewGroup;
@@ -103,13 +98,14 @@ namespace NexusForever.WorldServer.Game.Group
         /// <summary>
         /// Players who have been invited or who have request to join the group
         /// </summary>
-        private readonly List<GroupInvite> invites = new List<GroupInvite>();
+        private protected readonly List<GroupInvite> invites = new List<GroupInvite>();
+        private readonly ReaderWriterLockSlim invitesLock = new ReaderWriterLockSlim();
 
         /// <summary>
         /// Used for throttling the cleanup rate
         /// </summary>
         private double timeToClearInvites = ClearInvitesInterval;
-
+        
         /// <summary>
         /// Create new Group
         /// </summary>
@@ -134,15 +130,27 @@ namespace NexusForever.WorldServer.Game.Group
                 timeToClearInvites = ClearInvitesInterval;
 
                 var now = DateTime.UtcNow;
-                while (HasPendingInvites)
+                while (TryDequeueInvite(out var invite))
                 {
-                    var invite = invites[0];
                     if (invite.ExpirationTime <= now)
                         ExpireInvite(invite);
                     else
-                        return;
+                        break;
                 }
             }
+        }
+
+        /// <summary>
+        /// Get the oldest (first in the list) invite
+        /// </summary>
+        /// <returns>true if invite is found</returns>
+        private bool TryDequeueInvite(out GroupInvite invite)
+        {
+            invitesLock.EnterReadLock();
+            var hasInvites = invites.Count > 0;
+            invite = hasInvites ? invites[0] : null;
+            invitesLock.ExitReadLock();
+            return hasInvites;
         }
 
         /// <summary>
@@ -153,7 +161,9 @@ namespace NexusForever.WorldServer.Game.Group
         private GroupInvite CreateInvite(GroupMember inviter, Player invitee)
         {
             var invite = new GroupInvite(this, invitee, inviter);
+            invitesLock.EnterWriteLock();
             invites.Add(invite);
+            invitesLock.ExitWriteLock();
             invitee.GroupInvite = invite;
             return invite;
         }
@@ -164,7 +174,9 @@ namespace NexusForever.WorldServer.Game.Group
         private void RemoveInvite(GroupInvite invite)
         {
             invite.Player.GroupInvite = null;
+            invitesLock.EnterWriteLock();
             invites.Remove(invite);
+            invitesLock.ExitWriteLock();
         }
 
         /// <summary>

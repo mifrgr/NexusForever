@@ -86,9 +86,9 @@ namespace NexusForever.WorldServer.Game.Group
             }
 
             // create invite and send responses
-            CreateInvite(member, invitee);
+            var invite = CreateInvite(member, invitee);
             sendReply(InviteResult.Sent);
-            invitee.Session.EnqueueMessageEncrypted(BuildServerGroupInviteReceived());
+            invite.Send(BuildServerGroupInviteReceived());
         }
 
         /// <summary>
@@ -109,7 +109,7 @@ namespace NexusForever.WorldServer.Game.Group
             if (IsFull)
             {
                 var isFull = BuildServerGroupInviteResult(invite.Player.Name, InviteResult.GroupIsFull);
-                invite.Player.Session.EnqueueMessageEncrypted(isFull);
+                invite.Send(isFull);
                 invite.Inviter.Send(isFull);
                 return;
             }
@@ -126,7 +126,7 @@ namespace NexusForever.WorldServer.Game.Group
         {
             RemoveInvite(invite);
             invite.Inviter.Send(BuildServerGroupInviteResult(invite.Player.Name, InviteResult.PlayerInvitateHasExpired));
-            invite.Player.Session.EnqueueMessageEncrypted(BuildServerGroupInviteResult(invite.Player.Name, InviteResult.InviteExpired));
+            invite.Send(BuildServerGroupInviteResult(invite.Player.Name, InviteResult.InviteExpired));
             if (ShouldDisband) Disband();
         }
 
@@ -206,7 +206,8 @@ namespace NexusForever.WorldServer.Game.Group
 
             if (IsFull)
             {
-                invites.ToList().ForEach(i => ExpireInvite(i));
+                while (TryDequeueInvite(out var invite))
+                    ExpireInvite(invite);
             }
         }
 
@@ -360,10 +361,11 @@ namespace NexusForever.WorldServer.Game.Group
                 RemoveMember(member);
             });
 
-            invites.ToList().ForEach(invite => {
-                invite.Player.Session.EnqueueMessageEncrypted(BuildServerGroupInviteResult(invite.Player.Name, InviteResult.InviteExpired));
+            while (TryDequeueInvite(out var invite))
+            { 
+                invite.Send(BuildServerGroupInviteResult(invite.Player.Name, InviteResult.InviteExpired));
                 RemoveInvite(invite);
-            });
+            };
 
             GlobalGroupManager.RemoveGroup(this);
         }

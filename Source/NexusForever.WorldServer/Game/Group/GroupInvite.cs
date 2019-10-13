@@ -9,7 +9,7 @@ namespace NexusForever.WorldServer.Game.Group
     /// 
     /// Players can either be invited, or request to join (TODO)
     /// </summary>
-    public class GroupInvite
+    public partial class GroupInvite
     {
         /// <summary>
         /// Invite timeout duration
