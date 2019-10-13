@@ -148,10 +148,10 @@ namespace NexusForever.WorldServer.Game.Group
         private bool TryPeekInvite(out GroupInvite invite)
         {
             invitesLock.EnterReadLock();
-            var hasInvites = invites.Count > 0;
-            invite = hasInvites ? invites[0] : null;
+            var hasInvite = invites.Count > 0;
+            invite = hasInvite ? invites[0] : null;
             invitesLock.ExitReadLock();
-            return hasInvites;
+            return hasInvite;
         }
 
         /// <summary>
