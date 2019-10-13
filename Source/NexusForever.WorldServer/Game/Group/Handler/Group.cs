@@ -254,7 +254,7 @@ namespace NexusForever.WorldServer.Game.Group
 
             if (PartyLeader == null)
             {
-                Promote(NextPartyLeaderCandidate.Player);
+                Promote(GetNextPartyLeader().Player);
             }
         }
 

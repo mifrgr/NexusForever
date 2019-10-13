@@ -1,4 +1,5 @@
-﻿using NexusForever.WorldServer.Game.Entity;
+﻿using NexusForever.Shared;
+using NexusForever.WorldServer.Game.Entity;
 using NexusForever.WorldServer.Game.Group.Static;
 using NexusForever.WorldServer.Network.Message.Model.Shared;
 using NLog;
@@ -9,19 +10,8 @@ using System.Threading;
 
 namespace NexusForever.WorldServer.Game.Group
 {
-    public partial class Group
+    public partial class Group: IUpdate
     {
-        /// <summary>
-        /// Generate next unique group member ID
-        /// </summary>
-        private static ushort NextGroupMemberId => (ushort)Interlocked.Increment(ref nextGroupMemberId);
-        private static int nextGroupMemberId;
-
-        static Group()
-        {
-            nextGroupMemberId = 1;
-        }
-
         /// <summary>
         /// Maxoimum size party (non raid) group can be
         /// </summary>
@@ -31,6 +21,18 @@ namespace NexusForever.WorldServer.Game.Group
         /// Maximum size raid group can be
         /// </summary>
         public const uint MaxRaidSize = 20;
+
+        /// <summary>
+        /// Interval at which check to clear the invites
+        /// TODO: move this to the config file
+        /// </summary>
+        private const double ClearInvitesInterval = 1d;
+
+        /// <summary>
+        /// Generate next unique group member ID
+        /// </summary>
+        private static ushort NextGroupMemberId => (ushort)Interlocked.Increment(ref nextGroupMemberId);
+        private static int nextGroupMemberId = 1;
 
         /// <summary>
         /// Unique Group ID
@@ -48,64 +50,19 @@ namespace NexusForever.WorldServer.Game.Group
         public bool IsFull => members.Count == MaxSize;
 
         /// <summary>
-        /// Group can be dismissed if it has no members aside from group leader
-        /// and no pending invites
-        /// </summary>
-        public bool ShouldDisband => (members.Count == 0) || (IsEmpty && invites.Count == 0);
-
-        /// <summary>
-        /// True if this group has pending invites
-        /// </summary>
-        public bool HasPendingInvites => invites.Count > 0;
-
-        /// <summary>
         /// Current party leader
         /// </summary>
         public GroupMember PartyLeader { get; private set; }
 
         /// <summary>
-        /// Give next member in the group as candidate for the PartyLeader
-        /// </summary>
-        public GroupMember NextPartyLeaderCandidate {
-            get
-            {
-                if (PartyLeader == null)
-                {
-                    return members[0];
-                }
-                return members.Find(member => member.Id != PartyLeader.Id);
-            }
-        }
-
-        /// <summary>
         /// Is this open world (non instance) group
         /// </summary>
-        public bool IsOpenWorld
-        {
-            get { return (Flags & GroupFlags.OpenWorld) != 0; }
-            private set
-            {
-                if (value)
-                    Flags |= GroupFlags.OpenWorld;
-                else
-                    Flags &= ~GroupFlags.OpenWorld;
-            }
-        }
+        public bool IsOpenWorld => (Flags & GroupFlags.OpenWorld) != 0;
 
         /// <summary>
         /// Is this a raid group?
         /// </summary>
-        public bool IsRaid
-        {
-            get { return (Flags & GroupFlags.Raid) != 0; }
-            private set
-            {
-                if (value)
-                    Flags |= GroupFlags.Raid;
-                else
-                    Flags &= ~GroupFlags.Raid;
-            }
-        }
+        public bool IsRaid => (Flags & GroupFlags.Raid) != 0;
 
         /// <summary>
         /// Max size for this group type
@@ -116,6 +73,17 @@ namespace NexusForever.WorldServer.Game.Group
         /// Group flags that can be sent to the client
         /// </summary>
         public GroupFlags Flags { get; private set; }
+
+        /// <summary>
+        /// Group can be dismissed if it has no members aside from group leader
+        /// and no pending invites
+        /// </summary>
+        private bool ShouldDisband => (members.Count == 0) || (IsEmpty && invites.Count == 0);
+
+        /// <summary>
+        /// True if this group has pending invites
+        /// </summary>
+        private bool HasPendingInvites => invites.Count > 0;
 
         /// <summary>
         /// Group is new if member info has not been sent to the client yet
@@ -138,6 +106,11 @@ namespace NexusForever.WorldServer.Game.Group
         private readonly List<GroupInvite> invites = new List<GroupInvite>();
 
         /// <summary>
+        /// Used for throttling the cleanup rate
+        /// </summary>
+        private double timeToClearInvites = ClearInvitesInterval;
+
+        /// <summary>
         /// Create new Group
         /// </summary>
         /// <param name="id"></param>
@@ -146,22 +119,29 @@ namespace NexusForever.WorldServer.Game.Group
         {
             Id = id;
             PartyLeader = CreateMember(player);
-            IsOpenWorld = true;
+            Flags |= GroupFlags.OpenWorld;
             isNewGroup = true;
         }
 
         /// <summary>
         /// Clear out pending invites that have expired
         /// </summary>
-        public void ClearExpiredInvites(DateTime now)
+        public void Update(double lastTick)
         {
-            while (HasPendingInvites)
+            timeToClearInvites -= lastTick;
+            if (timeToClearInvites <= 0d)
             {
-                var invite = invites[0];
-                if (invite.ExpirationTime <= now)
-                    ExpireInvite(invite);
-                else
-                    return;
+                timeToClearInvites = ClearInvitesInterval;
+
+                var now = DateTime.UtcNow;
+                while (HasPendingInvites)
+                {
+                    var invite = invites[0];
+                    if (invite.ExpirationTime <= now)
+                        ExpireInvite(invite);
+                    else
+                        return;
+                }
             }
         }
 
@@ -215,6 +195,18 @@ namespace NexusForever.WorldServer.Game.Group
         private GroupMember FindMember(TargetPlayerIdentity target)
         {
             return members.Find(m => m.Player.CharacterId == target.CharacterId);
+        }
+
+        /// <summary>
+        /// Give next member in the group as candidate for the PartyLeader
+        /// </summary>
+        private GroupMember GetNextPartyLeader()
+        {
+            if (PartyLeader == null)
+            {
+                return members[0];
+            }
+            return members.Find(member => member.Id != PartyLeader.Id);
         }
     }
 }

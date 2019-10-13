@@ -1,5 +1,4 @@
 ﻿using NexusForever.WorldServer.Game.Entity;
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
@@ -11,14 +10,6 @@ namespace NexusForever.WorldServer.Game.Group
     /// </summary>
     public static class GlobalGroupManager
     {
-        // TODO: move this to the config file
-        private const double ClearInvitesInterval = 1d;
-
-        /// <summary>
-        /// Used for throttling the cleanup rate
-        /// </summary>
-        private static double timeToClearInvites = ClearInvitesInterval;
-
         /// <summary>
         /// List of active groups
         /// </summary>
@@ -48,22 +39,7 @@ namespace NexusForever.WorldServer.Game.Group
             while (pendingRemove.TryDequeue(out Group group))
                 groups.Remove(group);
 
-            timeToClearInvites -= lastTick;
-            if (timeToClearInvites <= 0d)
-            {
-                timeToClearInvites = ClearInvitesInterval;
-                var now = DateTime.UtcNow;
-                foreach (var group in groups)
-                {
-                    if (group.HasPendingInvites)
-                    {
-                        lock (group)
-                        {
-                            group.ClearExpiredInvites(now);
-                        }
-                    }
-                }
-            }
+            groups.ForEach(g => g.Update(lastTick));
 
             while (pendingAdd.TryDequeue(out Group group))
                 groups.Add(group);
