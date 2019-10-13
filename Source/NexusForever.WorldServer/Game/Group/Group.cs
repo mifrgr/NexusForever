@@ -98,7 +98,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// <summary>
         /// Players who have been invited or who have request to join the group
         /// </summary>
-        private protected readonly List<GroupInvite> invites = new List<GroupInvite>();
+        private readonly List<GroupInvite> invites = new List<GroupInvite>();
         private readonly ReaderWriterLockSlim invitesLock = new ReaderWriterLockSlim();
 
         /// <summary>
@@ -130,7 +130,7 @@ namespace NexusForever.WorldServer.Game.Group
                 timeToClearInvites = ClearInvitesInterval;
 
                 var now = DateTime.UtcNow;
-                while (TryDequeueInvite(out var invite))
+                while (TryPeekInvite(out var invite))
                 {
                     if (invite.ExpirationTime <= now)
                         ExpireInvite(invite);
@@ -141,10 +141,11 @@ namespace NexusForever.WorldServer.Game.Group
         }
 
         /// <summary>
-        /// Get the oldest (first in the list) invite
+        /// Get the oldest (first in the list) invite without removing it
+        /// From the list.
         /// </summary>
         /// <returns>true if invite is found</returns>
-        private bool TryDequeueInvite(out GroupInvite invite)
+        private bool TryPeekInvite(out GroupInvite invite)
         {
             invitesLock.EnterReadLock();
             var hasInvites = invites.Count > 0;

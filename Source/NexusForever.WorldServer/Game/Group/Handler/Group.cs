@@ -206,7 +206,7 @@ namespace NexusForever.WorldServer.Game.Group
 
             if (IsFull)
             {
-                while (TryDequeueInvite(out var invite))
+                while (TryPeekInvite(out var invite))
                     ExpireInvite(invite);
             }
         }
@@ -361,7 +361,7 @@ namespace NexusForever.WorldServer.Game.Group
                 RemoveMember(member);
             });
 
-            while (TryDequeueInvite(out var invite))
+            while (TryPeekInvite(out var invite))
             { 
                 invite.Send(BuildServerGroupInviteResult(invite.Player.Name, InviteResult.InviteExpired));
                 RemoveInvite(invite);
