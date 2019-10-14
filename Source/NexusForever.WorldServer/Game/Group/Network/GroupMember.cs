@@ -58,12 +58,10 @@ namespace NexusForever.WorldServer.Game.Group
                 EffectiveLevel = (byte)Player.Level,
                 Path = Player.Path,
                 GroupMemberId = Id,
-                Unknown8 = 1, // Something to do with Mentoring, Sets mentoring of first player that isn't you
-                Unknown9 = 1, // This and Unknown8 have to both be 1
-                Unknown10 = 1,
+                Unknown10 = 0,
                 Realm = WorldServer.RealmId,
-                WorldZoneId = (ushort)Player.Zone.Id,
-                Unknown25 = 1873,
+                WorldZoneId = (ushort)Player.Map.Entry.Id,
+                Unknown25 = 1,
                 Unknown26 = 1,
                 SyncedToGroup = true
             };

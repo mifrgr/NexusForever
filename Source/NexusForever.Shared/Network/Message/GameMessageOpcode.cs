@@ -61,6 +61,7 @@ namespace NexusForever.Shared.Network.Message
         ClientNonSpellActionSetChanges  = 0x016A,
         ServerShowActionBar             = 0x016C,
         ClientInnateChange              = 0x016F,
+        ServerUpdatePhase               = 0x0171,
         ClientChangeActiveActionSet     = 0x0174,
         ServerChangeActiveActionSet     = 0x0175,
         ClientToggleWeapons             = 0x0177,
@@ -145,6 +146,8 @@ namespace NexusForever.Shared.Network.Message
         ServerGroupSendReadyCheck       = 0x044C,
         ServerGroupRemove               = 0x0450,
         ServerGroupMaxSizeChange        = 0x0462,
+        ServerGroupUpdatePlayerRealm    = 0x0467,
+        ServerGroupPositionUpdate       = 0x0469,
         Server0497                      = 0x0497, // guild info
         ClientCastSpell                 = 0x04DB,
         ServerHousingResidenceDecor     = 0x04DE,

@@ -1,11 +1,13 @@
 ﻿using NexusForever.Shared;
 using NexusForever.WorldServer.Game.Entity;
 using NexusForever.WorldServer.Game.Group.Static;
+using NexusForever.WorldServer.Network.Message.Model;
 using NexusForever.WorldServer.Network.Message.Model.Shared;
 using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Threading;
 
 namespace NexusForever.WorldServer.Game.Group
@@ -27,6 +29,11 @@ namespace NexusForever.WorldServer.Game.Group
         /// TODO: move this to the config file
         /// </summary>
         private const double ClearInvitesInterval = 1d;
+
+        /// <summary>
+        /// Interval at which group member positions update is sent
+        /// </summary>
+        private const double UpdatePositionsInterval = 0.5;
 
         /// <summary>
         /// Generate next unique group member ID
@@ -105,7 +112,12 @@ namespace NexusForever.WorldServer.Game.Group
         /// Used for throttling the cleanup rate
         /// </summary>
         private double timeToClearInvites = ClearInvitesInterval;
-        
+
+        /// <summary>
+        /// Used for throttling group position updates
+        /// </summary>
+        private double timeToUpdatePositions = UpdatePositionsInterval;
+
         /// <summary>
         /// Create new Group
         /// </summary>
@@ -138,6 +150,57 @@ namespace NexusForever.WorldServer.Game.Group
                         break;
                 }
             }
+
+            timeToUpdatePositions -= lastTick;
+            if (timeToUpdatePositions <= 0d)
+            {
+                timeToUpdatePositions = UpdatePositionsInterval;
+                UpdatePositions();
+            }
+        }
+
+        private void UpdatePositions()
+        {
+            //var positions = new List<ServerGroupPositionUpdate.MemberPosition>();
+            //members.ForEach(m =>
+            //{
+            //    positions.Add(new ServerGroupPositionUpdate.MemberPosition
+            //    {
+            //        TargetPlayer = m.BuildTargetPlayerIdentity(),
+            //        Position = m.Player.Position
+            //    });
+            //});
+            //var packet = new ServerGroupPositionUpdate
+            //{
+            //    GroupId = Id,
+            //    Unknown1 = 0,
+            //    Positions = positions
+            //};
+
+            //var count = members.Count;
+            //var players = new List<TargetPlayerIdentity>(count);
+            //var positions = new List<Position>(count);
+            //var unknowns = new List<uint>(count);
+            //var flags = new List<uint>(count);
+
+            //members.ForEach(m =>
+            //{
+            //    players.Add(m.BuildTargetPlayerIdentity());
+            //    positions.Add(new Position(m.Player.Position));
+            //    unknowns.Add(m.Player.Map.Entry.Id);
+            //    flags.Add((uint)0b1);
+            //});
+
+            //var packet = new ServerGroupPositionUpdate
+            //{
+            //    GroupId = Id,
+            //    WorldZoneId = (ushort)PartyLeader.Player.Zone.Id,
+            //    Players = players,
+            //    Positions = positions,
+            //    Unknown = unknowns,
+            //    Flags = flags
+            //};
+            //Broadcast(packet);
         }
 
         /// <summary>
