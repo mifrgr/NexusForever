@@ -114,15 +114,17 @@ namespace NexusForever.WorldServer.Game.Entity
         public WorldSession Session { get; }
         public bool IsLoading { get; private set; } = true;
 
+        #nullable enable
         /// <summary>
         /// Pending invite to the group or null
         /// </summary>
-        public GroupInvite GroupInvite { get; set; }
+        public GroupInvite? GroupInvite { get; set; }
 
         /// <summary>
         /// Group that player is part of or null
         /// </summary>
-        public GroupMember GroupMember { get; set; }
+        public GroupMember? GroupMember { get; set; }
+        #nullable restore
 
         public Inventory Inventory { get; }
         public CurrencyManager CurrencyManager { get; }
@@ -597,20 +599,10 @@ namespace NexusForever.WorldServer.Game.Entity
         private void RemoveFromGroups()
         {
             if (GroupMember != null)
-            {
-                lock (GroupMember.Group)
-                {
-                    GroupMember.Group.Remove(this, Group.Static.RemoveReason.Disconnected);
-                }
-            }
+                GroupMember.Group.Remove(this, Group.Static.RemoveReason.Disconnected);
 
             if (GroupInvite != null)
-            {
-                lock (GroupMember.Group)
-                {
-                    GroupMember.Group.ExpireInvite(GroupInvite);
-                }
-            }
+                GroupMember.Group.ExpireInvite(GroupInvite);
         }
 
         /// <summary>

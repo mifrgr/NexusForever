@@ -3,6 +3,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 
+#nullable enable
+
 namespace NexusForever.WorldServer.Game.Group
 {
     /// <summary>

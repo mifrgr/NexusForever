@@ -10,6 +10,8 @@ using System.Linq;
 using System.Numerics;
 using System.Threading;
 
+#nullable enable
+
 namespace NexusForever.WorldServer.Game.Group
 {
     public partial class Group: IUpdate
@@ -59,7 +61,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// <summary>
         /// Current party leader
         /// </summary>
-        public GroupMember PartyLeader { get; private set; }
+        public GroupMember? PartyLeader { get; private set; }
 
         /// <summary>
         /// Is this open world (non instance) group
@@ -101,6 +103,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// Group members for private usage
         /// </summary>
         private readonly List<GroupMember> members = new List<GroupMember>();
+        private readonly ReaderWriterLockSlim membersLock = new ReaderWriterLockSlim();
 
         /// <summary>
         /// Players who have been invited or who have request to join the group
@@ -161,46 +164,6 @@ namespace NexusForever.WorldServer.Game.Group
 
         private void UpdatePositions()
         {
-            //var positions = new List<ServerGroupPositionUpdate.MemberPosition>();
-            //members.ForEach(m =>
-            //{
-            //    positions.Add(new ServerGroupPositionUpdate.MemberPosition
-            //    {
-            //        TargetPlayer = m.BuildTargetPlayerIdentity(),
-            //        Position = m.Player.Position
-            //    });
-            //});
-            //var packet = new ServerGroupPositionUpdate
-            //{
-            //    GroupId = Id,
-            //    Unknown1 = 0,
-            //    Positions = positions
-            //};
-
-            //var count = members.Count;
-            //var players = new List<TargetPlayerIdentity>(count);
-            //var positions = new List<Position>(count);
-            //var unknowns = new List<uint>(count);
-            //var flags = new List<uint>(count);
-
-            //members.ForEach(m =>
-            //{
-            //    players.Add(m.BuildTargetPlayerIdentity());
-            //    positions.Add(new Position(m.Player.Position));
-            //    unknowns.Add(m.Player.Map.Entry.Id);
-            //    flags.Add((uint)0b1);
-            //});
-
-            //var packet = new ServerGroupPositionUpdate
-            //{
-            //    GroupId = Id,
-            //    WorldZoneId = (ushort)PartyLeader.Player.Zone.Id,
-            //    Players = players,
-            //    Positions = positions,
-            //    Unknown = unknowns,
-            //    Flags = flags
-            //};
-            //Broadcast(packet);
         }
 
         /// <summary>
@@ -211,10 +174,18 @@ namespace NexusForever.WorldServer.Game.Group
         private bool TryPeekInvite(out GroupInvite invite)
         {
             invitesLock.EnterReadLock();
-            var hasInvite = invites.Count > 0;
-            invite = hasInvite ? invites[0] : null;
-            invitesLock.ExitReadLock();
-            return hasInvite;
+            try
+            {
+                var hasInvite = invites.Count > 0;
+                #nullable disable
+                invite = hasInvite ? invites[0] : null;
+                #nullable restore
+                return hasInvite;
+            }
+            finally
+            {
+                invitesLock.ExitReadLock();
+            }
         }
 
         /// <summary>
@@ -226,9 +197,15 @@ namespace NexusForever.WorldServer.Game.Group
         {
             var invite = new GroupInvite(this, invitee, inviter);
             invitesLock.EnterWriteLock();
-            invites.Add(invite);
-            invitesLock.ExitWriteLock();
-            invitee.GroupInvite = invite;
+            try
+            {
+                invites.Add(invite);
+                invitee.GroupInvite = invite;
+            }
+            finally
+            {
+                invitesLock.ExitWriteLock();
+            }
             return invite;
         }
 
@@ -237,10 +214,16 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         private void RemoveInvite(GroupInvite invite)
         {
-            invite.Player.GroupInvite = null;
             invitesLock.EnterWriteLock();
-            invites.Remove(invite);
-            invitesLock.ExitWriteLock();
+            try
+            {
+                invite.Player.GroupInvite = null;
+                invites.Remove(invite);
+            }
+            finally
+            {
+                invitesLock.ExitWriteLock();
+            }
         }
 
         /// <summary>
@@ -249,8 +232,16 @@ namespace NexusForever.WorldServer.Game.Group
         private GroupMember CreateMember(Player player)
         {
             var member = new GroupMember(NextGroupMemberId, this, player);
-            members.Add(member);
-            player.GroupMember = member;
+            membersLock.EnterWriteLock();
+            try
+            {
+                members.Add(member);
+                player.GroupMember = member;
+            }
+            finally
+            {
+                membersLock.ExitWriteLock();
+            }
             return member;
         }
 
@@ -259,10 +250,18 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         private void RemoveMember(GroupMember member)
         {
-            members.Remove(member);
-            member.Player.GroupMember = null;
-            if (PartyLeader?.Id == member.Id)
-                PartyLeader = null;
+            membersLock.EnterWriteLock();
+            try
+            {
+                members.Remove(member);
+                member.Player.GroupMember = null;
+                if (PartyLeader?.Id == member.Id)
+                    PartyLeader = null;
+            }
+            finally
+            {
+                membersLock.ExitWriteLock();
+            }
         }
 
         /// <summary>
@@ -270,7 +269,15 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         private GroupMember FindMember(TargetPlayerIdentity target)
         {
-            return members.Find(m => m.Player.CharacterId == target.CharacterId);
+            membersLock.EnterReadLock();
+            try
+            {
+                return members.Find(m => m.Player.CharacterId == target.CharacterId);
+            }
+            finally
+            {
+                membersLock.ExitReadLock();
+            }
         }
 
         /// <summary>
@@ -278,11 +285,16 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         private GroupMember GetNextPartyLeader()
         {
-            if (PartyLeader == null)
+            membersLock.EnterReadLock();
+            try
             {
-                return members[0];
+                if (PartyLeader == null) return members[0];
+                return members.Find(member => member.Id != PartyLeader.Id);
             }
-            return members.Find(member => member.Id != PartyLeader.Id);
+            finally
+            {
+                membersLock.ExitReadLock();
+            }
         }
     }
 }

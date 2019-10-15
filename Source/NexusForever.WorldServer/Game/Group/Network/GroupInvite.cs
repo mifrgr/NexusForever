@@ -1,5 +1,7 @@
 ﻿using NexusForever.Shared.Network.Message;
 
+#nullable enable
+
 namespace NexusForever.WorldServer.Game.Group
 {
     public partial class GroupInvite

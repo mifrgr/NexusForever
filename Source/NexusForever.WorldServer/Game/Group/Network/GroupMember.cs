@@ -4,6 +4,8 @@ using NexusForever.WorldServer.Network.Message.Model;
 using NexusForever.WorldServer.Network.Message.Model.Shared;
 using static NexusForever.WorldServer.Network.Message.Model.ServerGroupJoin;
 
+#nullable enable
+
 namespace NexusForever.WorldServer.Game.Group
 {
     public partial class GroupMember
@@ -58,11 +60,10 @@ namespace NexusForever.WorldServer.Game.Group
                 EffectiveLevel = (byte)Player.Level,
                 Path = Player.Path,
                 GroupMemberId = Id,
-                Unknown10 = 0,
                 Realm = WorldServer.RealmId,
-                WorldZoneId = (ushort)Player.Map.Entry.Id,
-                Unknown25 = 1,
-                Unknown26 = 1,
+                WorldZoneId = (ushort)Player.Zone.Id,
+                Unknown25 = 0, // Player.Map.Entry.Id,
+                Unknown26 = 0,
                 SyncedToGroup = true
             };
         }

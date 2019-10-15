@@ -1,6 +1,8 @@
 ﻿using NexusForever.WorldServer.Game.Entity;
 using System;
 
+#nullable enable
+
 namespace NexusForever.WorldServer.Game.Group
 {
     /// <summary>

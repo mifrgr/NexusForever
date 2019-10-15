@@ -6,10 +6,13 @@ using NexusForever.WorldServer.Database.Character;
 using NexusForever.WorldServer.Database.Character.Model;
 using NexusForever.WorldServer.Game.Entity;
 using NexusForever.WorldServer.Game.Group.Static;
+using NexusForever.WorldServer.Game.Map;
 using NexusForever.WorldServer.Network;
 using NexusForever.WorldServer.Network.Message.Model;
 using NexusForever.WorldServer.Network.Message.Model.Shared;
 using System.Linq;
+
+#nullable enable
 
 namespace NexusForever.WorldServer.Game.Group
 {
@@ -204,7 +207,7 @@ namespace NexusForever.WorldServer.Game.Group
             {
                 newMember.Send(BuildServerGroupJoin(newMember));
                 var addMember = BuildServerGroupMemberAdd(newMember);
-                Broadcast(member => member.Id == newMember.Id ? null : addMember);
+                Broadcast(addMember, newMember);
             }
 
             if (IsFull)

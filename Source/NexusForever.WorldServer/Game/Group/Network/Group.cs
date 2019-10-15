@@ -3,21 +3,29 @@ using NexusForever.WorldServer.Game.Group.Static;
 using NexusForever.WorldServer.Network.Message.Model;
 using NexusForever.WorldServer.Network.Message.Model.Shared;
 using System.Collections.Generic;
+using System.Linq;
+
+#nullable enable
 
 namespace NexusForever.WorldServer.Game.Group
 {
     public partial class Group
     {
-        public delegate IWritable BroadcastCallback(GroupMember member);
+        public delegate IWritable? BroadcastCallback(GroupMember member);
 
         /// <summary>
-        /// Broadcast generated message per member
+        /// Broadcast generated message to every member in the group
         /// </summary>
         /// <param name="group">Group to broadcast to</param>
         /// <param name="callback">callback to generate message per every member</param>
         public void Broadcast(BroadcastCallback callback)
         {
-            members.ForEach(member => {
+            membersLock.EnterReadLock();
+            var groupMembers = members.ToList();
+            membersLock.ExitReadLock();
+
+            groupMembers.ForEach(member =>
+            {
                 var value = callback(member);
                 if (value != null)
                     member.Send(value);
@@ -30,7 +38,37 @@ namespace NexusForever.WorldServer.Game.Group
         /// <param name="message"></param>
         public void Broadcast(IWritable message)
         {
-            members.ForEach(m => m.Send(message));
+            membersLock.EnterReadLock();
+            try
+            {
+                members.ForEach(m => m.Send(message));
+            }
+            finally
+            {
+                membersLock.ExitReadLock();
+            }
+        }
+
+        /// <summary>
+        /// Broadcast given message to the whole group, except excluded member
+        /// </summary>
+        /// <param name="message">message to broadcast</param>
+        /// <param name="excluded">excluded member</param>
+        public void Broadcast(IWritable message, GroupMember excluded)
+        {
+            membersLock.EnterReadLock();
+            try
+            {
+                members.ForEach(m => {
+                    if (m.Id == excluded.Id)
+                        return;
+                    m.Send(message);
+                });
+            }
+            finally
+            {
+                membersLock.ExitReadLock();
+            }
         }
 
         /// <summary>
