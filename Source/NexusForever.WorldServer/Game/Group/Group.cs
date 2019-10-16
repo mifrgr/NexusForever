@@ -6,6 +6,8 @@ using NexusForever.WorldServer.Network.Message.Model.Shared;
 using NLog;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Numerics;
 using System.Threading;
@@ -61,7 +63,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// <summary>
         /// Current party leader
         /// </summary>
-        public GroupMember? PartyLeader { get; private set; }
+        public GroupMember PartyLeader { get; private set; }
 
         /// <summary>
         /// Is this open world (non instance) group
@@ -100,8 +102,23 @@ namespace NexusForever.WorldServer.Game.Group
         private static readonly ILogger log = LogManager.GetCurrentClassLogger();
 
         /// <summary>
-        /// Group members for private usage
+        /// Group members.
         /// </summary>
+        public List<GroupMember> Members
+        {
+            get
+            {
+                membersLock.EnterReadLock();
+                try
+                {
+                    return members.ToList();
+                }
+                finally
+                {
+                    membersLock.ExitReadLock();
+                }
+            }
+        }
         private readonly List<GroupMember> members = new List<GroupMember>();
         private readonly ReaderWriterLockSlim membersLock = new ReaderWriterLockSlim();
 

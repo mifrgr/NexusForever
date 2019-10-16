@@ -1,14 +1,10 @@
 ﻿using NexusForever.Shared.Game.Events;
-using NexusForever.Shared.GameTable;
-using NexusForever.Shared.GameTable.Model;
 using NexusForever.Shared.Network;
 using NexusForever.WorldServer.Database.Character;
 using NexusForever.WorldServer.Database.Character.Model;
 using NexusForever.WorldServer.Game.Entity;
 using NexusForever.WorldServer.Game.Group.Static;
-using NexusForever.WorldServer.Game.Map;
 using NexusForever.WorldServer.Network;
-using NexusForever.WorldServer.Network.Message.Model;
 using NexusForever.WorldServer.Network.Message.Model.Shared;
 using System.Linq;
 
@@ -291,6 +287,7 @@ namespace NexusForever.WorldServer.Game.Group
         {
             var member = ValidatePlayer(player);
 
+            // TODO: encapsulate
             var set = flags & changed;
             member.SetFlags(set, true);
 
@@ -345,10 +342,10 @@ namespace NexusForever.WorldServer.Game.Group
             if (!member.CanReadyCheck)
                 return;
 
-            members.ForEach(member =>
+            Broadcast(member =>
             {
                 member.PrepareForReadyCheck();
-                Broadcast(member.BuildServerGroupMemberFlagsChanged(false));
+                return member.BuildServerGroupMemberFlagsChanged(false);
             });
 
             Broadcast(BuildServerGroupSendReadyCheck(member, message));
@@ -361,7 +358,7 @@ namespace NexusForever.WorldServer.Game.Group
         public void Disband()
         {
             var serverLeave = BuildServerGroupLeave(RemoveReason.Disband);
-            members.ToList().ForEach(member =>
+            Members.ForEach(member =>
             {
                 member.Send(serverLeave);
                 RemoveMember(member);
@@ -388,12 +385,12 @@ namespace NexusForever.WorldServer.Game.Group
             var y = player.Position.Y;
             var z = player.Position.Z;
 
-            foreach (var member in members)
+            Members.ForEach(member =>
             {
-                if (member.Player.Guid == player.Guid)
-                    continue;
-                member.Player.TeleportTo(worldId, x, y, z);
-            }
+               if (member.Player.Guid == player.Guid)
+                   return;
+               member.Player.TeleportTo(worldId, x, y, z);
+            });
         }
 
         /// <summary>
@@ -401,8 +398,10 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         public void Teleport(ushort worldId, float x, float y, float z)
         {
-            foreach (var member in members)
+            Members.ForEach(member =>
+            {
                 member.Player.TeleportTo(worldId, x, y, z);
+            });
         }
 
         #endregion

@@ -20,11 +20,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// <param name="callback">callback to generate message per every member</param>
         public void Broadcast(BroadcastCallback callback)
         {
-            membersLock.EnterReadLock();
-            var groupMembers = members.ToList();
-            membersLock.ExitReadLock();
-
-            groupMembers.ForEach(member =>
+            Members.ForEach(member =>
             {
                 var value = callback(member);
                 if (value != null)
@@ -80,9 +76,17 @@ namespace NexusForever.WorldServer.Game.Group
         {
             uint groupIndex = 1;
             var groupMembers = new List<ServerGroupJoin.GroupMemberInfo>();
-            foreach (var groupMember in members)
+            membersLock.EnterReadLock();
+            try
             {
-                groupMembers.Add(groupMember.BuildGroupMemberInfo(groupIndex++));
+                foreach (var groupMember in members)
+                {
+                    groupMembers.Add(groupMember.BuildGroupMemberInfo(groupIndex++));
+                }
+            }
+            finally
+            {
+                membersLock.ExitReadLock();
             }
 
             return new ServerGroupJoin
@@ -91,8 +95,8 @@ namespace NexusForever.WorldServer.Game.Group
                 GroupId = Id,
                 GroupFlags = Flags,
                 MaxSize = MaxSize,
-                LootRuleNormal = LootRule.NeedBeforeGreed,         // Under LootThreshold rarity (For Raid)
-                LootRuleThreshold = LootRule.RoundRobin,              // This is the selection for Loot Rules in the UI / Over LootTreshold rarity (For Raid)
+                LootRuleNormal = LootRule.NeedBeforeGreed,          // Under LootThreshold rarity (For Raid)
+                LootRuleThreshold = LootRule.RoundRobin,            // This is the selection for Loot Rules in the UI / Over LootTreshold rarity (For Raid)
                 LootThreshold = LootThreshold.Excellent,
                 LootRuleHarvest = LootRuleHarvest.FirstTagger,      // IDK were it shows this setting in the UI
                 GroupMembers = groupMembers,
@@ -106,13 +110,21 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         public ServerGroupMemberAdd BuildServerGroupMemberAdd(GroupMember member)
         {
-            var groupIndex = (uint)members.IndexOf(member) + 1;
-            var memberInfo = member.BuildGroupMemberInfo(groupIndex);
-            return new ServerGroupMemberAdd
+            membersLock.EnterReadLock();
+            try
             {
-                GroupId = Id,
-                AddMemberInfo = memberInfo
-            };
+                var groupIndex = (uint)members.IndexOf(member) + 1;
+                var memberInfo = member.BuildGroupMemberInfo(groupIndex);
+                return new ServerGroupMemberAdd
+                {
+                    GroupId = Id,
+                    AddMemberInfo = memberInfo
+                };
+            }
+            finally
+            {
+                membersLock.ExitReadLock();
+            }
         }
 
         /// <summary>
@@ -146,7 +158,15 @@ namespace NexusForever.WorldServer.Game.Group
         public ServerGroupInviteReceived BuildServerGroupInviteReceived()
         {
             var groupMembers = new List<Member>();
-            members.ForEach(m => groupMembers.Add(m.BuildGroupMember()));
+            membersLock.EnterReadLock();
+            try
+            {
+                members.ForEach(m => groupMembers.Add(m.BuildGroupMember()));
+            }
+            finally
+            {
+                membersLock.ExitReadLock();
+            }
             return new ServerGroupInviteReceived
             {
                 GroupId = Id,
