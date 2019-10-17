@@ -18,7 +18,13 @@ namespace NexusForever.WorldServer.Network.Message.Handler
             var group = player.GroupMember?.Group ?? GlobalGroupManager.CreateGroup(player);
             group.Invite(player, request.PlayerName);
         }
-                
+
+        [MessageHandler(GameMessageOpcode.ClientGroupRequestJoin)]
+        public static void HandleClientGroupRequestJoin(WorldSession session, ClientGroupRequestJoin request)
+        {
+            log.Debug($"name = {request.PlayerName}");
+        }
+
         [MessageHandler(GameMessageOpcode.ClientGroupInviteResponse)]
         public static void HandleGroupInviteResponse(WorldSession session, ClientGroupInviteResponse request)
         {
