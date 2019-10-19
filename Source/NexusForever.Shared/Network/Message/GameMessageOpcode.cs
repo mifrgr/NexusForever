@@ -148,6 +148,7 @@ namespace NexusForever.Shared.Network.Message
         ServerGroupSendReadyCheck       = 0x044C,
         ServerGroupRemove               = 0x0450,
         ClientGroupRequestJoinResponse  = 0x0453,
+        ServerGroupRequestJoinResult    = 0x0456,
         ServerGroupMaxSizeChange        = 0x0462,
         ServerGroupUpdatePlayerRealm    = 0x0467,
         ServerGroupPositionUpdate       = 0x0469,

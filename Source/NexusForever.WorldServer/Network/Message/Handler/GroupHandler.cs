@@ -5,8 +5,10 @@ using NexusForever.WorldServer.Database.Character;
 using NexusForever.WorldServer.Database.Character.Model;
 using NexusForever.WorldServer.Game.Entity;
 using NexusForever.WorldServer.Game.Group;
+using NexusForever.WorldServer.Game.Group.Static;
 using NexusForever.WorldServer.Network.Message.Model;
 using NLog;
+using System;
 
 namespace NexusForever.WorldServer.Network.Message.Handler
 {
@@ -25,43 +27,41 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         [MessageHandler(GameMessageOpcode.ClientGroupRequestJoin)]
         public static void HandleClientGroupRequestJoin(WorldSession session, ClientGroupRequestJoin request)
         {
-            if (session.Player.GroupInvite != null)
-                return;
+            // if (session.Player.GroupInvite != null)
+            //    send Result.Pending
+            //    return;
 
-            if (session.Player.GroupMember != null)
-                return;
+            //if (session.Player.GroupMember != null)
+            //    send Result.Grouped
+            //    return;
 
-            session.EnqueueEvent(new TaskGenericEvent<Character>(CharacterDatabase.GetCharacterByName(request.PlayerName), character =>
+            FindPlayer(session, request.PlayerName, targetPlayer =>
             {
-                if (character == null)
-                    return;
-
-                var targetSession = NetworkManager<WorldSession>.GetSession(s => s.Player?.CharacterId == character.Id);
-                if (targetSession == null)
-                    return;
-
-                var targetPlayer = targetSession.Player;
-
                 if (targetPlayer.GroupMember == null)
                 {
-                    var existingGroup = GlobalGroupManager.CreateGroup(session.Player);
-                    existingGroup.Invite(session.Player, targetPlayer);
+                    // send Result.GroupNotFound
                     return;
                 }
 
                 var group = targetPlayer.GroupMember.Group;
-                var leader = group.PartyLeader;
+                group.RequestJoin(session.Player);
+            });
 
-                var tempMember = new GroupMember(999, group, session.Player);
 
-                var requestJoin = new ServerGroupRequestJoin
-                {
-                    GroupId = group.Id,
-                    MemberInfo = tempMember.BuildGroupMemberInfo((uint)group.Members.Count)
-                };
 
-                leader.Send(requestJoin);
-            }));
+            //    var group = targetPlayer.GroupMember.Group;
+            //    var leader = group.PartyLeader;
+
+            //    var tempMember = new GroupMember(999, group, session.Player);
+
+            //    var requestJoin = new ServerGroupRequestJoin
+            //    {
+            //        GroupId = group.Id,
+            //        MemberInfo = tempMember.BuildGroupMemberInfo((uint)group.Members.Count)
+            //    };
+
+            //    leader.Send(requestJoin);
+            //}));
         }
 
         [MessageHandler(GameMessageOpcode.ClientGroupRequestJoinResponse)]
@@ -69,25 +69,25 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         {
             var (group, player) = ValidateGroupMembership(session, request.GroupId);
 
-            log.Info($"Request Join Response:");
-            log.Info($"request.Accepted = {request.Accepted}");
-            log.Info($"request.PlayerName = {request.PlayerName}");
+            //log.Info($"Request Join Response:");
+            //log.Info($"request.Accepted = {request.Accepted}");
+            //log.Info($"request.PlayerName = {request.PlayerName}");
 
-            session.EnqueueEvent(new TaskGenericEvent<Character>(CharacterDatabase.GetCharacterByName(request.PlayerName), character =>
-            {
-                if (character == null)
-                    return;
+            //session.EnqueueEvent(new TaskGenericEvent<Character>(CharacterDatabase.GetCharacterByName(request.PlayerName), character =>
+            //{
+            //    if (character == null)
+            //        return;
 
-                var targetSession = NetworkManager<WorldSession>.GetSession(s => s.Player?.CharacterId == character.Id);
-                if (targetSession == null)
-                    return;
+            //    var targetSession = NetworkManager<WorldSession>.GetSession(s => s.Player?.CharacterId == character.Id);
+            //    if (targetSession == null)
+            //        return;
 
-                var targetPlayer = targetSession.Player;
+            //    var targetPlayer = targetSession.Player;
 
-                targetPlayer.GroupMember = null;
+            //    targetPlayer.GroupMember = null;
 
-                group.Add(targetPlayer);
-            }));
+            //    group.Add(targetPlayer);
+            //}));
         }
 
         [MessageHandler(GameMessageOpcode.ClientGroupInviteResponse)]
@@ -144,10 +144,10 @@ namespace NexusForever.WorldServer.Network.Message.Handler
             group.Kick(player, request.PlayerIdentity);
         }
 
-        // <summary>
-        // Validate that current player is in a group with given group ID
-        // </summary>
-        // <returns>Tuple containing GroupMember and Group objects</returns>
+        /// <summary>
+        /// Validate that current player is in a group with given group ID
+        /// </summary>
+        /// <returns>Tuple containing GroupMember and Group objects</returns>
         private static (Group, Player) ValidateGroupMembership(WorldSession session, ulong groupId)
         {
             var player = session.Player;
@@ -160,6 +160,44 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                 throw new InvalidPacketValueException();
 
             return (group, player);
+        }
+        
+        /// <summary>
+        /// Find player by name and get their session
+        /// </summary>
+        /// <param name="session">Requesting player's session</param>
+        /// <param name="playerName">Player to find</param>
+        /// <param name="handler">Callback to execute</param>
+        private static void FindPlayer(WorldSession session, string playerName, Action<Player> handler)
+        {
+            void sendNotFound()
+            {
+                var message = new ServerGroupInviteResult
+                {
+                    GroupId = 0,
+                    PlayerName = playerName,
+                    Result = InviteResult.PlayerNotFound
+                };
+                session.EnqueueMessageEncrypted(message);
+            }
+
+            session.EnqueueEvent(new TaskGenericEvent<Character>(CharacterDatabase.GetCharacterByName(playerName), character =>
+            {
+                if (character == null)
+                {
+                    sendNotFound();
+                    return;
+                }
+
+                var targetSession = NetworkManager<WorldSession>.GetSession(s => s.Player?.CharacterId == character.Id);
+                if (targetSession == null)
+                {
+                    sendNotFound();
+                    return;
+                }
+
+                handler(targetSession.Player);
+            }));
         }
     }
 }

@@ -59,36 +59,36 @@ namespace NexusForever.WorldServer.Game.Group
 
             if (invitee.GroupMember != null)
             {
-                sendReply(InviteResult.PlayerAlreadyInGroup);
+                sendReply(InviteResult.Grouped);
                 return;
             }
 
             if (invitee.GroupInvite != null)
             {
-                sendReply(InviteResult.PlayerAlreadyInvited);
+                sendReply(InviteResult.IsInvited);
                 return;
             }
 
             if (inviter.Guid == invitee.Guid)
             {
-                sendReply(InviteResult.CannotInviteYourself);
+                sendReply(InviteResult.NoInvitingSelf);
                 return;
             }
 
             if (!member.CanInvite)
             {
-                sendReply(InviteResult.NotPermitted);
+                sendReply(InviteResult.NoPermissions);
                 return;
             }
 
             if (IsFull)
             {
-                sendReply(InviteResult.GroupIsFull);
+                sendReply(InviteResult.Full);
                 return;
             }
 
             // create invite and send responses
-            var invite = CreateInvite(member, invitee);
+            var invite = CreateInvite(member, invitee, GroupInviteType.Invite);
             sendReply(InviteResult.Sent);
             invite.Send(BuildServerGroupInviteReceived());
         }
@@ -110,7 +110,7 @@ namespace NexusForever.WorldServer.Game.Group
 
             if (IsFull)
             {
-                var isFull = BuildServerGroupInviteResult(invite.Player.Name, InviteResult.GroupIsFull);
+                var isFull = BuildServerGroupInviteResult(invite.Player.Name, InviteResult.Full);
                 invite.Send(isFull);
                 invite.Inviter.Send(isFull);
                 return;
@@ -127,9 +127,17 @@ namespace NexusForever.WorldServer.Game.Group
         public void ExpireInvite(GroupInvite invite)
         {
             RemoveInvite(invite);
-            invite.Inviter.Send(BuildServerGroupInviteResult(invite.Player.Name, InviteResult.PlayerInvitateHasExpired));
-            invite.Send(BuildServerGroupInviteResult(invite.Player.Name, InviteResult.InviteExpired));
+            invite.Inviter.Send(BuildServerGroupInviteResult(invite.Player.Name, InviteResult.ExpiredInviter));
+            invite.Send(BuildServerGroupInviteResult(invite.Player.Name, InviteResult.ExpiredInvitee));
             if (ShouldDisband) Disband();
+        }
+
+        /// <summary>
+        /// Player has requested to join the group
+        /// </summary>
+        public void RequestJoin(Player player)
+        {
+
         }
 
         /// <summary>
@@ -366,7 +374,7 @@ namespace NexusForever.WorldServer.Game.Group
 
             while (TryPeekInvite(out var invite))
             { 
-                invite.Send(BuildServerGroupInviteResult(invite.Player.Name, InviteResult.InviteExpired));
+                invite.Send(BuildServerGroupInviteResult(invite.Player.Name, InviteResult.ExpiredInvitee));
                 RemoveInvite(invite);
             };
 

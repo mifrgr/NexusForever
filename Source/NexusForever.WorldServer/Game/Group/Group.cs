@@ -210,9 +210,9 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         /// <param name="inviter">group member who is inviting</param>
         /// <param name="invitee">player being invited</param>
-        private GroupInvite CreateInvite(GroupMember inviter, Player invitee)
+        private GroupInvite CreateInvite(GroupMember inviter, Player invitee, GroupInviteType type)
         {
-            var invite = new GroupInvite(this, invitee, inviter);
+            var invite = new GroupInvite(this, invitee, inviter, type);
             invitesLock.EnterWriteLock();
             try
             {

@@ -1,4 +1,5 @@
 ﻿using NexusForever.WorldServer.Game.Entity;
+using NexusForever.WorldServer.Game.Group.Static;
 using System;
 
 #nullable enable
@@ -34,6 +35,11 @@ namespace NexusForever.WorldServer.Game.Group
         public readonly GroupMember Inviter;
 
         /// <summary>
+        /// Type of invite
+        /// </summary>
+        public readonly GroupInviteType Type;
+
+        /// <summary>
         /// Time when this invite expires
         /// </summary>
         public readonly DateTime ExpirationTime = DateTime.UtcNow.AddSeconds(InviteTimeout);
@@ -41,11 +47,12 @@ namespace NexusForever.WorldServer.Game.Group
         /// <summary>
         /// Create invite to group
         /// </summary>
-        public GroupInvite(Group group, Player player, GroupMember inviter)
+        public GroupInvite(Group group, Player player, GroupMember inviter, GroupInviteType type)
         {
             Group = group;
             Player = player;
             Inviter = inviter;
+            Type = type;
         }
     }
 }
