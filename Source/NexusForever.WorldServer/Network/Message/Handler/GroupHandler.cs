@@ -27,41 +27,23 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         [MessageHandler(GameMessageOpcode.ClientGroupRequestJoin)]
         public static void HandleClientGroupRequestJoin(WorldSession session, ClientGroupRequestJoin request)
         {
-            // if (session.Player.GroupInvite != null)
-            //    send Result.Pending
-            //    return;
-
-            //if (session.Player.GroupMember != null)
-            //    send Result.Grouped
-            //    return;
-
             FindPlayer(session, request.PlayerName, targetPlayer =>
             {
                 if (targetPlayer.GroupMember == null)
                 {
-                    // send Result.GroupNotFound
+                    // should this be invite to group instead?
+                    session.EnqueueMessageEncrypted(new ServerGroupRequestJoinResult {
+                        GroupId = 0,
+                        PlayerName = request.PlayerName,
+                        Result = InviteResult.GroupNotFound,
+                        IsJoin = true
+                    });
                     return;
                 }
 
                 var group = targetPlayer.GroupMember.Group;
                 group.RequestJoin(session.Player);
             });
-
-
-
-            //    var group = targetPlayer.GroupMember.Group;
-            //    var leader = group.PartyLeader;
-
-            //    var tempMember = new GroupMember(999, group, session.Player);
-
-            //    var requestJoin = new ServerGroupRequestJoin
-            //    {
-            //        GroupId = group.Id,
-            //        MemberInfo = tempMember.BuildGroupMemberInfo((uint)group.Members.Count)
-            //    };
-
-            //    leader.Send(requestJoin);
-            //}));
         }
 
         [MessageHandler(GameMessageOpcode.ClientGroupRequestJoinResponse)]
@@ -69,25 +51,16 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         {
             var (group, player) = ValidateGroupMembership(session, request.GroupId);
 
-            //log.Info($"Request Join Response:");
-            //log.Info($"request.Accepted = {request.Accepted}");
-            //log.Info($"request.PlayerName = {request.PlayerName}");
-
-            //session.EnqueueEvent(new TaskGenericEvent<Character>(CharacterDatabase.GetCharacterByName(request.PlayerName), character =>
-            //{
-            //    if (character == null)
-            //        return;
-
-            //    var targetSession = NetworkManager<WorldSession>.GetSession(s => s.Player?.CharacterId == character.Id);
-            //    if (targetSession == null)
-            //        return;
-
-            //    var targetPlayer = targetSession.Player;
-
-            //    targetPlayer.GroupMember = null;
-
-            //    group.Add(targetPlayer);
-            //}));
+            FindPlayer(session, request.PlayerName, targetPlayer =>
+            {
+                var invite = targetPlayer.GroupInvite;
+                if (invite == null)
+                {
+                    return;
+                }
+                
+                group.HandleRequestJoin(invite, request.Accepted);
+            });
         }
 
         [MessageHandler(GameMessageOpcode.ClientGroupInviteResponse)]

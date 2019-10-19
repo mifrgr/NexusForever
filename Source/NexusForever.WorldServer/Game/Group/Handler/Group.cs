@@ -5,6 +5,7 @@ using NexusForever.WorldServer.Database.Character.Model;
 using NexusForever.WorldServer.Game.Entity;
 using NexusForever.WorldServer.Game.Group.Static;
 using NexusForever.WorldServer.Network;
+using NexusForever.WorldServer.Network.Message.Model;
 using NexusForever.WorldServer.Network.Message.Model.Shared;
 using System.Linq;
 
@@ -137,7 +138,71 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         public void RequestJoin(Player player)
         {
+            void sendJoinResult(InviteResult result)
+            {
+                player.Session.EnqueueMessageEncrypted(BuildServerGroupRequestJoinResult("", result, true));
+            }
 
+            if (player.GroupInvite != null)
+            {
+                return;
+            }
+
+            if (player.GroupMember != null)
+            {
+                sendJoinResult(InviteResult.Grouped);
+                return;
+            }
+
+            if ((Flags & GroupFlags.JoinRequestClosed) != 0)
+            {
+                sendJoinResult(InviteResult.NotAcceptingRequests);
+                return;
+            }
+
+            if (IsFull)
+            {
+                sendJoinResult(InviteResult.Full);
+                return;
+            }
+
+            if ((Flags & GroupFlags.JoinRequestOpen) != 0)
+            {
+                Add(player);
+                return;
+            }
+
+            var invite = CreateInvite(PartyLeader, player, GroupInviteType.Requst);
+            invite.Send(BuildServerGroupRequestJoinResult(PartyLeader.Player.Name, InviteResult.Sent, true));
+
+            PartyLeader.Send(BuildServerGroupRequestJoin(invite));
+        }
+
+        /// <summary>
+        /// Handle request to join response
+        /// </summary>
+        /// <param name="invite">invite of the player who requested to join</param>
+        /// <param name="accepted">party leader response</param>
+        public void HandleRequestJoin(GroupInvite invite, bool accepted)
+        {
+            ValidateInvite(invite);
+            RemoveInvite(invite);
+
+            if (!accepted)
+            {
+                invite.Send(BuildServerGroupRequestJoinResult(invite.Inviter.Player.Name, InviteResult.Declined, true));
+                return;
+            }
+
+            if (IsFull)
+            {
+                invite.Send(BuildServerGroupRequestJoinResult("", InviteResult.Full, true));
+                return;
+            }
+
+            // Accept
+            invite.Send(BuildServerGroupRequestJoinResult(invite.Inviter.Player.Name, InviteResult.Accepted, true));
+            Add(invite.Player);
         }
 
         /// <summary>

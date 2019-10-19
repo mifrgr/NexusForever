@@ -106,6 +106,18 @@ namespace NexusForever.WorldServer.Game.Group
         }
 
         /// <summary>
+        /// Build group join request packet
+        /// </summary>
+        public ServerGroupRequestJoin BuildServerGroupRequestJoin(GroupInvite invite)
+        {
+            return new ServerGroupRequestJoin
+            {
+                GroupId = Id,
+                MemberInfo = invite.BuildGroupMemberInfo()
+            };
+        }
+
+        /// <summary>
         /// Build Member Add packet for the given member
         /// </summary>
         public ServerGroupMemberAdd BuildServerGroupMemberAdd(GroupMember member)
@@ -149,6 +161,17 @@ namespace NexusForever.WorldServer.Game.Group
                 GroupId = Id,
                 PlayerName = playerName,
                 Result = result
+            };
+        }
+
+        public ServerGroupRequestJoinResult BuildServerGroupRequestJoinResult(string playerName, InviteResult result, bool isJoin)
+        {
+            return new ServerGroupRequestJoinResult
+            {
+                GroupId = Id,
+                PlayerName = playerName,
+                Result = result,
+                IsJoin = isJoin
             };
         }
 
