@@ -29,7 +29,8 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         {
             FindPlayer(session, request.PlayerName, targetPlayer =>
             {
-                if (targetPlayer.GroupMember == null)
+                var targetMember = targetPlayer.GroupMember;
+                if (targetMember is null)
                 {
                     // should this be invite to group instead?
                     session.EnqueueMessageEncrypted(new ServerGroupRequestJoinResult {
@@ -41,8 +42,8 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                     return;
                 }
 
-                var group = targetPlayer.GroupMember.Group;
-                group.RequestJoin(session.Player);
+                var group = targetMember.Group;
+                group.RequestJoin(targetPlayer, session.Player);
             });
         }
 

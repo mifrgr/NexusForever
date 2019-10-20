@@ -128,16 +128,32 @@ namespace NexusForever.WorldServer.Game.Group
         public void ExpireInvite(GroupInvite invite)
         {
             RemoveInvite(invite);
-            invite.Inviter.Send(BuildServerGroupInviteResult(invite.Player.Name, InviteResult.ExpiredInviter));
-            invite.Send(BuildServerGroupInviteResult(invite.Player.Name, InviteResult.ExpiredInvitee));
-            if (ShouldDisband) Disband();
+            switch (invite.Type)
+            {
+                case GroupInviteType.Invite:
+                    invite.Inviter.Send(BuildServerGroupInviteResult(invite.Player.Name, InviteResult.ExpiredInviter));
+                    invite.Send(BuildServerGroupInviteResult(invite.Player.Name, InviteResult.ExpiredInvitee));
+                    if (ShouldDisband) Disband();
+                    break;
+                case GroupInviteType.Requst:
+                    PartyLeader?.Send(BuildServerGroupRequestJoinResult(invite.Player.Name, InviteResult.ExpiredInvitee, true));
+                    invite.Send(BuildServerGroupRequestJoinResult(invite.Inviter.Player.Name, InviteResult.ExpiredInviter, true));
+                    break;
+                case GroupInviteType.Referral:
+                    // TODO
+                    break;
+            }
         }
 
         /// <summary>
         /// Player has requested to join the group
         /// </summary>
-        public void RequestJoin(Player player)
+        /// <param name="proxyPlayer">player through whom asking to join</param>
+        /// <param name="player">Player requesting to join</param>
+        public void RequestJoin(Player proxyPlayer, Player player)
         {
+            var proxyMember = ValidatePlayer(proxyPlayer);
+
             void sendJoinResult(InviteResult result)
             {
                 player.Session.EnqueueMessageEncrypted(BuildServerGroupRequestJoinResult("", result, true));
@@ -172,8 +188,8 @@ namespace NexusForever.WorldServer.Game.Group
                 return;
             }
 
-            var invite = CreateInvite(PartyLeader, player, GroupInviteType.Requst);
-            invite.Send(BuildServerGroupRequestJoinResult(PartyLeader.Player.Name, InviteResult.Sent, true));
+            var invite = CreateInvite(proxyMember, player, GroupInviteType.Requst);
+            invite.Send(BuildServerGroupRequestJoinResult(proxyPlayer.Name, InviteResult.Sent, true));
 
             PartyLeader.Send(BuildServerGroupRequestJoin(invite));
         }
@@ -328,7 +344,7 @@ namespace NexusForever.WorldServer.Game.Group
                 return;
             }
 
-            if (PartyLeader == null)
+            if (PartyLeader.Id == member.Id)
             {
                 Promote(GetNextPartyLeader().Player);
             }
@@ -439,7 +455,18 @@ namespace NexusForever.WorldServer.Game.Group
 
             while (TryPeekInvite(out var invite))
             { 
-                invite.Send(BuildServerGroupInviteResult(invite.Player.Name, InviteResult.ExpiredInvitee));
+                switch (invite.Type)
+                {
+                    case GroupInviteType.Invite:
+                        invite.Send(BuildServerGroupInviteResult(invite.Player.Name, InviteResult.ExpiredInvitee));
+                        break;
+                    case GroupInviteType.Requst:
+                        PartyLeader.Send(BuildServerGroupRequestJoinResult(invite.Player.Name, InviteResult.ExpiredInvitee, true));
+                        invite.Send(BuildServerGroupRequestJoinResult(invite.Inviter.Player.Name, InviteResult.ExpiredInviter, true));
+                        break;
+                    case GroupInviteType.Referral:
+                        break;
+                }
                 RemoveInvite(invite);
             };
 

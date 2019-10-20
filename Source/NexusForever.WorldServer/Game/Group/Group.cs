@@ -272,8 +272,6 @@ namespace NexusForever.WorldServer.Game.Group
             {
                 members.Remove(member);
                 member.Player.GroupMember = null;
-                if (PartyLeader?.Id == member.Id)
-                    PartyLeader = null;
             }
             finally
             {
