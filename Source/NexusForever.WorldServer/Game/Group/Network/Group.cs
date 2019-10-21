@@ -20,7 +20,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// <param name="callback">callback to generate message per every member</param>
         public void Broadcast(BroadcastCallback callback)
         {
-            Members.ForEach(member =>
+            GetMembers().ForEach(member =>
             {
                 var value = callback(member);
                 if (value != null)

@@ -29,14 +29,14 @@ namespace NexusForever.WorldServer.Game.Group
 
             inviter.Session.EnqueueEvent(new TaskGenericEvent<Character>(CharacterDatabase.GetCharacterByName(playerName), character =>
             {
-                if (character == null)
+                if (character is null)
                 {
                     sendReply(InviteResult.PlayerNotFound);
                     return;
                 }
                 
                 var inviteeSession = NetworkManager<WorldSession>.GetSession(s => s.Player?.CharacterId == character.Id);
-                if (inviteeSession == null)
+                if (inviteeSession is null)
                 {
                     sendReply(InviteResult.PlayerNotFound);
                     return;
@@ -249,7 +249,7 @@ namespace NexusForever.WorldServer.Game.Group
                 return;
 
             var newLeader = FindMember(identity);
-            if (newLeader == null)
+            if (newLeader is null)
                 return;
 
             Promote(newLeader.Player);
@@ -267,7 +267,7 @@ namespace NexusForever.WorldServer.Game.Group
 
             Broadcast(member.BuildServerGroupPromote());
 
-            if (oldLeader != null)
+            if (members.Contains(oldLeader))
                 Broadcast(oldLeader.BuildServerGroupMemberFlagsChanged(true));
 
             Broadcast(member.BuildServerGroupMemberFlagsChanged(true));
@@ -315,7 +315,7 @@ namespace NexusForever.WorldServer.Game.Group
                 return;
 
             var kickedMember = FindMember(identity);
-            if (kickedMember == null)
+            if (kickedMember is null)
                 return;
 
             if (kickedMember.IsPartyLeader)
@@ -360,7 +360,7 @@ namespace NexusForever.WorldServer.Game.Group
             var member = ValidatePlayer(player);
 
             var targetMember = FindMember(identity);
-            if (targetMember == null)
+            if (targetMember is null)
                 return;
 
             if (!member.CanUpdateFlags(changed, targetMember))
@@ -447,7 +447,7 @@ namespace NexusForever.WorldServer.Game.Group
         public void Disband()
         {
             var serverLeave = BuildServerGroupLeave(RemoveReason.Disband);
-            Members.ForEach(member =>
+            GetMembers().ForEach(member =>
             {
                 member.Send(serverLeave);
                 RemoveMember(member);
@@ -485,7 +485,7 @@ namespace NexusForever.WorldServer.Game.Group
             var y = player.Position.Y;
             var z = player.Position.Z;
 
-            Members.ForEach(member =>
+            GetMembers().ForEach(member =>
             {
                if (member.Player.Guid == player.Guid)
                    return;
@@ -498,7 +498,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         public void Teleport(ushort worldId, float x, float y, float z)
         {
-            Members.ForEach(member =>
+            GetMembers().ForEach(member =>
             {
                 member.Player.TeleportTo(worldId, x, y, z);
             });

@@ -86,7 +86,7 @@ namespace NexusForever.WorldServer.Network.Message.Model.Shared
 
             UnknownStruct0List.ForEach(i => i.Write(writer));
 
-            if (MentoringTarget == null)
+            if (MentoringTarget is null)
             {
                 writer.Write((ushort)0, 14u);
                 writer.Write((ulong)0);

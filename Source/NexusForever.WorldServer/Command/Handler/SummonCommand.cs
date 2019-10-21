@@ -18,7 +18,7 @@ namespace NexusForever.WorldServer.Command.Handler
         protected override async Task HandleCommandAsync(CommandContext context, string command, string[] parameters)
         {
             var member = context.Session.Player.GroupMember;
-            if (member == null)
+            if (member is null)
             {
                 await context.SendMessageAsync($"You are not in a group");
                 return;

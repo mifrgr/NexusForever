@@ -55,7 +55,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
             FindPlayer(session, request.PlayerName, targetPlayer =>
             {
                 var invite = targetPlayer.GroupInvite;
-                if (invite == null)
+                if (invite is null)
                 {
                     return;
                 }
@@ -70,7 +70,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
             var player = session.Player;
             
             var invite = player.GroupInvite;
-            if (invite == null)
+            if (invite is null)
                 return;
 
             invite.Group.HandleInvite(invite, request.Response);
@@ -126,11 +126,11 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         {
             var player = session.Player;
             var member = player.GroupMember;
-            if (member == null)
+            if (member is null)
                 throw new InvalidPacketValueException();
 
             var group = member.Group;
-            if (group == null || group.Id != groupId)
+            if (group is null || group.Id != groupId)
                 throw new InvalidPacketValueException();
 
             return (group, player);
@@ -157,14 +157,14 @@ namespace NexusForever.WorldServer.Network.Message.Handler
 
             session.EnqueueEvent(new TaskGenericEvent<Character>(CharacterDatabase.GetCharacterByName(playerName), character =>
             {
-                if (character == null)
+                if (character is null)
                 {
                     sendNotFound();
                     return;
                 }
 
                 var targetSession = NetworkManager<WorldSession>.GetSession(s => s.Player?.CharacterId == character.Id);
-                if (targetSession == null)
+                if (targetSession is null)
                 {
                     sendNotFound();
                     return;

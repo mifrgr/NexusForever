@@ -46,14 +46,14 @@ namespace NexusForever.WorldServer.Game.Group
         private static int nextGroupMemberId = 1;
 
         /// <summary>
+        /// Logger for the groups
+        /// </summary>
+        private static readonly ILogger log = LogManager.GetCurrentClassLogger();
+
+        /// <summary>
         /// Unique Group ID
         /// </summary>
         public readonly ulong Id;
-
-        /// <summary>
-        /// True of group has no other members aside from party leader in it and
-        /// </summary>
-        public bool IsEmpty => members.Count <= 1;
 
         /// <summary>
         /// True if max number of players in the group.
@@ -89,7 +89,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// Group can be dismissed if it has no members aside from group leader
         /// and no pending invites
         /// </summary>
-        private bool ShouldDisband => (members.Count == 0) || (IsEmpty && invites.Count == 0);
+        private bool ShouldDisband => (members.Count == 0) || (members.Count == 1 && invites.Count == 0);
 
         /// <summary>
         /// Group is new if member info has not been sent to the client yet
@@ -97,28 +97,8 @@ namespace NexusForever.WorldServer.Game.Group
         private bool isNewGroup;
 
         /// <summary>
-        /// Logger for the groups
-        /// </summary>
-        private static readonly ILogger log = LogManager.GetCurrentClassLogger();
-
-        /// <summary>
         /// Group members.
         /// </summary>
-        public List<GroupMember> Members
-        {
-            get
-            {
-                membersLock.EnterReadLock();
-                try
-                {
-                    return members.ToList();
-                }
-                finally
-                {
-                    membersLock.ExitReadLock();
-                }
-            }
-        }
         private readonly List<GroupMember> members = new List<GroupMember>();
         private readonly ReaderWriterLockSlim membersLock = new ReaderWriterLockSlim();
 
@@ -244,6 +224,22 @@ namespace NexusForever.WorldServer.Game.Group
         }
 
         /// <summary>
+        /// Get copy of group members in a thread safe way
+        /// </summary>
+        public List<GroupMember> GetMembers()
+        {
+            membersLock.EnterReadLock();
+            try
+            {
+                return members.ToList();
+            }
+            finally
+            {
+                membersLock.ExitReadLock();
+            }
+        }
+
+        /// <summary>
         /// Add new member to the group
         /// </summary>
         private GroupMember CreateMember(Player player)
@@ -303,7 +299,7 @@ namespace NexusForever.WorldServer.Game.Group
             membersLock.EnterReadLock();
             try
             {
-                if (PartyLeader == null) return members[0];
+                if (PartyLeader is null) return members[0];
                 return members.Find(member => member.Id != PartyLeader.Id);
             }
             finally
