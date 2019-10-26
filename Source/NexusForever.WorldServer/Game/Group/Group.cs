@@ -347,14 +347,12 @@ namespace NexusForever.WorldServer.Game.Group
             GroupFlags set = 0;
 
             // Raid
-
             if ((flags & GroupFlags.Raid) != 0)
             {
                 set |= GroupFlags.Raid;
             }
 
             // Join request
-
             if ((flags & GroupFlags.JoinRequestOpen) != 0)
             {
                 set |= GroupFlags.JoinRequestOpen;
@@ -365,7 +363,6 @@ namespace NexusForever.WorldServer.Game.Group
             }
 
             // Referral
-
             if ((flags & GroupFlags.ReferralsOpen) != 0)
             {
                 set |= GroupFlags.ReferralsOpen;
@@ -381,7 +378,6 @@ namespace NexusForever.WorldServer.Game.Group
                 set |= GroupFlags.OpenWorld;
             }
 
-            // update
             Flags = set;
         }
     }
