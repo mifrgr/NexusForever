@@ -341,7 +341,6 @@ namespace NexusForever.WorldServer.Game.Group
         /// <summary>
         /// Set group flags
         /// </summary>
-        /// <param name="flags"></param>
         private void SetFlags(GroupFlags flags)
         {
             GroupFlags set = 0;
