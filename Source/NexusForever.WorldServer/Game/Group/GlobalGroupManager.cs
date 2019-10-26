@@ -22,7 +22,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// <summary>
         /// Next unique ID for a new group.
         /// </summary>
-        private static ulong NextGroupId => (uint)Interlocked.Increment(ref nextGroupId);
+        private static ulong NextGroupId => (ulong)Interlocked.Increment(ref nextGroupId);
         private static long nextGroupId;
 
         /// <summary>

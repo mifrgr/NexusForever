@@ -1,9 +1,9 @@
 ﻿using NexusForever.Shared.Network.Message;
+using NexusForever.WorldServer.Game.Group.Extensions;
 using NexusForever.WorldServer.Game.Group.Static;
 using NexusForever.WorldServer.Network.Message.Model;
 using NexusForever.WorldServer.Network.Message.Model.Shared;
 using System.Collections.Generic;
-using System.Linq;
 
 #nullable enable
 
@@ -91,7 +91,7 @@ namespace NexusForever.WorldServer.Game.Group
 
             return new ServerGroupJoin
             {
-                JoinedPlayer = member.BuildTargetPlayerIdentity(),
+                JoinedPlayer = member.Player.BuildTargetPlayerIdentity(),
                 GroupId = Id,
                 GroupFlags = Flags,
                 MaxSize = MaxSize,
@@ -100,7 +100,7 @@ namespace NexusForever.WorldServer.Game.Group
                 LootThreshold = LootThreshold.Excellent,
                 LootRuleHarvest = LootRuleHarvest.FirstTagger,      // IDK were it shows this setting in the UI
                 GroupMembers = groupMembers,
-                LeaderIdentity = PartyLeader.BuildTargetPlayerIdentity(),
+                LeaderIdentity = PartyLeader.Player.BuildTargetPlayerIdentity(),
                 Realm = WorldServer.RealmId
             };
         }
@@ -205,7 +205,7 @@ namespace NexusForever.WorldServer.Game.Group
             return new ServerGroupSendReadyCheck
             {
                 GroupId = Id,
-                SenderIdentity = member.BuildTargetPlayerIdentity(),
+                SenderIdentity = member.Player.BuildTargetPlayerIdentity(),
                 Message = message
             };
         }

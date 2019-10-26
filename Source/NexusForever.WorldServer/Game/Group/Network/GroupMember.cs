@@ -1,4 +1,5 @@
 ﻿using NexusForever.Shared.Network.Message;
+using NexusForever.WorldServer.Game.Group.Extensions;
 using NexusForever.WorldServer.Game.Group.Static;
 using NexusForever.WorldServer.Network.Message.Model;
 using NexusForever.WorldServer.Network.Message.Model.Shared;
@@ -19,25 +20,13 @@ namespace NexusForever.WorldServer.Game.Group
         }
 
         /// <summary>
-        /// Identity object suitable for sending to the client
-        /// </summary>
-        public TargetPlayerIdentity BuildTargetPlayerIdentity()
-        {
-            return new TargetPlayerIdentity
-            {
-                RealmId = WorldServer.RealmId,
-                CharacterId = Player.CharacterId
-            };
-        }
-
-        /// <summary>
         /// Group member info suitable for sending to the client
         /// </summary>
         public GroupMemberInfo BuildGroupMemberInfo(uint groupIndex)
         {
             return new GroupMemberInfo
             {
-                MemberIdentity = BuildTargetPlayerIdentity(),
+                MemberIdentity = Player.BuildTargetPlayerIdentity(),
                 Flags = Flags,
                 GroupMember = BuildGroupMember(),
                 GroupIndex = groupIndex
@@ -49,23 +38,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         public Member BuildGroupMember()
         {
-            return new Member
-            {
-                Name = Player.Name,
-                Faction = Player.Faction1,
-                Race = Player.Race,
-                Class = Player.Class,
-                Sex = Player.Sex,
-                Level = (byte)Player.Level,
-                EffectiveLevel = (byte)Player.Level,
-                Path = Player.Path,
-                GroupMemberId = Id,
-                Realm = WorldServer.RealmId,
-                WorldZoneId = (ushort)Player.Zone.Id,
-                Unknown25 = 0, // Player.Map.Entry.Id,
-                Unknown26 = 0,
-                SyncedToGroup = true
-            };
+            return Player.BuildGroupMember(Id);
         }
 
         /// <summary>
@@ -77,7 +50,7 @@ namespace NexusForever.WorldServer.Game.Group
             {
                 GroupId = Group.Id,
                 MemberId = Id,
-                PlayerIdentity = BuildTargetPlayerIdentity()
+                PlayerIdentity = Player.BuildTargetPlayerIdentity()
             };
         }
 
@@ -92,7 +65,7 @@ namespace NexusForever.WorldServer.Game.Group
             {
                 GroupId = Group.Id,
                 MemberId = Id,
-                PlayerIdentity = BuildTargetPlayerIdentity(),
+                PlayerIdentity = Player.BuildTargetPlayerIdentity(),
                 Flags = Flags,
                 FromPromotion = fromPromotion
             };
@@ -107,7 +80,7 @@ namespace NexusForever.WorldServer.Game.Group
             {
                 GroupId = Group.Id,
                 MemberId = Id,
-                PlayerLeave = BuildTargetPlayerIdentity(),
+                PlayerLeave = Player.BuildTargetPlayerIdentity(),
                 RemoveReason = reason
             };
         }
