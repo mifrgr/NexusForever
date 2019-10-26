@@ -5,9 +5,7 @@ using NexusForever.WorldServer.Database.Character.Model;
 using NexusForever.WorldServer.Game.Entity;
 using NexusForever.WorldServer.Game.Group.Static;
 using NexusForever.WorldServer.Network;
-using NexusForever.WorldServer.Network.Message.Model;
 using NexusForever.WorldServer.Network.Message.Model.Shared;
-using System.Linq;
 
 #nullable enable
 
