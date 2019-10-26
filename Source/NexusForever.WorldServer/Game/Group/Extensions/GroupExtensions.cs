@@ -20,7 +20,7 @@ namespace NexusForever.WorldServer.Game.Group.Extensions
                 Level = (byte)player.Level,
                 EffectiveLevel = (byte)player.Level,
                 Path = player.Path,
-                GroupMemberId = groupMemberId,
+                GroupMemberId = groupMemberId, // this is **probably** something else.
                 Realm = WorldServer.RealmId,
                 WorldZoneId = (ushort)player.Zone.Id,
                 Unknown25 = player.Map.Entry.Id, // probably?

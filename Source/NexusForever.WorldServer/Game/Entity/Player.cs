@@ -289,6 +289,7 @@ namespace NexusForever.WorldServer.Game.Entity
                 Race     = Race,
                 Class    = Class,
                 Sex      = Sex,
+                GroupId  = GroupMember?.Group.Id ?? 0,
                 Bones    = Bones,
                 Title    = TitleManager.ActiveTitleId,
                 PvPFlag  = PvPFlag.Disabled

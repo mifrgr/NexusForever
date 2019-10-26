@@ -83,5 +83,19 @@ namespace NexusForever.WorldServer.Game.Group
                 RemoveReason = reason
             };
         }
+
+
+        /// <summary>
+        /// Build player entity update packet to associate it with group id
+        /// </summary>
+        /// <param name="isMember">Sends group id, otherwise sense 0</param>
+        public ServerEntityGroupAssociation BuildServerEntityGroupAssociation(bool isMember)
+        {
+            return new ServerEntityGroupAssociation
+            {
+                UnitId = Player.Guid,
+                GroupId = isMember ? Group.Id : 0ul
+            };
+        }
     }
 }

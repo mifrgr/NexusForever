@@ -40,7 +40,7 @@ namespace NexusForever.WorldServer.Network.Message.Model.Shared
         public byte EffectiveLevel { get; set; } // 7
         public Path Path { get; set; } // 3
         public uint Unknown4 { get; set; } // 17
-        public ushort GroupMemberId { get; set; } // 16
+        public ushort GroupMemberId { get; set; } // 16 Probably something else and not a group member ID
 
         public List<UnknownStruct0> UnknownStruct0List { get; set; } = new List<UnknownStruct0> { new UnknownStruct0(), new UnknownStruct0(), new UnknownStruct0(), new UnknownStruct0(), new UnknownStruct0() };
 
