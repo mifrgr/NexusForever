@@ -58,7 +58,6 @@ namespace NexusForever.WorldServer.Game.Group
         /// Build flags flag change
         /// </summary>
         /// <param name="fromPromotion">if true client will supress notifications in chat</param>
-        /// <returns></returns>
         public ServerGroupMemberFlagsChanged BuildServerGroupMemberFlagsChanged(bool fromPromotion)
         {
             return new ServerGroupMemberFlagsChanged

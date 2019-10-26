@@ -16,7 +16,6 @@ namespace NexusForever.WorldServer.Game.Group
         /// <summary>
         /// Broadcast generated message to every member in the group
         /// </summary>
-        /// <param name="group">Group to broadcast to</param>
         /// <param name="callback">callback to generate message per every member</param>
         public void Broadcast(BroadcastCallback callback)
         {
@@ -31,32 +30,15 @@ namespace NexusForever.WorldServer.Game.Group
         /// <summary>
         /// Broadcast given message to the whole group
         /// </summary>
-        /// <param name="message"></param>
-        public void Broadcast(IWritable message)
-        {
-            membersLock.EnterReadLock();
-            try
-            {
-                members.ForEach(m => m.Send(message));
-            }
-            finally
-            {
-                membersLock.ExitReadLock();
-            }
-        }
-
-        /// <summary>
-        /// Broadcast given message to the whole group, except excluded member
-        /// </summary>
         /// <param name="message">message to broadcast</param>
-        /// <param name="excluded">excluded member</param>
-        public void Broadcast(IWritable message, GroupMember excluded)
+        /// <param name="excluded">do not send message to excluded member</param>
+        public void Broadcast(IWritable message, GroupMember? excluded = null)
         {
             membersLock.EnterReadLock();
             try
             {
                 members.ForEach(m => {
-                    if (m.Id == excluded.Id)
+                    if (m.Id == excluded?.Id)
                         return;
                     m.Send(message);
                 });
@@ -71,7 +53,6 @@ namespace NexusForever.WorldServer.Game.Group
         /// Build Group Join packet for the given member
         /// </summary>
         /// <param name="member">new member who joined</param>
-        /// <returns></returns>
         public ServerGroupJoin BuildServerGroupJoin(GroupMember member)
         {
             uint groupIndex = 1;
@@ -164,14 +145,17 @@ namespace NexusForever.WorldServer.Game.Group
             };
         }
 
-        public ServerGroupRequestJoinResult BuildServerGroupRequestJoinResult(string playerName, InviteResult result, bool isJoin)
+        /// <summary>
+        /// Build group reuqest to join result
+        /// </summary>
+        public ServerGroupRequestJoinResult BuildServerGroupRequestJoinResult(string playerName, InviteResult result)
         {
             return new ServerGroupRequestJoinResult
             {
                 GroupId = Id,
                 PlayerName = playerName,
                 Result = result,
-                IsJoin = isJoin
+                IsJoin = true
             };
         }
 
@@ -213,7 +197,6 @@ namespace NexusForever.WorldServer.Game.Group
         /// <summary>
         /// Build group flags changed packet
         /// </summary>
-        /// <returns></returns>
         public ServerGroupFlagsChanged BuildServerGroupFlagsChanged()
         {
             return new ServerGroupFlagsChanged
