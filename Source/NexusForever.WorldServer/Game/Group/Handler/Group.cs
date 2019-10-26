@@ -168,7 +168,7 @@ namespace NexusForever.WorldServer.Game.Group
                 return;
             }
 
-            if ((Flags & GroupFlags.JoinRequestClosed) != 0)
+            if (JoinRequestsMethod == InvitationMethod.Closed)
             {
                 sendJoinResult(InviteResult.NotAcceptingRequests);
                 return;
@@ -180,7 +180,7 @@ namespace NexusForever.WorldServer.Game.Group
                 return;
             }
 
-            if ((Flags & GroupFlags.JoinRequestOpen) != 0)
+            if (JoinRequestsMethod == InvitationMethod.Open)
             {
                 Add(player);
                 return;
@@ -353,7 +353,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         /// <param name="changed">flags that have changed</param>
         /// <param name="flags">new flag values</param>
-        public void UpdateFlags(Player player, TargetPlayerIdentity identity, GroupMemberInfoFlags changed, GroupMemberInfoFlags flags)
+        public void UpdateMemberFlags(Player player, TargetPlayerIdentity identity, GroupMemberInfoFlags changed, GroupMemberInfoFlags flags)
         {
             var member = ValidatePlayer(player);
 
@@ -364,17 +364,16 @@ namespace NexusForever.WorldServer.Game.Group
             if (!member.CanUpdateFlags(changed, targetMember))
                 return;
 
-            UpdateFlags(targetMember.Player, changed, flags);
+            UpdateMemberFlags(targetMember.Player, changed, flags);
         }
 
         /// <summary>
         /// Update group member flags
         /// </summary>
-        public void UpdateFlags(Player player, GroupMemberInfoFlags changed, GroupMemberInfoFlags flags)
+        public void UpdateMemberFlags(Player player, GroupMemberInfoFlags changed, GroupMemberInfoFlags flags)
         {
             var member = ValidatePlayer(player);
 
-            // TODO: encapsulate
             var set = flags & changed;
             member.SetFlags(set, true);
 
@@ -389,27 +388,24 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         /// <param name="player">player doing the flag change</param>
         /// <param name="flags">flag that is being changed</param>
-        public void UpdateFlags(Player player, GroupFlags flags)
+        public void UpdatePartyFlags(Player player, GroupFlags flags)
         {
             var member = ValidatePlayer(player);
             if (!member.IsPartyLeader)
                 return;
 
-            UpdateFlags(flags);
+            UpdatePartyFlags(flags);
         }
 
         /// <summary>
         /// Change flags of group
         /// </summary>
         /// <param name="flags">flag that is being changed</param>
-        public void UpdateFlags(GroupFlags flags)
+        public void UpdatePartyFlags(GroupFlags flags)
         {
             var wasRaidAlready = IsRaid;
 
-            if ((flags & (GroupFlags.Raid)) != 0)
-                Flags = GroupFlags.Raid;
-            else
-                Flags = flags;
+            SetFlags(flags);
 
             Broadcast(BuildServerGroupFlagsChanged());
 

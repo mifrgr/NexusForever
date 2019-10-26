@@ -62,6 +62,45 @@ namespace NexusForever.WorldServer.Game.Group
         public GroupMember PartyLeader { get; private set; }
 
         /// <summary>
+        /// Group flags. Use Flags accessor to get correct flags
+        /// </summary>
+        public GroupFlags Flags { get; private set; }
+
+        /// <summary>
+        /// Group join requests setting
+        /// </summary>
+        public InvitationMethod JoinRequestsMethod
+        {
+            get
+            {
+                if ((Flags & GroupFlags.JoinRequestOpen) != 0)
+                    return InvitationMethod.Open;
+
+                if ((Flags & GroupFlags.JoinRequestClosed) != 0)
+                    return InvitationMethod.Closed;
+
+                return InvitationMethod.Neutral;
+            }
+        }
+
+        /// <summary>
+        /// Group referrals settings
+        /// </summary>
+        public InvitationMethod ReferralsMethod
+        {
+            get
+            {
+                if ((Flags & GroupFlags.ReferralsOpen) != 0)
+                    return InvitationMethod.Open;
+
+                if ((Flags & GroupFlags.ReferralsClosed) != 0)
+                    return InvitationMethod.Closed;
+
+                return InvitationMethod.Neutral;
+            }
+        }
+
+        /// <summary>
         /// Is this open world (non instance) group
         /// </summary>
         public bool IsOpenWorld => (Flags & GroupFlags.OpenWorld) != 0;
@@ -75,11 +114,6 @@ namespace NexusForever.WorldServer.Game.Group
         /// Max size for this group type
         /// </summary>
         public uint MaxSize => IsRaid ? MaxRaidSize : MaxPartySize;
-
-        /// <summary>
-        /// Group flags that can be sent to the client
-        /// </summary>
-        public GroupFlags Flags { get; private set; }
 
         /// <summary>
         /// Group can be dismissed if it has no members aside from group leader
@@ -123,7 +157,7 @@ namespace NexusForever.WorldServer.Game.Group
         {
             Id = id;
             PartyLeader = CreateMember(player);
-            Flags |= GroupFlags.OpenWorld;
+            SetFlags(GroupFlags.OpenWorld);
             isNewGroup = true;
         }
 
@@ -302,6 +336,53 @@ namespace NexusForever.WorldServer.Game.Group
             {
                 membersLock.ExitReadLock();
             }
+        }
+
+        /// <summary>
+        /// Set group flags
+        /// </summary>
+        /// <param name="flags"></param>
+        private void SetFlags(GroupFlags flags)
+        {
+            GroupFlags set = 0;
+
+            // Raid
+
+            if ((flags & GroupFlags.Raid) != 0)
+            {
+                set |= GroupFlags.Raid;
+            }
+
+            // Join request
+
+            if ((flags & GroupFlags.JoinRequestOpen) != 0)
+            {
+                set |= GroupFlags.JoinRequestOpen;
+            }
+            else if ((flags & GroupFlags.JoinRequestClosed) != 0)
+            {
+                set |= GroupFlags.JoinRequestClosed;
+            }
+
+            // Referral
+
+            if ((flags & GroupFlags.ReferralsOpen) != 0)
+            {
+                set |= GroupFlags.ReferralsOpen;
+            }
+            else if ((flags & GroupFlags.ReferralsClosed) != 0)
+            {
+                set |= GroupFlags.ReferralsClosed;
+            }
+
+            // open world
+            if ((flags & GroupFlags.OpenWorld) != 0)
+            {
+                set |= GroupFlags.OpenWorld;
+            }
+
+            // update
+            Flags = set;
         }
     }
 }

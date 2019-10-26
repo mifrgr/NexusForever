@@ -125,10 +125,10 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         public void PrepareForReadyCheck()
         {
-            var flags = GroupMemberInfoFlags.HasSetReady
+            var unset = GroupMemberInfoFlags.HasSetReady
                       | GroupMemberInfoFlags.Ready;
-            this.flags &= ~flags;
-            this.flags |= GroupMemberInfoFlags.Pending;
+            flags &= ~unset;
+            flags |= GroupMemberInfoFlags.Pending;
         }
 
         /// <summary>

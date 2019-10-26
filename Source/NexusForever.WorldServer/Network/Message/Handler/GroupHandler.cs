@@ -56,9 +56,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
             {
                 var invite = targetPlayer.GroupInvite;
                 if (invite is null)
-                {
                     return;
-                }
                 
                 group.HandleRequestJoin(invite, request.Accepted);
             });
@@ -94,7 +92,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         public static void HandleGroupSetRole(WorldSession session, ClientGroupSetRole request)
         {
             var (group, player) = ValidateGroupMembership(session, request.GroupId);
-            group.UpdateFlags(player, request.PlayerIdentity, request.ChangedFlags, request.Flags);
+            group.UpdateMemberFlags(player, request.PlayerIdentity, request.ChangedFlags, request.Flags);
         }
 
         [MessageHandler(GameMessageOpcode.ClientGroupSendReadyCheck)]
@@ -108,7 +106,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         public static void HandleGroupFlagsChanged(WorldSession session, ClientGroupFlags request)
         {
             var (group, player) = ValidateGroupMembership(session, request.GroupId);
-            group.UpdateFlags(player, request.Flag);
+            group.UpdatePartyFlags(player, request.Flag);
         }
 
         [MessageHandler(GameMessageOpcode.ClientGroupKick)]
