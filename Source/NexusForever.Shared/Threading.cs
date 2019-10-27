@@ -44,7 +44,7 @@ namespace NexusForever.Shared
         private readonly ReaderWriterLockSlim writerLock;
 
         /// <summary>
-        /// Create the lock and enter read mode
+        /// Create the lock and enter write mode
         /// </summary>
         public DisposableWriteLock(ReaderWriterLockSlim writerLock)
         {
