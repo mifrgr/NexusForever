@@ -1,12 +1,15 @@
 ﻿using NexusForever.Shared;
 using NexusForever.WorldServer.Game.Entity;
+using NexusForever.WorldServer.Game.Group.Extensions;
 using NexusForever.WorldServer.Game.Group.Static;
+using NexusForever.WorldServer.Network.Message.Model;
 using NexusForever.WorldServer.Network.Message.Model.Shared;
 using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using NexusForever.WorldServer.Game.Entity;
 
 #nullable enable
 
@@ -191,6 +194,33 @@ namespace NexusForever.WorldServer.Game.Group
 
         private void UpdatePositions()
         {
+            //using (membersLock.GetReadLock())
+            //{
+            //    var entries = new ServerGroupPositionUpdate.Entry[members.Count];
+            //    for (var i = 0; i < members.Count; i++)
+            //    {
+            //        var player = members[i].Player;
+            //        entries[i] = new ServerGroupPositionUpdate.Entry
+            //        {
+            //            Player = player.BuildTargetPlayerIdentity(),
+            //            Position = new Position(player.Position),
+            //            UnitId = player.Guid,
+            //            Flags = 0
+            //        };
+            //    }
+
+            //    var update = new ServerGroupPositionUpdate
+            //    {
+            //        GroupId = Id,
+            //        WorldZoneId = (ushort)PartyLeader.Player.Zone.Id,
+            //        Entries = entries
+            //    };
+
+            //    foreach (var member in members)
+            //    {
+            //        member.Send(update);
+            //    }
+            //}
         }
 
         /// <summary>
