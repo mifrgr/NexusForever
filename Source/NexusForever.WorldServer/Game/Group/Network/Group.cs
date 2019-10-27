@@ -1,4 +1,5 @@
-﻿using NexusForever.Shared.Network.Message;
+﻿using NexusForever.Shared;
+using NexusForever.Shared.Network.Message;
 using NexusForever.WorldServer.Game.Group.Extensions;
 using NexusForever.WorldServer.Game.Group.Static;
 using NexusForever.WorldServer.Network.Message.Model;
@@ -38,16 +39,11 @@ namespace NexusForever.WorldServer.Game.Group
         /// <param name="excluded">do not send message to excluded member</param>
         public void Broadcast(IWritable message, GroupMember? excluded = null)
         {
-            try
+            using(membersLock.GetReadLock())
             {
-                membersLock.EnterReadLock();
                 foreach (var member in members)
                     if (member.Id != excluded?.Id)
                         member.Send(message);
-            }
-            finally
-            {
-                membersLock.ExitReadLock();
             }
         }
 
@@ -60,10 +56,8 @@ namespace NexusForever.WorldServer.Game.Group
         /// <param name="member">If not null then only related to this member</param>
         public void SendGroupEntityAssociations(bool associate, GroupMember? member = null)
         {
-            try
+            using(membersLock.GetReadLock())
             {
-                membersLock.EnterReadLock();
-
                 // multicast to all
                 if (member is null)
                 {
@@ -106,10 +100,6 @@ namespace NexusForever.WorldServer.Game.Group
                     }
                 }
             }
-            finally
-            {
-                membersLock.ExitReadLock();
-            }
         }
 
         #region Packets
@@ -122,15 +112,10 @@ namespace NexusForever.WorldServer.Game.Group
         {
             uint groupIndex = 1;
             var groupMembers = new List<ServerGroupJoin.GroupMemberInfo>();
-            membersLock.EnterReadLock();
-            try
-            {
+            using(membersLock.GetReadLock())
+            { 
                 foreach (var groupMember in members)
                     groupMembers.Add(groupMember.BuildGroupMemberInfo(groupIndex++));
-            }
-            finally
-            {
-                membersLock.ExitReadLock();
             }
 
             return new ServerGroupJoin
@@ -166,8 +151,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         public ServerGroupMemberAdd BuildServerGroupMemberAdd(GroupMember member)
         {
-            membersLock.EnterReadLock();
-            try
+            using (membersLock.GetReadLock())
             {
                 var groupIndex = (uint)members.IndexOf(member) + 1;
                 var memberInfo = member.BuildGroupMemberInfo(groupIndex);
@@ -176,10 +160,6 @@ namespace NexusForever.WorldServer.Game.Group
                     GroupId = Id,
                     AddMemberInfo = memberInfo
                 };
-            }
-            finally
-            {
-                membersLock.ExitReadLock();
             }
         }
 
@@ -228,14 +208,9 @@ namespace NexusForever.WorldServer.Game.Group
         public ServerGroupInviteReceived BuildServerGroupInviteReceived()
         {
             var groupMembers = new List<Member>();
-            membersLock.EnterReadLock();
-            try
+            using (membersLock.GetReadLock())
             {
                 members.ForEach(m => groupMembers.Add(m.BuildGroupMember()));
-            }
-            finally
-            {
-                membersLock.ExitReadLock();
             }
             return new ServerGroupInviteReceived
             {

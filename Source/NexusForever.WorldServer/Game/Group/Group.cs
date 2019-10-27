@@ -200,18 +200,13 @@ namespace NexusForever.WorldServer.Game.Group
         /// <returns>true if invite is found</returns>
         private bool TryPeekInvite(out GroupInvite invite)
         {
-            invitesLock.EnterReadLock();
-            try
+            using(invitesLock.GetReadLock())
             {
                 var hasInvite = invites.Count > 0;
                 #nullable disable
                 invite = hasInvite ? invites[0] : null;
                 #nullable enable
                 return hasInvite;
-            }
-            finally
-            {
-                invitesLock.ExitReadLock();
             }
         }
 
@@ -223,15 +218,10 @@ namespace NexusForever.WorldServer.Game.Group
         private GroupInvite CreateInvite(GroupMember inviter, Player invitee, GroupInviteType type)
         {
             var invite = new GroupInvite(this, invitee, inviter, type);
-            invitesLock.EnterWriteLock();
-            try
+            using(invitesLock.GetWriteLock())
             {
                 invites.Add(invite);
                 invitee.GroupInvite = invite;
-            }
-            finally
-            {
-                invitesLock.ExitWriteLock();
             }
             return invite;
         }
@@ -241,15 +231,10 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         private void RemoveInvite(GroupInvite invite)
         {
-            invitesLock.EnterWriteLock();
-            try
+            using (invitesLock.GetWriteLock())
             {
                 invite.Player.GroupInvite = null;
                 invites.Remove(invite);
-            }
-            finally
-            {
-                invitesLock.ExitWriteLock();
             }
         }
 
@@ -258,14 +243,9 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         public List<GroupMember> GetMembers()
         {
-            membersLock.EnterReadLock();
-            try
+            using(membersLock.GetReadLock())
             {
                 return members.ToList();
-            }
-            finally
-            {
-                membersLock.ExitReadLock();
             }
         }
 
@@ -275,15 +255,10 @@ namespace NexusForever.WorldServer.Game.Group
         private GroupMember CreateMember(Player player)
         {
             var member = new GroupMember(NextGroupMemberId, this, player);
-            membersLock.EnterWriteLock();
-            try
+            using(membersLock.GetWriteLock())
             {
                 members.Add(member);
                 player.GroupMember = member;
-            }
-            finally
-            {
-                membersLock.ExitWriteLock();
             }
             return member;
         }
@@ -293,15 +268,10 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         private void RemoveMember(GroupMember member)
         {
-            membersLock.EnterWriteLock();
-            try
+            using(membersLock.GetWriteLock())
             {
                 members.Remove(member);
                 member.Player.GroupMember = null;
-            }
-            finally
-            {
-                membersLock.ExitWriteLock();
             }
         }
 
@@ -310,14 +280,9 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         private GroupMember FindMember(TargetPlayerIdentity target)
         {
-            membersLock.EnterReadLock();
-            try
+            using (membersLock.GetReadLock())
             {
                 return members.Find(m => m.Player.CharacterId == target.CharacterId);
-            }
-            finally
-            {
-                membersLock.ExitReadLock();
             }
         }
 
@@ -326,15 +291,10 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         private GroupMember GetNextPartyLeader()
         {
-            membersLock.EnterReadLock();
-            try
+            using (membersLock.GetReadLock())
             {
                 if (PartyLeader is null) return members[0];
                 return members.Find(member => member.Id != PartyLeader.Id);
-            }
-            finally
-            {
-                membersLock.ExitReadLock();
             }
         }
 
