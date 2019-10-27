@@ -12,7 +12,7 @@ using System.Threading;
 
 namespace NexusForever.WorldServer.Game.Group
 {
-    public partial class Group: IUpdate
+    public partial class Group : IUpdate
     {
         /// <summary>
         /// Maxoimum size party (non raid) group can be
@@ -200,7 +200,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// <returns>true if invite is found</returns>
         private bool TryPeekInvite(out GroupInvite invite)
         {
-            using(invitesLock.GetReadLock())
+            using (invitesLock.GetReadLock())
             {
                 var hasInvite = invites.Count > 0;
                 #nullable disable
@@ -218,7 +218,7 @@ namespace NexusForever.WorldServer.Game.Group
         private GroupInvite CreateInvite(GroupMember inviter, Player invitee, GroupInviteType type)
         {
             var invite = new GroupInvite(this, invitee, inviter, type);
-            using(invitesLock.GetWriteLock())
+            using (invitesLock.GetWriteLock())
             {
                 invites.Add(invite);
                 invitee.GroupInvite = invite;
@@ -243,7 +243,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         public List<GroupMember> GetMembers()
         {
-            using(membersLock.GetReadLock())
+            using (membersLock.GetReadLock())
             {
                 return members.ToList();
             }
@@ -255,7 +255,7 @@ namespace NexusForever.WorldServer.Game.Group
         private GroupMember CreateMember(Player player)
         {
             var member = new GroupMember(NextGroupMemberId, this, player);
-            using(membersLock.GetWriteLock())
+            using (membersLock.GetWriteLock())
             {
                 members.Add(member);
                 player.GroupMember = member;
@@ -268,7 +268,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         private void RemoveMember(GroupMember member)
         {
-            using(membersLock.GetWriteLock())
+            using (membersLock.GetWriteLock())
             {
                 members.Remove(member);
                 member.Player.GroupMember = null;

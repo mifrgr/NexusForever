@@ -6,7 +6,7 @@ using System.Threading;
 namespace NexusForever.Shared
 {
     /// <summary>
-    /// Disposable class to enter EnterReadLock with using statement 
+    /// Disposable class to EnterReadLock with using statement 
     /// </summary>
     public struct DisposableReadLock : IDisposable
     {
@@ -34,7 +34,7 @@ namespace NexusForever.Shared
     }
 
     /// <summary>
-    /// Disposable class to enter EnterReadLock with using statement 
+    /// Disposable class to EnterWriteLock with using statement 
     /// </summary>
     public struct DisposableWriteLock : IDisposable
     {
@@ -53,7 +53,7 @@ namespace NexusForever.Shared
         }
 
         /// <summary>
-        /// Exit read mode
+        /// Exit write mode
         /// </summary>
         public void Dispose()
         {
