@@ -508,7 +508,7 @@ namespace NexusForever.WorldServer.Game.Entity
         }
 
         /// <summary>
-        /// Returns true if two players can see each other
+        /// Returns true if two players are within visible range
         /// </summary>
         public bool CanSeePlayer(Player player)
         {
