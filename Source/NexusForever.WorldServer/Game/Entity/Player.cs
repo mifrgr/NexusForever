@@ -518,7 +518,6 @@ namespace NexusForever.WorldServer.Game.Entity
                     if (visible.CharacterId == player.CharacterId)
                         return true;
             }
-
             return false;
         }
 

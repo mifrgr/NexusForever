@@ -286,7 +286,7 @@ namespace NexusForever.WorldServer.Game.Group
             {
                 isNewGroup = false;
                 Broadcast(member => BuildServerGroupJoin(member));
-                SendGroupEntityAssociations(true, null);
+                SendGroupEntityAssociations(true);
             }
             else
             {
@@ -444,7 +444,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         public void Disband()
         {
-            SendGroupEntityAssociations(false, null);
+            SendGroupEntityAssociations(false);
 
             var serverLeave = BuildServerGroupLeave(RemoveReason.Disband);
             GetMembers().ForEach(member =>
