@@ -508,6 +508,21 @@ namespace NexusForever.WorldServer.Game.Entity
         }
 
         /// <summary>
+        /// Returns true if two players can see each other
+        /// </summary>
+        public bool CanSeePlayer(Player player)
+        {
+            foreach (var entity in visibleEntities.Values)
+            {
+                if (entity is Player visible)
+                    if (visible.CharacterId == player.CharacterId)
+                        return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Set the <see cref="WorldEntity"/> that currently being controlled by the <see cref="Player"/>.
         /// </summary>
         public void SetControl(WorldEntity entity)

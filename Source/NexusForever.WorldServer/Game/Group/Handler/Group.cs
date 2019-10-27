@@ -282,37 +282,18 @@ namespace NexusForever.WorldServer.Game.Group
 
             var newMember = CreateMember(player);
 
-            // TODO: Send group / entity association only to group members
-            //       who are within the same zone. As UnitIds can be duplicate
-            //       across different maps.
-
             if (isNewGroup)
             {
                 isNewGroup = false;
                 Broadcast(member => BuildServerGroupJoin(member));
-                // Inner broadcast will acquire a read lock. So making
-                // a copy to avoid lock recursion.
-                var groupMembers = GetMembers();
-                groupMembers.ForEach(m => Broadcast(m.BuildServerEntityGroupAssociation(true)));
+                SendGroupEntityAssociations(true, null);
             }
             else
             {
                 newMember.Send(BuildServerGroupJoin(newMember));
                 var addMember = BuildServerGroupMemberAdd(newMember);
                 Broadcast(addMember, newMember);
-                membersLock.EnterReadLock();
-                try
-                {
-                    var association = newMember.BuildServerEntityGroupAssociation(true);
-                    members.ForEach(m => {
-                        newMember.Send(m.BuildServerEntityGroupAssociation(true));
-                        m.Send(association);
-                    });
-                }
-                finally
-                {
-                    membersLock.ExitReadLock();
-                }
+                SendGroupEntityAssociations(true, newMember);
             }
 
             if (IsFull)
@@ -357,7 +338,7 @@ namespace NexusForever.WorldServer.Game.Group
             RemoveMember(member);
             member.Send(BuildServerGroupLeave(reason));
             Broadcast(member.BuildServerGroupRemove(reason));
-            Broadcast(member.BuildServerEntityGroupAssociation(false));
+            SendGroupEntityAssociations(false, member);
 
             if (ShouldDisband)
             {
@@ -463,11 +444,12 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         public void Disband()
         {
+            SendGroupEntityAssociations(false, null);
+
             var serverLeave = BuildServerGroupLeave(RemoveReason.Disband);
             GetMembers().ForEach(member =>
             {
                 member.Send(serverLeave);
-                member.Send(member.BuildServerEntityGroupAssociation(false));
                 RemoveMember(member);
             });
 

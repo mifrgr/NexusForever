@@ -206,7 +206,7 @@ namespace NexusForever.WorldServer.Game.Group
                 var hasInvite = invites.Count > 0;
                 #nullable disable
                 invite = hasInvite ? invites[0] : null;
-                #nullable restore
+                #nullable enable
                 return hasInvite;
             }
             finally

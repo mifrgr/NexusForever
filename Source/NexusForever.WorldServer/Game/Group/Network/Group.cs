@@ -11,20 +11,24 @@ namespace NexusForever.WorldServer.Game.Group
 {
     public partial class Group
     {
+        #region Broadcast
+
+        /// <summary>
+        /// Generate message to broadcast
+        /// </summary>
+        /// <param name="member">message subject</param>
+        /// <returns>message to send or null to skip</returns>
         public delegate IWritable? BroadcastCallback(GroupMember member);
 
         /// <summary>
-        /// Broadcast generated message to every member in the group
+        /// Broadcast message generated in callback to all members
         /// </summary>
-        /// <param name="callback">callback to generate message per every member</param>
+        /// <param name="callback">callback to generate message per member</param>
         public void Broadcast(BroadcastCallback callback)
         {
-            GetMembers().ForEach(member =>
-            {
-                var value = callback(member);
-                if (value != null)
-                    member.Send(value);
-            });
+            foreach (var member in GetMembers())
+                if (callback(member) is IWritable message)
+                    member.Send(message);
         }
 
         /// <summary>
@@ -34,20 +38,81 @@ namespace NexusForever.WorldServer.Game.Group
         /// <param name="excluded">do not send message to excluded member</param>
         public void Broadcast(IWritable message, GroupMember? excluded = null)
         {
-            membersLock.EnterReadLock();
             try
             {
-                members.ForEach(m => {
-                    if (m.Id == excluded?.Id)
-                        return;
-                    m.Send(message);
-                });
+                membersLock.EnterReadLock();
+                foreach (var member in members)
+                    if (member.Id != excluded?.Id)
+                        member.Send(message);
             }
             finally
             {
                 membersLock.ExitReadLock();
             }
         }
+
+        #endregion
+
+        /// <summary>
+        /// Send group <-> entity association to all group members who can see each other
+        /// </summary>
+        /// <param name="associate">bind entities to this group or unbind</param>
+        /// <param name="member">If not null then only related to this member</param>
+        public void SendGroupEntityAssociations(bool associate, GroupMember? member = null)
+        {
+            try
+            {
+                membersLock.EnterReadLock();
+
+                // multicast to all
+                if (member is null)
+                {
+                    var count = members.Count;
+
+                    // pre-generate messages for every member
+                    var messages = new ServerEntityGroupAssociation[count];
+                    for (var i = 0; i < count; i++)
+                        messages[i] = members[i].BuildServerEntityGroupAssociation(associate);
+
+                    // send associations to all members about all other members
+                    for (var t = 0; t < count; t++)
+                    {
+                        var target = members[t];
+                        target.Send(messages[t]);
+
+                        for (var s = t + 1; s < count; s++)
+                        {
+                            var subject = members[s];
+                            if (target.Player.CanSeePlayer(subject.Player))
+                            {
+                                subject.Send(messages[t]);
+                                target.Send(messages[s]);
+                            }
+                        }
+                    }           
+                    return;
+                }
+
+                // only specific member
+                var message = member.BuildServerEntityGroupAssociation(associate);
+                member.Send(message);
+
+                foreach (var target in members)
+                { 
+                    if (target.Id != member.Id && target.Player.CanSeePlayer(member.Player))
+                    {
+                        target.Send(message);
+                        member.Send(target.BuildServerEntityGroupAssociation(associate));
+                    }
+                }
+            }
+            finally
+            {
+                membersLock.ExitReadLock();
+            }
+        }
+
+        #region Packets
 
         /// <summary>
         /// Build Group Join packet for the given member
@@ -61,9 +126,7 @@ namespace NexusForever.WorldServer.Game.Group
             try
             {
                 foreach (var groupMember in members)
-                {
                     groupMembers.Add(groupMember.BuildGroupMemberInfo(groupIndex++));
-                }
             }
             finally
             {
@@ -218,5 +281,7 @@ namespace NexusForever.WorldServer.Game.Group
                 Flags = Flags
             };
         }
+
+        #endregion
     }
 }
