@@ -5,7 +5,6 @@ using NexusForever.WorldServer.Database.Character.Model;
 using NexusForever.WorldServer.Game.Entity;
 using NexusForever.WorldServer.Game.Group.Static;
 using NexusForever.WorldServer.Network;
-using NexusForever.WorldServer.Network.Message.Model;
 using NexusForever.WorldServer.Network.Message.Model.Shared;
 
 #nullable enable
@@ -69,7 +68,7 @@ namespace NexusForever.WorldServer.Game.Group
                 return;
             }
 
-            if (inviter.Guid == invitee.Guid)
+            if (inviter.CharacterId == invitee.CharacterId)
             {
                 sendReply(InviteResult.NoInvitingSelf);
                 return;
@@ -487,7 +486,7 @@ namespace NexusForever.WorldServer.Game.Group
 
             GetMembers().ForEach(member =>
             {
-               if (member.Player.Guid == player.Guid)
+               if (member.Player.CharacterId == player.CharacterId)
                    return;
                member.Player.TeleportTo(worldId, x, y, z);
             });
