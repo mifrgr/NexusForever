@@ -14,7 +14,7 @@ using System.Threading;
 
 namespace NexusForever.WorldServer.Game.Group
 {
-    public partial class Group : IUpdate
+    public sealed partial class Group : IUpdate
     {
         /// <summary>
         /// Maxoimum size party (non raid) group can be
