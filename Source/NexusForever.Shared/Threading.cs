@@ -8,7 +8,7 @@ namespace NexusForever.Shared
     /// <summary>
     /// Disposable class to EnterReadLock with using statement 
     /// </summary>
-    public struct DisposableReadLock : IDisposable
+    public readonly struct DisposableReadLock : IDisposable
     {
         /// <summary>
         /// Managed lock
@@ -29,14 +29,14 @@ namespace NexusForever.Shared
         /// </summary>
         public void Dispose()
         {
-            this.readerLock.ExitReadLock();
+            readerLock.ExitReadLock();
         }
     }
 
     /// <summary>
     /// Disposable class to EnterWriteLock with using statement 
     /// </summary>
-    public struct DisposableWriteLock : IDisposable
+    public readonly struct DisposableWriteLock : IDisposable
     {
         /// <summary>
         /// Managed lock
@@ -57,11 +57,11 @@ namespace NexusForever.Shared
         /// </summary>
         public void Dispose()
         {
-            this.writerLock.ExitWriteLock();
+            writerLock.ExitWriteLock();
         }
     }
 
-    public static partial class ThreadingExtensions
+    public static class ThreadingExtensions
     {
         /// <summary>
         /// Get disposable read lock
