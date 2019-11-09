@@ -176,6 +176,8 @@ namespace NexusForever.Shared.Network.Message
         ClientHousingVisit              = 0x0531,
         ClientHousingEditMode           = 0x053C,
         ServerSpellList                 = 0x0551,
+        ClientInspectPlayerRequest      = 0x0552,
+        ServerInspectPlayerResponse     = 0x0553,
         ServerItemSwap                  = 0x0568,
         ServerItemMove                  = 0x0569,
         BiInputKeySet                   = 0x056F,
@@ -221,6 +223,8 @@ namespace NexusForever.Shared.Network.Message
         ServerUnlockPetFlair            = 0x068D,
         ServerChangePetStance           = 0x068F,
         ServerPublicEventStart          = 0x0700,
+        ClientRandomRollRequest         = 0x071B,
+        ServerRandomRollResponse        = 0x071C,
         ServerEntityInteractiveUpdate   = 0x0755,
         ServerRealmFirstAchievement     = 0x075F,
         ServerRealmList                 = 0x0761, // bidirectional? packet has both read and write handlers
