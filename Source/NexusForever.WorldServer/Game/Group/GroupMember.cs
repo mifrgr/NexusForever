@@ -25,6 +25,8 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         public readonly Player Player;
 
+        public ushort ZoneId;
+
         /// <summary>
         /// Member flags. Use Flags accessor to get correct flags
         /// </summary>
@@ -95,6 +97,7 @@ namespace NexusForever.WorldServer.Game.Group
             Group = group;
             Player = player;
             flags = 0;
+            ZoneId = (ushort)player.Zone.Id;
         }
 
         /// <summary>

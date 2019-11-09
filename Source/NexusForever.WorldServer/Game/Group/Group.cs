@@ -35,7 +35,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// <summary>
         /// Interval at which group member positions update is sent
         /// </summary>
-        private const double UpdatePositionsInterval = 0.5;
+        private const double UpdatePositionsInterval = 1.0;
 
         /// <summary>
         /// Generate next unique group member ID
@@ -200,29 +200,52 @@ namespace NexusForever.WorldServer.Game.Group
         {
             //using (membersLock.GetReadLock())
             //{
-            //    var entries = new ServerGroupPositionUpdate.Entry[members.Count];
-            //    for (var i = 0; i < members.Count; i++)
+            //    foreach (var member in members)
             //    {
-            //        var player = members[i].Player;
-            //        entries[i] = new ServerGroupPositionUpdate.Entry
+            //        if (member.ZoneId != member.Player.Zone.Id)
+            //        {
+            //            member.ZoneId = (ushort)member.Player.Zone.Id;
+            //            members.ForEach( m => m.Send(new ServerGroupUpdatePlayerRealm
+            //            {
+            //                GroupId = Id,
+            //                TargetPlayer = member.Player.BuildTargetPlayerIdentity(),
+            //                Realm = WorldServer.RealmId,
+            //                WorldZoneId = (ushort)member.ZoneId,
+            //                Unknown25 = member.Player.Map.Entry.Id,
+            //                Unknown26 = 1,
+            //                SyncedToGroup = true
+            //            }));
+            //        }
+            //    }
+
+            //    var updates = new Dictionary<ushort, ServerGroupPositionUpdate>();
+            //    foreach (var member in members)
+            //    {
+            //        if (!updates.TryGetValue(member.ZoneId, out var update))
+            //        {
+            //            update = new ServerGroupPositionUpdate
+            //            {
+            //                GroupId = Id,
+            //                WorldZoneId = member.ZoneId,
+            //                Entries = new List<ServerGroupPositionUpdate.Entry>()
+            //            };
+            //            updates.Add(member.ZoneId, update);
+            //        }
+
+            //        var player = member.Player;
+            //        var entry = new ServerGroupPositionUpdate.Entry
             //        {
             //            Player = player.BuildTargetPlayerIdentity(),
             //            Position = new Position(player.Position),
-            //            UnitId = player.Guid,
+            //            UnitId = member.Player.Guid,
             //            Flags = 0
             //        };
+            //        update.Entries.Add(entry);
             //    }
 
-            //    var update = new ServerGroupPositionUpdate
+            //    foreach (var item in updates)
             //    {
-            //        GroupId = Id,
-            //        WorldZoneId = (ushort)PartyLeader.Player.Zone.Id,
-            //        Entries = entries
-            //    };
-
-            //    foreach (var member in members)
-            //    {
-            //        member.Send(update);
+            //        members.ForEach(m => m.Send(item.Value));
             //    }
             //}
         }

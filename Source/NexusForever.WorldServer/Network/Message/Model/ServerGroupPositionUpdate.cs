@@ -2,6 +2,7 @@
 using NexusForever.Shared.Network.Message;
 using NexusForever.WorldServer.Game.Entity;
 using NexusForever.WorldServer.Network.Message.Model.Shared;
+using System.Collections.Generic;
 
 namespace NexusForever.WorldServer.Network.Message.Model
 {
@@ -18,13 +19,13 @@ namespace NexusForever.WorldServer.Network.Message.Model
 
         public ulong GroupId { get; set; }
         public ushort WorldZoneId { get; set; }
-        public Entry[] Entries { get; set; }
+        public List<Entry> Entries { get; set; }
 
         public void Write(GamePacketWriter writer)
         {
             writer.Write(GroupId);
             writer.Write(WorldZoneId, 15u);
-            writer.Write(Entries.Length, 32u);
+            writer.Write(Entries.Count, 32u);
 
             foreach (var entry in Entries)
                 entry.Player.Write(writer);
