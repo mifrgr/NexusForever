@@ -507,7 +507,7 @@ namespace NexusForever.WorldServer.Game.Group
                 RemoveInvite(invite);
             };
 
-            GlobalGroupManager.RemoveGroup(this);
+            GlobalGroupManager.Instance.RemoveGroup(this);
         }
 
         #region Teleport

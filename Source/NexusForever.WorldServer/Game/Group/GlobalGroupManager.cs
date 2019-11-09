@@ -1,4 +1,5 @@
-﻿using NexusForever.WorldServer.Game.Entity;
+﻿using NexusForever.Shared;
+using NexusForever.WorldServer.Game.Entity;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
@@ -10,25 +11,25 @@ namespace NexusForever.WorldServer.Game.Group
     /// <summary>
     /// Coordinate in game groups.
     /// </summary>
-    public static class GlobalGroupManager
+    public sealed class GlobalGroupManager : Singleton<GlobalGroupManager>, IUpdate
     {
         /// <summary>
         /// List of active groups
         /// </summary>
-        private readonly static List<Group> groups = new List<Group>();
-        private static readonly ConcurrentQueue<Group> pendingAdd = new ConcurrentQueue<Group>();
-        private static readonly ConcurrentQueue<Group> pendingRemove = new ConcurrentQueue<Group>();
+        private readonly List<Group> groups = new List<Group>();
+        private readonly ConcurrentQueue<Group> pendingAdd = new ConcurrentQueue<Group>();
+        private readonly ConcurrentQueue<Group> pendingRemove = new ConcurrentQueue<Group>();
 
         /// <summary>
         /// Next unique ID for a new group.
         /// </summary>
-        private static ulong NextGroupId => (ulong)Interlocked.Increment(ref nextGroupId);
-        private static long nextGroupId;
+        private ulong NextGroupId => (ulong)Interlocked.Increment(ref nextGroupId);
+        private long nextGroupId;
 
         /// <summary>
         /// Set things up
         /// </summary>
-        public static void Initialise()
+        public void Initialise()
         {
             nextGroupId = 1;
         }
@@ -36,7 +37,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// <summary>
         /// Trigger group house keeping
         /// </summary>
-        public static void Update(double lastTick)
+        public void Update(double lastTick)
         {
             while (pendingRemove.TryDequeue(out Group group))
                 groups.Remove(group);
@@ -50,7 +51,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// <summary>
         /// Create a new group and set given player as party leader
         /// </summary>
-        public static Group CreateGroup(Player partyLeader)
+        public Group CreateGroup(Player partyLeader)
         {
             var group = new Group(NextGroupId, partyLeader);
             pendingAdd.Enqueue(group);
@@ -60,7 +61,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// <summary>
         /// Disband the group, remove all members and invites from it
         /// </summary>
-        public static void RemoveGroup(Group group)
+        public void RemoveGroup(Group group)
         {
             pendingRemove.Enqueue(group);
         }

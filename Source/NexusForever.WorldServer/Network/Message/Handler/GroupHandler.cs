@@ -24,7 +24,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
             FindPlayer(session, request.PlayerName, GroupInviteType.Invite, 0, targetPlayer =>
             {
                 var player = session.Player;
-                var group = player.GroupMember?.Group ?? GlobalGroupManager.CreateGroup(player);
+                var group = player.GroupMember?.Group ?? GlobalGroupManager.Instance.CreateGroup(player);
                 group.Invite(player, targetPlayer);
             });
         }
@@ -209,7 +209,7 @@ namespace NexusForever.WorldServer.Network.Message.Handler
                     return;
                 }
 
-                var targetSession = NetworkManager<WorldSession>.GetSession(s => s.Player?.CharacterId == character.Id);
+                var targetSession = NetworkManager<WorldSession>.Instance.GetSession(s => s.Player?.CharacterId == character.Id);
                 if (targetSession is null)
                 {
                     sendNotFound();
