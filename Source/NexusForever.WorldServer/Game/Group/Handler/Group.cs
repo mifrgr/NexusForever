@@ -39,7 +39,7 @@ namespace NexusForever.WorldServer.Game.Group
                 return;
             }
 
-            if (!member.CanInvite)
+            if (!member.CanInvite && ReferralsMethod != InvitationMethod.Open)
             {
                 sendReply(InviteResult.NoPermissions);
                 return;
@@ -74,7 +74,7 @@ namespace NexusForever.WorldServer.Game.Group
 
             if (IsFull)
             {
-                var isFull = BuildServerGroupInviteResult(invite.Player.Name, InviteResult.Full);
+                var isFull = BuildServerGroupInviteResult("", InviteResult.Full);
                 invite.Send(isFull);
                 invite.Inviter.Send(isFull);
                 return;

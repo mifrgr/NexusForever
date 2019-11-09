@@ -256,13 +256,9 @@ namespace NexusForever.WorldServer.Game.Group
             {
                 invites.Add(invite);
                 if (type == GroupInviteType.Referral)
-                {
                     referrals.Add(invite);
-                }
                 else
-                {
                     invitee.GroupInvite = invite;
-                }
             }
             return invite;
         }
@@ -276,13 +272,9 @@ namespace NexusForever.WorldServer.Game.Group
             {
                 invites.Remove(invite);
                 if (invite.Type == GroupInviteType.Referral)
-                {
                     referrals.Remove(invite);
-                }
                 else
-                {
                     invite.Player.GroupInvite = null;
-                }
             }
         }
 
