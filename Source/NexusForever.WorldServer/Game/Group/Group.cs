@@ -9,7 +9,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using NexusForever.WorldServer.Game.Entity;
 
 #nullable enable
 
@@ -142,6 +141,11 @@ namespace NexusForever.WorldServer.Game.Group
         private readonly ReaderWriterLockSlim invitesLock = new ReaderWriterLockSlim();
 
         /// <summary>
+        /// Pending referrals that are sent to the party leader for confirmation
+        /// </summary>
+        private readonly List<GroupInvite> referrals = new List<GroupInvite>();
+
+        /// <summary>
         /// Used for throttling the cleanup rate
         /// </summary>
         private double timeToClearInvites = ClearInvitesInterval;
@@ -251,7 +255,14 @@ namespace NexusForever.WorldServer.Game.Group
             using (invitesLock.GetWriteLock())
             {
                 invites.Add(invite);
-                invitee.GroupInvite = invite;
+                if (type == GroupInviteType.Referral)
+                {
+                    referrals.Add(invite);
+                }
+                else
+                {
+                    invitee.GroupInvite = invite;
+                }
             }
             return invite;
         }
@@ -263,8 +274,26 @@ namespace NexusForever.WorldServer.Game.Group
         {
             using (invitesLock.GetWriteLock())
             {
-                invite.Player.GroupInvite = null;
                 invites.Remove(invite);
+                if (invite.Type == GroupInviteType.Referral)
+                {
+                    referrals.Remove(invite);
+                }
+                else
+                {
+                    invite.Player.GroupInvite = null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Find invite referral for given player name
+        /// </summary>
+        public GroupInvite? FindReferral(string PlayerName)
+        {
+            using (invitesLock.GetReadLock())
+            {
+                return referrals.Find(i => i.Player.Name == PlayerName);
             }
         }
 
@@ -308,7 +337,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// <summary>
         /// Find member in the group
         /// </summary>
-        private GroupMember FindMember(TargetPlayerIdentity target)
+        private GroupMember? FindMember(TargetPlayerIdentity target)
         {
             using (membersLock.GetReadLock())
             {

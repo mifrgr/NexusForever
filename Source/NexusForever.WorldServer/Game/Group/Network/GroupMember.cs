@@ -97,5 +97,19 @@ namespace NexusForever.WorldServer.Game.Group
                 GroupId = isMember ? Group.Id : 0ul
             };
         }
+
+        /// <summary>
+        /// Build group join referral
+        /// </summary>
+        /// <param name="inviteeName">Player name being invited</param>
+        public ServerGroupReferral BuildServerGroupReferral(string inviteeName)
+        {
+            return new ServerGroupReferral
+            {
+                GroupId = Group.Id,
+                inviter = Player.BuildTargetPlayerIdentity(),
+                inviteeName = inviteeName
+            };
+        }
     }
 }

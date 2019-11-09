@@ -10,6 +10,8 @@ using NexusForever.WorldServer.Network.Message.Model;
 using NLog;
 using System;
 
+#nullable enable
+
 namespace NexusForever.WorldServer.Network.Message.Handler
 {
     public static class GroupHandler
@@ -19,31 +21,44 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         [MessageHandler(GameMessageOpcode.ClientGroupInvite)]
         public static void HandleGroupInvite(WorldSession session, ClientGroupInvite request)
         {
-            var player = session.Player;
-            var group = player.GroupMember?.Group ?? GlobalGroupManager.CreateGroup(player);
-            group.Invite(player, request.PlayerName);
+            FindPlayer(session, request.PlayerName, GroupInviteType.Invite, 0, targetPlayer =>
+            {
+                var player = session.Player;
+                var group = player.GroupMember?.Group ?? GlobalGroupManager.CreateGroup(player);
+                group.Invite(player, targetPlayer);
+            });
         }
 
         [MessageHandler(GameMessageOpcode.ClientGroupRequestJoin)]
         public static void HandleClientGroupRequestJoin(WorldSession session, ClientGroupRequestJoin request)
         {
-            FindPlayer(session, request.PlayerName, targetPlayer =>
+            var groupId = session.Player.GroupMember?.Group.Id ?? 0;
+            var type = groupId == 0
+                     ? GroupInviteType.Request
+                     : GroupInviteType.Referral;
+
+            FindPlayer(session, request.PlayerName, type, groupId, targetPlayer =>
             {
-                var targetMember = targetPlayer.GroupMember;
-                if (targetMember is null)
+                if (targetPlayer.GroupMember?.Group is Group joinGroup)
                 {
-                    // should this be invite to group instead?
-                    session.EnqueueMessageEncrypted(new ServerGroupRequestJoinResult {
-                        GroupId = 0,
-                        PlayerName = request.PlayerName,
-                        Result = InviteResult.GroupNotFound,
-                        IsJoin = true
-                    });
+                    joinGroup.RequestJoin(targetPlayer, session.Player);
                     return;
                 }
-
-                var group = targetMember.Group;
-                group.RequestJoin(targetPlayer, session.Player);
+                
+                if (session.Player.GroupMember?.Group is Group referGroup)
+                {
+                    referGroup.RequestReferral(session.Player, targetPlayer);
+                    return;
+                }
+                
+                // should this be invite to group instead?
+                session.EnqueueMessageEncrypted(new ServerGroupRequestJoinResult
+                {
+                    GroupId = 0,
+                    PlayerName = request.PlayerName,
+                    Result = InviteResult.GroupNotFound,
+                    IsJoin = type == GroupInviteType.Request
+                });
             });
         }
 
@@ -51,14 +66,28 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         public static void HandleClientGroupRequestJoinResponse(WorldSession session, ClientGroupRequestJoinResponse request)
         {
             var (group, player) = ValidateGroupMembership(session, request.GroupId);
+            var referral = group.FindReferral(request.PlayerName);
+            var type = referral is null
+                     ? GroupInviteType.Request
+                     : GroupInviteType.Referral;
 
-            FindPlayer(session, request.PlayerName, targetPlayer =>
+            FindPlayer(session, request.PlayerName, type, group.Id, targetPlayer =>
             {
-                var invite = targetPlayer.GroupInvite;
-                if (invite is null)
+                if (referral != null)
+                {
+                    if (referral.Player.CharacterId != targetPlayer.CharacterId)
+                        throw new InvalidPacketValueException();
+
+                    group.HandleRequestReferral(referral, request.Accepted);
                     return;
-                
-                group.HandleRequestJoin(invite, request.Accepted);
+                }
+
+                var invite = targetPlayer.GroupInvite;
+                if (invite != null)
+                {
+                    group.HandleRequestJoin(invite, request.Accepted);
+                    return;
+                }
             });
         }
 
@@ -139,16 +168,35 @@ namespace NexusForever.WorldServer.Network.Message.Handler
         /// </summary>
         /// <param name="session">Requesting player's session</param>
         /// <param name="playerName">Player to find</param>
+        /// <param name="type">Type of invite</param>
         /// <param name="handler">Callback to execute</param>
-        private static void FindPlayer(WorldSession session, string playerName, Action<Player> handler)
+        private static void FindPlayer(WorldSession session, string playerName, GroupInviteType type, ulong groupId, Action<Player> handler)
         {
             void sendNotFound()
             {
-                var message = new ServerGroupInviteResult
+                IWritable message = type switch
                 {
-                    GroupId = 0,
-                    PlayerName = playerName,
-                    Result = InviteResult.PlayerNotFound
+                    GroupInviteType.Invite => new ServerGroupInviteResult
+                    {
+                        GroupId = groupId,
+                        PlayerName = playerName,
+                        Result = InviteResult.PlayerNotFound
+                    },
+                    GroupInviteType.Request => new ServerGroupRequestJoinResult
+                    {
+                        GroupId = groupId,
+                        PlayerName = playerName,
+                        Result = InviteResult.PlayerNotFound,
+                        IsJoin = true
+                    },
+                    GroupInviteType.Referral => new ServerGroupRequestJoinResult
+                    {
+                        GroupId = groupId,
+                        PlayerName = playerName,
+                        Result = InviteResult.PlayerNotFound,
+                        IsJoin = false
+                    },
+                    _ => throw new InvalidOperationException()
                 };
                 session.EnqueueMessageEncrypted(message);
             }

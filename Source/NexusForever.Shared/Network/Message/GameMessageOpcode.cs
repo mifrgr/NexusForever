@@ -149,6 +149,7 @@ namespace NexusForever.Shared.Network.Message
         ServerGroupPromote              = 0x0447,
         ClientGroupSendReadyCheck       = 0x044A,
         ServerGroupSendReadyCheck       = 0x044C,
+        ServerGroupReferral             = 0x044F,
         ServerGroupRemove               = 0x0450,
         ClientGroupRequestJoinResponse  = 0x0453,
         ServerGroupRequestJoinResult    = 0x0456,

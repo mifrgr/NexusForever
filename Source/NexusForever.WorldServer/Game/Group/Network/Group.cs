@@ -1,5 +1,6 @@
 ﻿using NexusForever.Shared;
 using NexusForever.Shared.Network.Message;
+using NexusForever.WorldServer.Game.Entity;
 using NexusForever.WorldServer.Game.Group.Extensions;
 using NexusForever.WorldServer.Game.Group.Static;
 using NexusForever.WorldServer.Network.Message.Model;
@@ -199,6 +200,20 @@ namespace NexusForever.WorldServer.Game.Group
                 PlayerName = playerName,
                 Result = result,
                 IsJoin = true
+            };
+        }
+
+        /// <summary>
+        /// Build group reuqest to join result
+        /// </summary>
+        public ServerGroupRequestJoinResult BuildServerGroupReferralResult(string playerName, InviteResult result)
+        {
+            return new ServerGroupRequestJoinResult
+            {
+                GroupId = Id,
+                PlayerName = playerName,
+                Result = result,
+                IsJoin = false
             };
         }
 

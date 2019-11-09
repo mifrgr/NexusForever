@@ -12,7 +12,7 @@
         /// <summary>
         /// Person requests to join the group
         /// </summary>
-        Requst,
+        Request,
         /// <summary>
         /// Person is being referred to join by another group member
         /// </summary>
