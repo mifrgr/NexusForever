@@ -304,11 +304,11 @@ namespace NexusForever.WorldServer.Game.Group
         /// <summary>
         /// Find invite referral for given player name
         /// </summary>
-        public GroupInvite? FindReferral(string PlayerName)
+        public GroupInvite? FindReferral(string playerName)
         {
             using (invitesLock.GetReadLock())
             {
-                return referrals.Find(i => i.Player.Name == PlayerName);
+                return referrals.Find(i => i.Player.Name == playerName);
             }
         }
 
