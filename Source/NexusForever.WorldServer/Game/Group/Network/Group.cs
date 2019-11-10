@@ -11,7 +11,7 @@ using System.Collections.Generic;
 
 namespace NexusForever.WorldServer.Game.Group
 {
-    public partial class Group
+    public sealed partial class Group
     {
         #region Broadcast
 

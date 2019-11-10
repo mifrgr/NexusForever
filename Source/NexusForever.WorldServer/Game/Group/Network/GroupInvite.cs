@@ -6,7 +6,7 @@ using static NexusForever.WorldServer.Network.Message.Model.ServerGroupJoin;
 
 namespace NexusForever.WorldServer.Game.Group
 {
-    public partial class GroupInvite
+    public sealed partial class GroupInvite
     {
         /// <summary>
         /// Send message to the invited player

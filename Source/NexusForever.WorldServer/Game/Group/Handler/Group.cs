@@ -7,7 +7,7 @@ using NexusForever.WorldServer.Network.Message.Model.Shared;
 
 namespace NexusForever.WorldServer.Game.Group
 {
-    public partial class Group
+    public sealed partial class Group
     {
         /// <summary>
         /// Invite player to the group

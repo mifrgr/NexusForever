@@ -9,7 +9,7 @@ using static NexusForever.WorldServer.Network.Message.Model.ServerGroupJoin;
 
 namespace NexusForever.WorldServer.Game.Group
 {
-    public partial class GroupMember
+    public sealed partial class GroupMember
     {
         /// <summary>
         /// Send message to the given group member
