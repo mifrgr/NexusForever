@@ -7,6 +7,7 @@ using NexusForever.WorldServer.Network.Message.Model.Shared;
 using NLog;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 
@@ -255,14 +256,12 @@ namespace NexusForever.WorldServer.Game.Group
         /// From the list.
         /// </summary>
         /// <returns>true if invite is found</returns>
-        private bool TryPeekInvite(out GroupInvite invite)
+        private bool TryPeekInvite([NotNullWhen(true)] out GroupInvite? invite)
         {
             using (invitesLock.GetReadLock())
             {
                 var hasInvite = invites.Count > 0;
-                #nullable disable
                 invite = hasInvite ? invites[0] : null;
-                #nullable enable
                 return hasInvite;
             }
         }
@@ -363,7 +362,7 @@ namespace NexusForever.WorldServer.Game.Group
         /// <summary>
         /// Give next member in the group as candidate for the PartyLeader
         /// </summary>
-        private GroupMember GetNextPartyLeader()
+        private GroupMember? GetNextPartyLeader()
         {
             using (membersLock.GetReadLock())
             {

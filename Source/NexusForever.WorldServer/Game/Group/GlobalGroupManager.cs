@@ -39,12 +39,12 @@ namespace NexusForever.WorldServer.Game.Group
         /// </summary>
         public void Update(double lastTick)
         {
-            while (pendingRemove.TryDequeue(out Group group))
+            while (pendingRemove.TryDequeue(out Group? group))
                 groups.Remove(group);
 
             groups.ForEach(g => g.Update(lastTick));
 
-            while (pendingAdd.TryDequeue(out Group group))
+            while (pendingAdd.TryDequeue(out Group? group))
                 groups.Add(group);
         }
 

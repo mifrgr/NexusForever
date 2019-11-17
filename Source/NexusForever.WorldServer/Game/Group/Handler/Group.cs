@@ -383,7 +383,10 @@ namespace NexusForever.WorldServer.Game.Group
 
             if (PartyLeader.Id == member.Id)
             {
-                Promote(GetNextPartyLeader().Player);
+                if (GetNextPartyLeader() is GroupMember nextLeader)
+                    Promote(nextLeader.Player);
+                else
+                    Disband();
             }
         }
 
