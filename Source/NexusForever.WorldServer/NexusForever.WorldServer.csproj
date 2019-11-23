@@ -40,6 +40,10 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Network\Message\Model\" />
+  </ItemGroup>
+
   <Import Project="./ExtractGameTableFiles.targets" Condition="$(ExtractGameTables) == 'true'" />
 
   <Import Project="./GenerateBaseMapFiles.targets" Condition="$(GenerateMapFiles) == 'true'" />

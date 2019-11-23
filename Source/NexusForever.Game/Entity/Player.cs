@@ -1280,6 +1280,21 @@ namespace NexusForever.Game.Entity
         }
 
         /// <summary>
+        /// Handles regeneration of Stat Values. Used to provide a hook into the Update method, for future implementation.
+        /// </summary>
+        protected override void HandleStatUpdate(double lastTick)
+        {
+            base.HandleStatUpdate(lastTick);
+
+            float dashRemaining = GetStatFloat(Stat.Dash) ?? 0f;
+            if (dashRemaining < GetPropertyValue(Property.ResourceMax7))
+            {
+                float dashRegenAmount = GetPropertyValue(Property.ResourceMax7) * GetPropertyValue(Property.ResourceRegenMultiplier7);
+                SetStat(Stat.Dash, (float)Math.Min(dashRemaining + dashRegenAmount, (float)GetPropertyValue(Property.ResourceMax7)));
+            }
+        }
+
+        /// <summary>
         /// Determine if this <see cref="IPlayer"/> can attack supplied <see cref="IUnitEntity"/>.
         /// </summary>
         public override bool CanAttack(IUnitEntity target)

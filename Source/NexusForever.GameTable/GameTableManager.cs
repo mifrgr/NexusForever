@@ -664,7 +664,10 @@ namespace NexusForever.GameTable
         public GameTable<VeteranTierEntry> VeteranTier { get; private set; }
         public GameTable<VirtualItemEntry> VirtualItem { get; private set; }
         public GameTable<VisualEffectEntry> VisualEffect { get; private set; }
+
+        [GameData]
         public GameTable<VitalEntry> Vital { get; private set; }
+
         public GameTable<WaterSurfaceEffectEntry> WaterSurfaceEffect { get; private set; }
 
         [GameData]
