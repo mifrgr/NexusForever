@@ -14,6 +14,7 @@ namespace NexusForever.Game.Abstract.Spell
         Position TargetPosition { get; set; }
         uint PositionalUnitId { get; set; }
         ushort TaxiNode { get; set; }
+        ulong SpellCost { get; set; }
         uint ThresholdValue { get; set; }
         bool IsProxy { get; set; }
         bool ForceCancelOnly { get; set; }
