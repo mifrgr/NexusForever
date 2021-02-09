@@ -14,7 +14,8 @@ namespace NexusForever.WorldServer.Game.Entity.Static
         Costume     = 0x0004,
         InputKeySet = 0x0008,
         Xp          = 0x0010,
+        Innate      = 0x0080,
+        Appearance  = 0x0100,
         Flags       = 0x0020,
-        Innate      = 0x0080
     }
 }
