@@ -110,7 +110,10 @@
         SpellEffect105              = 105, // Spell effect requirements not met
         Unknown106                  = 106, // Requirements not met
         QuestObjective7             = 107, // Quest object requirement not met
-        Unknown108                  = 108, // Requirements not met
+        /// <summary>
+        /// Checks to see if a PositionalRequirement Entry is met.
+        /// </summary>
+        PositionalRequirement       = 108, // Requirements not met
         WorldRequirement            = 109, // World requirement not met
         PlayerPathMissionCount      = 110, // Player path mission count not correct
         HazardProperty111           = 111, // Hazard property requirement not met
