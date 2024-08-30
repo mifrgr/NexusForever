@@ -5,15 +5,15 @@ using NexusForever.Game.Static.Prerequisite;
 
 namespace NexusForever.Game.Prerequisite.Check
 {
-    [PrerequisiteCheck(PrerequisiteType.Achievement)]
-    public class PrerequisiteCheckAchievement : IPrerequisiteCheck
+    [PrerequisiteCheck(PrerequisiteType.AchievementState)]
+    public class PrerequisiteCheckAchievementState : IPrerequisiteCheck
     {
         #region Dependency Injection
 
-        private readonly ILogger<PrerequisiteCheckAchievement> log;
+        private readonly ILogger<PrerequisiteCheckAchievementState> log;
 
-        public PrerequisiteCheckAchievement(
-            ILogger<PrerequisiteCheckAchievement> log)
+        public PrerequisiteCheckAchievementState(
+            ILogger<PrerequisiteCheckAchievementState> log)
         {
             this.log = log;
         }
@@ -29,7 +29,7 @@ namespace NexusForever.Game.Prerequisite.Check
                 case PrerequisiteComparison.Equal:
                     return player.AchievementManager.HasCompletedAchievement((ushort)objectId);
                 default:
-                    log.LogWarning($"Unhandled PrerequisiteComparison {comparison} for {PrerequisiteType.Achievement}!");
+                    log.LogWarning($"Unhandled PrerequisiteComparison {comparison} for {PrerequisiteType.AchievementState}!");
                     return false;
             }
         }
