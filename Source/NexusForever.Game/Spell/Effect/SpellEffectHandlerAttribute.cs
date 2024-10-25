@@ -1,8 +1,8 @@
 ﻿using NexusForever.Game.Static.Spell;
 
-namespace NexusForever.Game.Spell
+namespace NexusForever.Game.Spell.Effect
 {
-    [AttributeUsage(AttributeTargets.Method)]
+    [AttributeUsage(AttributeTargets.Class)]
     public class SpellEffectHandlerAttribute : Attribute
     {
         public SpellEffectType SpellEffectType { get; }

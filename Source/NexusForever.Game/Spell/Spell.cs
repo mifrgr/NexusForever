@@ -1,6 +1,8 @@
 using System.Numerics;
+using Microsoft.Extensions.DependencyInjection;
 using NexusForever.Game.Abstract.Entity;
 using NexusForever.Game.Abstract.Spell;
+using NexusForever.Game.Abstract.Spell.Effect;
 using NexusForever.Game.Abstract.Spell.Event;
 using NexusForever.Game.Entity;
 using NexusForever.Game.Prerequisite;
@@ -587,7 +589,7 @@ namespace NexusForever.Game.Spell
                 .Where(t => allowedStates.Contains(t.TargetSelectionState) && (t.Flags & (SpellEffectTargetFlags)spell4EffectsEntry.TargetFlags) != 0)
                 .ToList();
 
-            SpellEffectDelegate handler = GlobalSpellManager.Instance.GetEffectHandler((SpellEffectType)spell4EffectsEntry.EffectType);
+            ISpellEffectApplyHandler handler = LegacyServiceProvider.Provider.GetKeyedService<ISpellEffectApplyHandler>((SpellEffectType)spell4EffectsEntry.EffectType);
             if (handler == null)
                 log.Warn($"Unhandled spell effect {(SpellEffectType)spell4EffectsEntry.EffectType}");
             else
@@ -602,7 +604,7 @@ namespace NexusForever.Game.Spell
                     effectTarget.Effects.Add(info);
 
                     // TODO: if there is an unhandled exception in the handler, there will be an infinite loop on Execute()
-                    handler.Invoke(this, effectTarget.Entity, info);
+                    handler.Apply(this, effectTarget.Entity, info);
 
                     // Track the number of times this effect has fired.
                     // Some spell effects have a limited trigger count per spell cast.
@@ -635,10 +637,11 @@ namespace NexusForever.Game.Spell
             if (targets.Count > 0 && CastMethod == CastMethod.Aura)
                 log.Trace($"Target exited spell {CastingId}'s range, removing effects.");
 
-            // TODO: Remove effects triggered by this spell from the target.
-            // target.Entity?.RemoveSpellProperties(Spell4Id);
-            // target.Entity?.RemoveProc(parameters.SpellInfo.Entry.Id);
-            // target.Entity?.RemoveTemporaryDisplayItem(Spell4Id);
+            foreach (ISpellTargetEffectInfo info in target.Effects)
+            {
+                ISpellEffectRemoveHandler handler = LegacyServiceProvider.Provider.GetKeyedService<ISpellEffectRemoveHandler>((SpellEffectType)info.Entry.EffectType);
+                handler?.Remove(this, target.Entity, info);
+            }
         }
 
         private bool CheckEffectApplyPrerequisites(Spell4EffectsEntry spell4EffectsEntry, IUnitEntity unit, SpellEffectTargetFlags targetFlags)

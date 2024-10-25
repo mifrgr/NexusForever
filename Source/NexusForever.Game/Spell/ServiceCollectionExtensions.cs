@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using NexusForever.Game.Abstract.Spell;
+using NexusForever.Game.Spell.Effect;
 using NexusForever.Shared;
 
 namespace NexusForever.Game.Spell
@@ -8,6 +9,8 @@ namespace NexusForever.Game.Spell
     {
         public static void AddGameSpell(this IServiceCollection sc)
         {
+            sc.AddGameSpellEffect();
+
             sc.AddSingletonLegacy<IGlobalSpellManager, GlobalSpellManager>();
         }
     }

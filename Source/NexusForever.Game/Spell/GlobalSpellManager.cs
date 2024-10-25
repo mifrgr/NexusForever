@@ -5,6 +5,7 @@ using System.Reflection;
 using NexusForever.Game.Abstract.Entity;
 using NexusForever.Game.Abstract.Spell;
 using NexusForever.Game.Entity;
+using NexusForever.Game.Spell.Effect;
 using NexusForever.Game.Static.Spell;
 using NexusForever.GameTable;
 using NexusForever.GameTable.Model;
@@ -33,7 +34,6 @@ namespace NexusForever.Game.Spell
         // Spell Delegates
         private delegate Spell SpellFactoryDelegate(IUnitEntity unit, ISpellParameters parameters);
         private ImmutableDictionary<CastMethod, SpellFactoryDelegate> spellFactoryDelegates;
-        private readonly Dictionary<SpellEffectType, SpellEffectDelegate> spellEffectDelegates = new();
 
         private readonly Dictionary<uint, ISpellBaseInfo> spellBaseInfoStore = new();
 
@@ -49,7 +49,6 @@ namespace NexusForever.Game.Spell
             InitialiseSpellFactories();
             CacheSpellEntries();
             InitialiseSpellInfo();
-            InitialiseSpellEffectHandlers();
         }
 
         private void InitialiseSpellFactories()
@@ -133,29 +132,6 @@ namespace NexusForever.Game.Spell
                 spellBaseInfo.Intitialise();
 
             log.Info($"Cached {spellBaseInfoStore.Count} spells in {sw.ElapsedMilliseconds}ms.");
-        }
-
-        private void InitialiseSpellEffectHandlers()
-        {
-            foreach (MethodInfo method in Assembly.GetExecutingAssembly()
-                .GetTypes()
-                .SelectMany(t => t.GetMethods()))
-            {
-                SpellEffectHandlerAttribute attribute = method.GetCustomAttribute<SpellEffectHandlerAttribute>();
-                if (attribute == null)
-                    continue;
-
-                ParameterExpression spellParameter  = Expression.Parameter(typeof(ISpell));
-                ParameterExpression targetParameter = Expression.Parameter(typeof(IUnitEntity));
-                ParameterExpression effectParameter = Expression.Parameter(typeof(ISpellTargetEffectInfo));
-
-                MethodCallExpression call = Expression.Call(method, spellParameter, targetParameter, effectParameter);
-
-                Expression<SpellEffectDelegate> lambda =
-                    Expression.Lambda<SpellEffectDelegate>(call, spellParameter, targetParameter, effectParameter);
-
-                spellEffectDelegates.Add(attribute.SpellEffectType, lambda.Compile());
-            }
         }
 
         /// <summary>
@@ -249,14 +225,6 @@ namespace NexusForever.Game.Spell
             }
             
             return spellBaseInfo;
-        }
-
-        /// <summary>
-        /// Return <see cref="SpellEffectDelegate"/> for supplied <see cref="SpellEffectType"/>.
-        /// </summary>
-        public SpellEffectDelegate GetEffectHandler(SpellEffectType spellEffectType)
-        {
-            return spellEffectDelegates.TryGetValue(spellEffectType, out SpellEffectDelegate handler) ? handler : null;
         }
     }
 }

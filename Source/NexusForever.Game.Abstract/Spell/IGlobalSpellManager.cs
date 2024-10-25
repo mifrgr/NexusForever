@@ -46,10 +46,5 @@ namespace NexusForever.Game.Abstract.Spell
         /// Return <see cref="ISpellBaseInfo"/>, if not already cached it will be generated before being returned.
         /// </summary>
         ISpellBaseInfo GetSpellBaseInfo(uint spell4BaseId);
-
-        /// <summary>
-        /// Return <see cref="SpellEffectDelegate"/> for supplied <see cref="SpellEffectType"/>.
-        /// </summary>
-        SpellEffectDelegate GetEffectHandler(SpellEffectType spellEffectType);
     }
 }
