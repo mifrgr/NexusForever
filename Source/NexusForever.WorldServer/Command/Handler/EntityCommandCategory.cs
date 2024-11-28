@@ -4,9 +4,11 @@ using System.Text;
 using NexusForever.Game.Abstract.Combat;
 using NexusForever.Game.Abstract.Entity;
 using NexusForever.Game.Static;
+using NexusForever.Game.Static.Entity;
 using NexusForever.Game.Static.RBAC;
 using NexusForever.Game.Static.Reputation;
 using NexusForever.GameTable;
+using NexusForever.GameTable.Model;
 using NexusForever.WorldServer.Command.Context;
 using NexusForever.WorldServer.Command.Shared;
 
@@ -67,6 +69,20 @@ namespace NexusForever.WorldServer.Command.Handler
                 foreach (IPropertyValue value in properties.OrderBy(p => p.Property))
                     builder.AppendLine($"{value.Property} - Base: {value.BaseValue} - Value: {value.Value}");
             }
+
+            context.SendMessage(builder.ToString());
+        }
+
+        [Command(Permission.EntityProperties, "Get information about the vitals for the target entity.", "v", "vitals")]
+        public void HandleEntityVitals(ICommandContext context)
+        {
+            IWorldEntity entity = context.GetTargetOrInvoker<IWorldEntity>();
+
+            var builder = new StringBuilder();
+            EntityUtility.BuildHeader(builder, entity, context.Language);
+
+            foreach (VitalEntry vital in GameTableManager.Instance.Vital.Entries)
+                builder.AppendLine($"{(Vital)vital.Id} - {entity.GetVitalValue((Vital)vital.Id)}");
 
             context.SendMessage(builder.ToString());
         }

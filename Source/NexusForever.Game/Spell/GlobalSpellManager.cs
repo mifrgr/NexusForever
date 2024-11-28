@@ -4,11 +4,12 @@ using System.Linq.Expressions;
 using System.Reflection;
 using NexusForever.Game.Abstract.Entity;
 using NexusForever.Game.Abstract.Spell;
-using NexusForever.Game.Entity;
-using NexusForever.Game.Spell.Effect;
+using NexusForever.Game.Static.Entity;
 using NexusForever.Game.Static.Spell;
 using NexusForever.GameTable;
 using NexusForever.GameTable.Model;
+using NexusForever.Network.World.Message;
+using NexusForever.Network.World.Message.Static;
 using NexusForever.Shared;
 using NLog;
 
@@ -43,12 +44,14 @@ namespace NexusForever.Game.Spell
         private ImmutableDictionary<uint, ImmutableList<TelegraphDamageEntry>> spellTelegraphEntries;
         private ImmutableDictionary<uint, ImmutableList<Spell4ThresholdsEntry>> spellThresholdEntries;
         private ImmutableDictionary<uint, ImmutableList<SpellPhaseEntry>> spellPhaseEntries;
+        private ImmutableDictionary<Vital, CastResult> vitalCastResults;
 
         public void Initialise()
         {
             InitialiseSpellFactories();
             CacheSpellEntries();
             InitialiseSpellInfo();
+            InitialiseVitalCastResults();
         }
 
         private void InitialiseSpellFactories()
@@ -132,6 +135,21 @@ namespace NexusForever.Game.Spell
                 spellBaseInfo.Intitialise();
 
             log.Info($"Cached {spellBaseInfoStore.Count} spells in {sw.ElapsedMilliseconds}ms.");
+        }
+
+        private void InitialiseVitalCastResults()
+        {
+            var builder = ImmutableDictionary.CreateBuilder<Vital, CastResult>();
+
+            foreach (FieldInfo field in typeof(CastResult).GetFields())
+            {
+                IEnumerable<CastResultVitalAttribute> attributes = field.GetCustomAttributes<CastResultVitalAttribute>();
+
+                foreach (CastResultVitalAttribute attribute in attributes)
+                    builder.Add(attribute.Vital, (CastResult)field.GetValue(null));
+            }
+
+            vitalCastResults = builder.ToImmutable();
         }
 
         /// <summary>
@@ -225,6 +243,15 @@ namespace NexusForever.Game.Spell
             }
             
             return spellBaseInfo;
+        }
+
+
+        /// <summary>
+        /// Return <see cref="CastResult"/> for failed cast on supplied <see cref="Vital"/>.
+        /// </summary>
+        public CastResult GetFailedCastResultForVital(Vital vital)
+        {
+            return vitalCastResults.TryGetValue(vital, out CastResult result) ? result : CastResult.SpellBad;
         }
     }
 }

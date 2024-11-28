@@ -1,4 +1,6 @@
 ﻿using NexusForever.Game.Abstract.Entity;
+using NexusForever.Game.Abstract.Spell;
+using NexusForever.Game.Entity;
 using NexusForever.Game.Static.Entity;
 using NexusForever.Game.Static.Prerequisite;
 using NexusForever.Game.Static.Quest;
@@ -76,6 +78,24 @@ namespace NexusForever.Game.Prerequisite
                     return Instance.Meets(player, objectId);
                 default:
                     log.Warn($"Unhandled {comparison} for {PrerequisiteType.Prerequisite}!");
+                    return false;
+            }
+        }
+
+        [PrerequisiteCheck(PrerequisiteType.Spell)]
+        private static bool PrerequisiteCheckSpell(IPlayer player, PrerequisiteComparison comparison, uint value, uint objectId)
+        {
+            if (value == 0 && objectId == 0)
+                return false;
+
+            switch (comparison)
+            {
+                case PrerequisiteComparison.Equal:
+                    return player.HasSpell(s => s.Spell4Id == value, out ISpell equalSpell);
+                case PrerequisiteComparison.NotEqual:
+                    return !player.HasSpell(s => s.Spell4Id == value, out ISpell notEqualSpell);
+                default:
+                    log.Warn($"Unhandled PrerequisiteComparison {comparison} for {PrerequisiteType.Spell}!");
                     return false;
             }
         }
@@ -158,20 +178,18 @@ namespace NexusForever.Game.Prerequisite
         {
             switch (comparison)
             {
-                // TODO: Uncomment when Vitals are added ;)
-                
-                // case PrerequisiteComparison.Equal:
-                //     return player.GetVitalValue((Vital)objectId) == value;
-                // case PrerequisiteComparison.NotEqual:
-                //     return player.GetVitalValue((Vital)objectId) != value;
-                // case PrerequisiteComparison.GreaterThanOrEqual:
-                //     return player.GetVitalValue((Vital)objectId) >= value;
-                // case PrerequisiteComparison.GreaterThan:
-                //     return player.GetVitalValue((Vital)objectId) > value;
-                // case PrerequisiteComparison.LessThanOrEqual:
-                //     return player.GetVitalValue((Vital)objectId) <= value;
-                // case PrerequisiteComparison.LessThan:
-                //     return player.GetVitalValue((Vital)objectId) < value;
+                case PrerequisiteComparison.Equal:
+                    return player.GetVitalValue((Vital)objectId) == value;
+                case PrerequisiteComparison.NotEqual:
+                    return player.GetVitalValue((Vital)objectId) != value;
+                case PrerequisiteComparison.GreaterThanOrEqual:
+                    return player.GetVitalValue((Vital)objectId) >= value;
+                case PrerequisiteComparison.GreaterThan:
+                    return player.GetVitalValue((Vital)objectId) > value;
+                case PrerequisiteComparison.LessThanOrEqual:
+                    return player.GetVitalValue((Vital)objectId) <= value;
+                case PrerequisiteComparison.LessThan:
+                    return player.GetVitalValue((Vital)objectId) < value;
                 default:
                     log.Warn($"Unhandled {comparison} for {PrerequisiteType.Vital}!");
                     return false;

@@ -12,6 +12,10 @@
         Quest           = 6,
         Achievement     = 7,
         Prerequisite    = 11,
+        /// <summary>
+        /// Checks for whether or not the Player is affected by this spell. Used in cases to check for if player has AMP.
+        /// </summary>
+        Spell           = 15,
         Path            = 52,
         Vital           = 73,
         SpellObj        = 129,

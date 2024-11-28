@@ -7,6 +7,7 @@ using NexusForever.Game.Abstract.Spell.Event;
 using NexusForever.Game.Entity;
 using NexusForever.Game.Prerequisite;
 using NexusForever.Game.Spell.Event;
+using NexusForever.Game.Static.Entity;
 using NexusForever.Game.Static.Spell;
 using NexusForever.GameTable.Model;
 using NexusForever.Network.World.Entity;
@@ -306,30 +307,30 @@ namespace NexusForever.Game.Spell
             if (runnerOveride)
                 return CastResult.Ok;
 
-            //for (int i = 0; i < parameters.SpellInfo.Entry.CasterInnateRequirements.Length; i++)
-            //{
-            //    uint innateRequirement = parameters.SpellInfo.Entry.CasterInnateRequirements[i];
-            //    if (innateRequirement == 0)
-            //        continue;
+            for (int i = 0; i < Parameters.SpellInfo.Entry.CasterInnateRequirements.Length; i++)
+            {
+                uint innateRequirement = Parameters.SpellInfo.Entry.CasterInnateRequirements[i];
+                if (innateRequirement == 0)
+                    continue;
 
-            //    switch (parameters.SpellInfo.Entry.CasterInnateRequirementEval[i])
-            //    {
-            //        case 2:
-            //            if (caster.GetVitalValue((Vital)innateRequirement) < parameters.SpellInfo.Entry.CasterInnateRequirementValues[i])
-            //                return GlobalSpellManager.Instance.GetFailedCastResultForVital((Vital)innateRequirement);
-            //            break;
-            //    }
-            //}
+                switch (Parameters.SpellInfo.Entry.CasterInnateRequirementEval[i])
+                {
+                    case 2:
+                        if (caster.GetVitalValue((Vital)innateRequirement) < Parameters.SpellInfo.Entry.CasterInnateRequirementValues[i])
+                            return GlobalSpellManager.Instance.GetFailedCastResultForVital((Vital)innateRequirement);
+                        break;
+                }
+            }
 
-            //for (int i = 0; i < parameters.SpellInfo.Entry.InnateCostTypes.Length; i++)
-            //{
-            //    uint innateCostType = parameters.SpellInfo.Entry.InnateCostTypes[i];
-            //    if (innateCostType == 0)
-            //        continue;
+            for (int i = 0; i < Parameters.SpellInfo.Entry.InnateCostTypes.Length; i++)
+            {
+                uint innateCostType = Parameters.SpellInfo.Entry.InnateCostTypes[i];
+                if (innateCostType == 0)
+                    continue;
 
-            //    if (caster.GetVitalValue((Vital)innateCostType) < parameters.SpellInfo.Entry.InnateCosts[i])
-            //        return GlobalSpellManager.Instance.GetFailedCastResultForVital((Vital)innateCostType);
-            //}
+                if (caster.GetVitalValue((Vital)innateCostType) < Parameters.SpellInfo.Entry.InnateCosts[i])
+                    return GlobalSpellManager.Instance.GetFailedCastResultForVital((Vital)innateCostType);
+            }
 
             return CastResult.Ok;
         }
@@ -435,7 +436,14 @@ namespace NexusForever.Game.Spell
             if (Parameters.CharacterSpell?.MaxAbilityCharges > 0)
                 Parameters.CharacterSpell.UseCharge();
 
-            // TODO: Handle costing Vital Resources
+            for (int i = 0; i < Parameters.SpellInfo.Entry.InnateCostTypes.Length; i++)
+            {
+                uint innateCostType = Parameters.SpellInfo.Entry.InnateCostTypes[i];
+                if (innateCostType == 0)
+                    continue;
+
+                caster.ModifyVital((Vital)innateCostType, Parameters.SpellInfo.Entry.InnateCosts[i] * -1f);
+            }
         }
 
         protected virtual void SelectTargets()

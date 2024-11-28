@@ -6,7 +6,6 @@ using NexusForever.Game.Abstract.Map;
 using NexusForever.Game.Abstract.Reputation;
 using NexusForever.Game.Abstract.Social;
 using NexusForever.Game.CSI;
-using NexusForever.Game.Entity.Movement;
 using NexusForever.Game.Map.Search;
 using NexusForever.Game.Prerequisite;
 using NexusForever.Game.Reputation;
@@ -119,6 +118,67 @@ namespace NexusForever.Game.Entity
         {
             get => (uint)GetPropertyValue(Property.ShieldCapacityMax);
             set => SetBaseProperty(Property.ShieldCapacityMax, value);
+        }
+
+        [Vital(Vital.Dash)]
+        public float Dash
+        {
+            get => GetStatFloat(Stat.Dash) ?? 0f;
+            set
+            {
+                // TODO: Validate prior to setting
+                float newVal = Math.Clamp(value, 0f, GetPropertyValue(Property.ResourceMax7));
+                SetStat(Stat.Dash, newVal);
+            }
+        }
+
+        [Vital(Vital.Resource1)]
+        [Vital(Vital.KineticEnergy)]
+        [Vital(Vital.Volatility)]
+        [Vital(Vital.Actuator)]
+        [Vital(Vital.Actuator2)]
+        public float Resource1
+        {
+            get => GetStatFloat(Stat.Resource1) ?? 0f;
+            set
+            {
+                // TODO: Validate prior to setting
+                float newVal = Math.Clamp(value, 0f, GetPropertyValue(Property.ResourceMax1));
+                SetStat(Stat.Resource1, newVal);
+            }
+        }
+
+        [Vital(Vital.Resource3)]
+        [Vital(Vital.SuitPower)]
+        public float Resource3
+        {
+            get => GetStatFloat(Stat.Resource3) ?? 0f;
+            set
+            {
+                // TODO: Validate prior to setting
+                float newVal = Math.Clamp(value, 0f, GetPropertyValue(Property.ResourceMax3));
+                SetStat(Stat.Resource3, newVal);
+            }
+        }
+
+        [Vital(Vital.Resource4)]
+        [Vital(Vital.SpellSurge)]
+        public float Resource4
+        {
+            get => GetStatFloat(Stat.Resource4) ?? 0f;
+            set
+            {
+                // TODO: Validate prior to setting
+                float newVal = Math.Clamp(value, 0f, GetPropertyValue(Property.ResourceMax4));
+                SetStat(Stat.Resource4, newVal);
+            }
+        }
+
+        [Vital(Vital.InterruptArmor)]
+        public float InterruptArmor
+        {
+            get => (float)(GetStatInteger(Stat.InterruptArmor) ?? 0f);
+            set => SetStat(Stat.InterruptArmor, (uint)value);
         }
 
         public virtual uint Level
@@ -813,6 +873,38 @@ namespace NexusForever.Game.Entity
         protected void SetStat<T>(Stat stat, T value) where T : Enum, IConvertible
         {
             SetStat(stat, value.ToUInt32(null));
+        }
+
+        /// <summary>
+        /// Get the current value of the <see cref="Stat"/> mapped to <see cref="Vital"/>.
+        /// </summary>
+        public float GetVitalValue(Vital vital)
+        {
+            return EntityManager.Instance.GetVitalGetter(vital)?.Invoke(this) ?? 0f;
+        }
+
+        /// <summary>
+        /// Set the stat value for the provided <see cref="Vital"/>.
+        /// </summary>
+        public void SetVital(Vital vital, float value)
+        {
+            var vitalHandler = EntityManager.Instance.GetVitalSetter(vital);
+            if (vitalHandler == null)
+                return;
+
+            vitalHandler.Invoke(this, value);
+        }
+
+        /// <summary>
+        /// Modify the current stat value for the <see cref="Vital"/>.
+        /// </summary>
+        public void ModifyVital(Vital vital, float value)
+        {
+            var vitalHandler = EntityManager.Instance.GetVitalSetter(vital);
+            if (vitalHandler == null)
+                return;
+
+            vitalHandler.Invoke(this, GetVitalValue(vital) + value);
         }
 
         /// <summary>
