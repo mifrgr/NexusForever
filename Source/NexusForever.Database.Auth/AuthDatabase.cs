@@ -84,6 +84,17 @@ namespace NexusForever.Database.Auth
         }
 
         /// <summary>
+        /// Selects an <see cref="AccountModel"/> asynchronously that matches the supplied external reference type and value.
+        /// </summary>
+        public async Task<AccountModel> GetAccountByExternalReference(string referenceType, string referenceValue)
+        {
+            using var context = new AuthContext(config);
+            return await context.Account
+                .Include(a => a.AccountExternalReference)
+                .SingleOrDefaultAsync(a => a.AccountExternalReference.Any(r => r.Type == referenceType && r.Value == referenceValue));
+        }
+
+        /// <summary>
         /// Returns if an account with the given username already exists.
         /// </summary>
         public bool AccountExists(string email)
@@ -100,20 +111,39 @@ namespace NexusForever.Database.Auth
             if (AccountExists(email))
                 throw new InvalidOperationException($"Account with that username already exists.");
 
+            CreateAccountAsync(email, s, v, role, []).GetAwaiter().GetResult();
+        }
+
+        /// <summary>
+        /// Create a new account with the supplied email, salt and password verifier and external references that is inserted into the database.
+        /// </summary>
+        public async Task CreateAccountAsync(string email, string s, string v, uint role, IEnumerable<(string referenceType, string referenceValue)> externalReferences)
+        {
             using var context = new AuthContext(config);
+
             var model = new AccountModel
             {
                 Email = email,
                 S     = s,
                 V     = v
             };
+
             model.AccountRole.Add(new AccountRoleModel
             {
                 RoleId = role
             });
-            context.Account.Add(model);
 
-            context.SaveChanges();
+            foreach ((string referenceType, string referenceValue) in externalReferences)
+            {
+                model.AccountExternalReference.Add(new AccountExternalReferenceModel
+                {
+                    Type  = referenceType,
+                    Value = referenceValue,
+                });
+            }
+
+            context.Account.Add(model);
+            await context.SaveChangesAsync();
         }
 
         /// <summary>
