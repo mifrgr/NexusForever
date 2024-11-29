@@ -190,6 +190,25 @@ namespace NexusForever.Database.Auth
             await context.SaveChangesAsync();
         }
 
+        /// <summary>
+        /// Update <see cref="AccountModel"/> with supplied salt and verifier asynchronously.
+        /// </summary>
+        public async Task UpdateAccountPasswordSaltAndVerifier(uint accountId, string s, string v)
+        {
+            await using var context = new AuthContext(config);
+            EntityEntry<AccountModel> entity = context.Attach(new AccountModel
+            {
+                Id = accountId,
+                S  = s,
+                V  = v
+            });
+
+            entity.Property(p => p.S).IsModified = true;
+            entity.Property(p => p.V).IsModified = true;
+
+            await context.SaveChangesAsync();
+        }
+
         public ImmutableList<ServerModel> GetServers()
         {
             using var context = new AuthContext(config);
