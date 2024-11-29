@@ -86,12 +86,13 @@ namespace NexusForever.Database.Auth
         /// <summary>
         /// Selects an <see cref="AccountModel"/> asynchronously that matches the supplied external reference type and value.
         /// </summary>
-        public async Task<AccountModel> GetAccountByExternalReference(string referenceType, string referenceValue)
+        public async Task<List<AccountModel>> GetAccountsByExternalReference(string referenceType, string referenceValue)
         {
             using var context = new AuthContext(config);
             return await context.Account
                 .Include(a => a.AccountExternalReference)
-                .SingleOrDefaultAsync(a => a.AccountExternalReference.Any(r => r.Type == referenceType && r.Value == referenceValue));
+                .Where(a => a.AccountExternalReference.Any(r => r.Type == referenceType && r.Value == referenceValue))
+                .ToListAsync();
         }
 
         /// <summary>

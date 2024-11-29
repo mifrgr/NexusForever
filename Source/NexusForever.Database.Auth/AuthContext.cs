@@ -182,9 +182,6 @@ namespace NexusForever.Database.Auth
                 entity.HasKey(e => new { e.Id, e.Type })
                     .HasName("PRIMARY");
 
-                entity.HasIndex(e => new { e.Type, e.Value })
-                    .IsUnique();
-
                 entity.ToTable("account_external_reference");
 
                 entity.Property(e => e.Id)
