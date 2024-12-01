@@ -54,7 +54,7 @@ namespace NexusForever.Game.Entity
             sc.AddSingletonLegacy<IEntityManager, EntityManager>();
             sc.AddSingletonLegacy<IPlayerManager, PlayerManager>();
 
-            sc.AddSingleton<ICurrencyManager, CurrencyManager>();
+            sc.AddTransient<ICurrencyManager, CurrencyManager>();
         }
     }
 }

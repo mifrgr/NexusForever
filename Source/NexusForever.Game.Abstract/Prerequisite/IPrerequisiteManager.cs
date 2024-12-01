@@ -4,8 +4,6 @@ namespace NexusForever.Game.Abstract.Prerequisite
 {
     public interface IPrerequisiteManager
     {
-        void Initialise();
-
         /// <summary>
         /// Checks if <see cref="IPlayer"/> meets supplied prerequisite.
         /// </summary>
