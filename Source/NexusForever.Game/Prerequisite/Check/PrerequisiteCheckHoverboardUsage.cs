@@ -4,8 +4,8 @@ using NexusForever.Game.Static.Prerequisite;
 
 namespace NexusForever.Game.Prerequisite.Check
 {
-    [PrerequisiteCheck(PrerequisiteType.Unknown195)]
-    public class PrerequisiteCheckUnknown195 : IPrerequisiteCheck
+    [PrerequisiteCheck(PrerequisiteType.HoverboardUsage)]
+    public class PrerequisiteCheckHoverboardUsage : IPrerequisiteCheck
     {
         public bool Meets(IPlayer player, PrerequisiteComparison comparison, uint value, uint objectId)
         {

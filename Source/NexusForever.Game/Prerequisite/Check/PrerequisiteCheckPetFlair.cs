@@ -6,15 +6,15 @@ using NexusForever.Game.Static.Prerequisite;
 
 namespace NexusForever.Game.Prerequisite.Check
 {
-    [PrerequisiteCheck(PrerequisiteType.HoverboardFlair)]
-    public class PrerequisiteCheckHoverboardFlair : IPrerequisiteCheck
+    [PrerequisiteCheck(PrerequisiteType.PetFlair)]
+    public class PrerequisiteCheckPetFlair : IPrerequisiteCheck
     {
         #region Dependency Injection
 
-        private readonly ILogger<PrerequisiteCheckHoverboardFlair> log;
+        private readonly ILogger<PrerequisiteCheckPetFlair> log;
 
-        public PrerequisiteCheckHoverboardFlair(
-            ILogger<PrerequisiteCheckHoverboardFlair> log)
+        public PrerequisiteCheckPetFlair(
+            ILogger<PrerequisiteCheckPetFlair> log)
         {
             this.log = log;
         }
@@ -30,7 +30,7 @@ namespace NexusForever.Game.Prerequisite.Check
                 case PrerequisiteComparison.NotEqual:
                     return player.PetCustomisationManager.GetCustomisation(PetType.HoverBoard, objectId) == null;
                 default:
-                    log.LogWarning($"Unhandled PrerequisiteComparison {comparison} for {PrerequisiteType.HoverboardFlair}!");
+                    log.LogWarning($"Unhandled PrerequisiteComparison {comparison} for {PrerequisiteType.PetFlair}!");
                     return false;
             }
         }

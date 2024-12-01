@@ -2,10 +2,11 @@
 using NexusForever.Game.Abstract.Entity;
 using NexusForever.Game.Abstract.Prerequisite;
 using NexusForever.Game.Static.Prerequisite;
+using NexusForever.Game.Static.Reputation;
 
 namespace NexusForever.Game.Prerequisite.Check
 {
-    [PrerequisiteCheck(PrerequisiteType.SpellBaseId)]
+    [PrerequisiteCheck(PrerequisiteType.BaseFaction)]
     public class PrerequisiteCheckBaseFaction : IPrerequisiteCheck
     {
         #region Dependency Injection
@@ -24,12 +25,12 @@ namespace NexusForever.Game.Prerequisite.Check
         {
             switch (comparison)
             {
-                case PrerequisiteComparison.NotEqual:
-                    return player.SpellManager.GetSpell(objectId) == null;
                 case PrerequisiteComparison.Equal:
-                    return player.SpellManager.GetSpell(objectId) != null;
+                    return player.Faction1 == (Faction)value;
+                case PrerequisiteComparison.NotEqual:
+                    return player.Faction1 != (Faction)value;
                 default:
-                    log.LogWarning($"Unhandled PrerequisiteComparison {comparison} for {PrerequisiteType.Achievement}!");
+                    log.LogWarning($"Unhandled PrerequisiteComparison {comparison} for {PrerequisiteType.BaseFaction}!");
                     return false;
             }
         }
