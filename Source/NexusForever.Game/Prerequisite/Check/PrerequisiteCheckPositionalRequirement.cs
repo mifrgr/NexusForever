@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Numerics;
+using Microsoft.Extensions.Logging;
 using NexusForever.Game.Abstract.Entity;
 using NexusForever.Game.Abstract.Prerequisite;
 using NexusForever.Game.Static.Prerequisite;
@@ -30,10 +31,23 @@ namespace NexusForever.Game.Prerequisite.Check
             if (entry == null)
                 return false;
 
+            float x = MathF.Cos(-parameters.Target.Rotation.X);
+            float z = MathF.Sin(-parameters.Target.Rotation.X);
+            Vector3 forward = new Vector3(x, 0, z);
+
+            Vector3 direction = Vector3.Normalize(player.Position - parameters.Target.Position);
+            float dot = Vector3.Dot(direction, forward);
+            float cross = Vector3.Cross(direction, forward).Y;
+
+            float angle = MathF.Atan2(cross, dot);
+            angle += MathF.PI / 2;
+            if (angle < 0)
+                angle += MathF.PI * 2;
+
+            angle = angle.ToDegrees();
+
             float minBounds = entry.AngleCenter - entry.AngleRange / 2f;
             float maxBounds = entry.AngleCenter + entry.AngleRange / 2f;
-
-            float angle = (parameters.Target.Position.GetAngle(player.Position) - parameters.Target.Rotation.X).ToDegrees();
             bool isAllowed = angle >= minBounds && angle <= maxBounds;
 
             switch (comparison)
