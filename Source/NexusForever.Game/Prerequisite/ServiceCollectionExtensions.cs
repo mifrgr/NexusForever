@@ -11,6 +11,8 @@ namespace NexusForever.Game.Prerequisite
         {
             sc.AddSingletonLegacy<IPrerequisiteManager, PrerequisiteManager>();
 
+            sc.AddTransientFactory<IPrerequisiteParameters, PrerequisiteParameters>();
+
             foreach (Type type in Assembly.GetExecutingAssembly().GetTypes())
             {
                 PrerequisiteCheckAttribute attribute = type.GetCustomAttribute<PrerequisiteCheckAttribute>();
