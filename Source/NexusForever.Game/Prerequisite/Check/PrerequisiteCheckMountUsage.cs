@@ -4,10 +4,10 @@ using NexusForever.Game.Static.Prerequisite;
 
 namespace NexusForever.Game.Prerequisite.Check
 {
-    [PrerequisiteCheck(PrerequisiteType.Unknown195)]
-    public class PrerequisiteCheckUnknown195 : IPrerequisiteCheck
+    [PrerequisiteCheck(PrerequisiteType.MountUsage)]
+    public class PrerequisiteCheckMountUsage : IPrerequisiteCheck
     {
-        public bool Meets(IPlayer player, PrerequisiteComparison comparison, uint value, uint objectId)
+        public bool Meets(IPlayer player, PrerequisiteComparison comparison, uint value, uint objectId, IPrerequisiteParameters parameters)
         {
             // TODO: Only used in Mount check prerequisites. Its use is unknown.
 

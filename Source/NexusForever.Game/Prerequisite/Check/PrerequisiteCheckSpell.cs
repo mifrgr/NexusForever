@@ -6,6 +6,7 @@ using NexusForever.Game.Static.Prerequisite;
 
 namespace NexusForever.Game.Prerequisite.Check
 {
+    [PrerequisiteCheck(PrerequisiteType.UnderSpell)]
     public class PrerequisiteCheckSpell : IPrerequisiteCheck
     {
         #region Dependency Injection
@@ -20,7 +21,7 @@ namespace NexusForever.Game.Prerequisite.Check
 
         #endregion
 
-        public bool Meets(IPlayer player, PrerequisiteComparison comparison, uint value, uint objectId)
+        public bool Meets(IPlayer player, PrerequisiteComparison comparison, uint value, uint objectId, IPrerequisiteParameters parameters)
         {
             if (value == 0 && objectId == 0)
                 return false;
@@ -32,7 +33,7 @@ namespace NexusForever.Game.Prerequisite.Check
                 case PrerequisiteComparison.NotEqual:
                     return !player.HasSpell(s => s.Spell4Id == value, out ISpell notEqualSpell);
                 default:
-                    log.LogWarning($"Unhandled PrerequisiteComparison {comparison} for {PrerequisiteType.Spell}!");
+                    log.LogWarning($"Unhandled PrerequisiteComparison {comparison} for {PrerequisiteType.UnderSpell}!");
                     return false;
             }
         }

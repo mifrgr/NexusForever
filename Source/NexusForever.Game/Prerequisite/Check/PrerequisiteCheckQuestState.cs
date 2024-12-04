@@ -6,22 +6,22 @@ using NexusForever.Game.Static.Quest;
 
 namespace NexusForever.Game.Prerequisite.Check
 {
-    [PrerequisiteCheck(PrerequisiteType.Quest)]
-    public class PrerequisiteCheckQuest : IPrerequisiteCheck
+    [PrerequisiteCheck(PrerequisiteType.QuestState)]
+    public class PrerequisiteCheckQuestState : IPrerequisiteCheck
     {
         #region Dependency Injection
 
-        private readonly ILogger<PrerequisiteCheckQuest> log;
+        private readonly ILogger<PrerequisiteCheckQuestState> log;
 
-        public PrerequisiteCheckQuest(
-            ILogger<PrerequisiteCheckQuest> log)
+        public PrerequisiteCheckQuestState(
+            ILogger<PrerequisiteCheckQuestState> log)
         {
             this.log = log;
         }
 
         #endregion
 
-        public bool Meets(IPlayer player, PrerequisiteComparison comparison, uint value, uint objectId)
+        public bool Meets(IPlayer player, PrerequisiteComparison comparison, uint value, uint objectId, IPrerequisiteParameters parameters)
         {
             switch (comparison)
             {
@@ -30,7 +30,7 @@ namespace NexusForever.Game.Prerequisite.Check
                 case PrerequisiteComparison.NotEqual:
                     return player.QuestManager.GetQuestState((ushort)objectId) != (QuestState)value;
                 default:
-                    log.LogWarning($"Unhandled PrerequisiteComparison {comparison} for {PrerequisiteType.Quest}!");
+                    log.LogWarning($"Unhandled PrerequisiteComparison {comparison} for {PrerequisiteType.QuestState}!");
                     return false;
             }
         }

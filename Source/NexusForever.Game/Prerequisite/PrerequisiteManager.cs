@@ -16,15 +16,18 @@ namespace NexusForever.Game.Prerequisite
         private readonly ILogger<PrerequisiteManager> log;
         private readonly IServiceProvider serviceProvider;
         private readonly IGameTableManager gameTableManager;
+        private readonly IFactory<IPrerequisiteParameters> prerequisiteParametersFactory;
 
         public PrerequisiteManager(
             ILogger<PrerequisiteManager> log,
             IServiceProvider serviceProvider,
-            IGameTableManager gameTableManager)
+            IGameTableManager gameTableManager,
+            IFactory<IPrerequisiteParameters> prerequisiteParametersFactory)
         {
-            this.log              = log;
-            this.serviceProvider  = serviceProvider;
-            this.gameTableManager = gameTableManager;
+            this.log                           = log;
+            this.serviceProvider               = serviceProvider;
+            this.gameTableManager              = gameTableManager;
+            this.prerequisiteParametersFactory = prerequisiteParametersFactory;
         }
 
         #endregion
@@ -34,23 +37,32 @@ namespace NexusForever.Game.Prerequisite
         /// </summary>
         public bool Meets(IPlayer player, uint prerequisiteId)
         {
+            IPrerequisiteParameters parameters = prerequisiteParametersFactory.Resolve();
+            return Meets(player, prerequisiteId, parameters);
+        }
+
+        /// <summary>
+        /// Checks if <see cref="IPlayer"/> meets supplied prerequisite.
+        /// </summary>
+        public bool Meets(IPlayer player, uint prerequisiteId, IPrerequisiteParameters parameters)
+        {
             PrerequisiteEntry entry = gameTableManager.Prerequisite.GetEntry(prerequisiteId);
             if (entry == null)
                 throw new ArgumentException();
-            
+
             switch (entry.Flags)
             {
                 case EvaluationMode.EvaluateAND:
-                    return MeetsEvaluateAnd(player, prerequisiteId, entry);
+                    return MeetsEvaluateAnd(player, prerequisiteId, entry, parameters);
                 case EvaluationMode.EvaluateOR:
-                    return MeetsEvaluateOr(player, prerequisiteId, entry);
+                    return MeetsEvaluateOr(player, prerequisiteId, entry, parameters);
                 default:
                     log.LogTrace($"Unhandled EvaluationMode {entry.Flags}");
                     return false;
             }
         }
 
-        private bool MeetsEvaluateAnd(IPlayer player, uint prerequisiteId, PrerequisiteEntry entry)
+        private bool MeetsEvaluateAnd(IPlayer player, uint prerequisiteId, PrerequisiteEntry entry, IPrerequisiteParameters parameters)
         {
             for (int i = 0; i < entry.PrerequisiteTypeId.Length; i++)
             {
@@ -58,8 +70,8 @@ namespace NexusForever.Game.Prerequisite
                 if (type == PrerequisiteType.None)
                     continue;
 
-                PrerequisiteComparison comparison = (PrerequisiteComparison)entry.PrerequisiteComparisonId[i];
-                if (!Meets(player, type, comparison, entry.Value[i], entry.ObjectId[i]))
+                PrerequisiteComparison comparison = entry.PrerequisiteComparisonId[i];
+                if (!Meets(player, type, comparison, entry.Value[i], entry.ObjectId[i], parameters))
                 {
                     log.LogTrace($"Player {player.Name} failed prerequisite AND check ({prerequisiteId}) {type}, {comparison}, {entry.Value[i]}, {entry.ObjectId[i]}");
                     return false;
@@ -69,7 +81,7 @@ namespace NexusForever.Game.Prerequisite
             return true;
         }
 
-        private bool MeetsEvaluateOr(IPlayer player, uint prerequisiteId, PrerequisiteEntry entry)
+        private bool MeetsEvaluateOr(IPlayer player, uint prerequisiteId, PrerequisiteEntry entry, IPrerequisiteParameters parameters)
         {
             for (int i = 0; i < entry.PrerequisiteTypeId.Length; i++)
             {
@@ -77,7 +89,7 @@ namespace NexusForever.Game.Prerequisite
                 if (type == PrerequisiteType.None)
                     continue;
 
-                if (Meets(player, type, entry.PrerequisiteComparisonId[i], entry.Value[i], entry.ObjectId[i]))
+                if (Meets(player, type, entry.PrerequisiteComparisonId[i], entry.Value[i], entry.ObjectId[i], parameters))
                     return true;
             }
 
@@ -85,7 +97,7 @@ namespace NexusForever.Game.Prerequisite
             return false;
         }
 
-        private bool Meets(IPlayer player, PrerequisiteType type, PrerequisiteComparison comparison, uint value, uint objectId)
+        private bool Meets(IPlayer player, PrerequisiteType type, PrerequisiteComparison comparison, uint value, uint objectId, IPrerequisiteParameters parameters)
         {
             IPrerequisiteCheck handler = serviceProvider.GetKeyedService<IPrerequisiteCheck>(type);
             if (handler == null)
@@ -94,7 +106,7 @@ namespace NexusForever.Game.Prerequisite
                 return false;
             }
 
-            return handler.Meets(player, comparison, value, objectId);
+            return handler.Meets(player, comparison, value, objectId, parameters);
         }
     }
 }

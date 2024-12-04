@@ -5,16 +5,16 @@ using NexusForever.Game.Static.Prerequisite;
 
 namespace NexusForever.Game.Prerequisite.Check
 {
-    [PrerequisiteCheck(PrerequisiteType.Prerequisite)]
-    public class PrerequisiteCheckPrerequisite : IPrerequisiteCheck
+    [PrerequisiteCheck(PrerequisiteType.OtherPrerequisite)]
+    public class PrerequisiteCheckOtherPrerequisite : IPrerequisiteCheck
     {
         #region Dependency Injection
 
-        private readonly ILogger<PrerequisiteCheckPrerequisite> log;
+        private readonly ILogger<PrerequisiteCheckOtherPrerequisite> log;
         private readonly IPrerequisiteManager prerequisiteManager;
 
-        public PrerequisiteCheckPrerequisite(
-            ILogger<PrerequisiteCheckPrerequisite> log,
+        public PrerequisiteCheckOtherPrerequisite(
+            ILogger<PrerequisiteCheckOtherPrerequisite> log,
             IPrerequisiteManager prerequisiteManager)
         {
             this.log                 = log;
@@ -23,7 +23,7 @@ namespace NexusForever.Game.Prerequisite.Check
 
         #endregion
 
-        public bool Meets(IPlayer player, PrerequisiteComparison comparison, uint value, uint objectId)
+        public bool Meets(IPlayer player, PrerequisiteComparison comparison, uint value, uint objectId, IPrerequisiteParameters parameters)
         {
             switch (comparison)
             {
@@ -32,7 +32,7 @@ namespace NexusForever.Game.Prerequisite.Check
                 case PrerequisiteComparison.Equal:
                     return prerequisiteManager.Meets(player, objectId);
                 default:
-                    log.LogWarning($"Unhandled {comparison} for {PrerequisiteType.Prerequisite}!");
+                    log.LogWarning($"Unhandled {comparison} for {PrerequisiteType.OtherPrerequisite}!");
                     return false;
             }
         }
