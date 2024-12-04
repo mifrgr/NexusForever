@@ -193,7 +193,7 @@ namespace NexusForever.Game.Entity
         public bool IsLoading { get; set; } = true;
 
         public IInventory Inventory { get; private set; }
-        public ICurrencyManager CurrencyManager { get; private set; }
+        public ICurrencyManager CurrencyManager { get; }
         public IPathManager PathManager { get; private set; }
         public ITitleManager TitleManager { get; private set; }
         public ISpellManager SpellManager { get; private set; }
@@ -234,12 +234,16 @@ namespace NexusForever.Game.Entity
             IMovementManager movementManager,
             IEntityFactory entityFactory,
             IMatchingManager matchingManager,
-            IMatchManager matchManager)
+            IMatchManager matchManager,
+            ICurrencyManager currencyManager)
             : base(movementManager)
         {
             this.entityFactory   = entityFactory;
             this.matchingManager = matchingManager;
             this.matchManager    = matchManager;
+
+            // managers
+            CurrencyManager = currencyManager;
         }
 
         #endregion
@@ -290,7 +294,7 @@ namespace NexusForever.Game.Entity
 
             CostumeManager          = new CostumeManager(this, model);
             Inventory               = new Inventory(this, model);
-            CurrencyManager         = new CurrencyManager(this, model);
+            CurrencyManager.Initialise(this, model);
             PathManager             = new PathManager(this, model);
             TitleManager            = new TitleManager(this, model);
             SpellManager            = new SpellManager(this, model);

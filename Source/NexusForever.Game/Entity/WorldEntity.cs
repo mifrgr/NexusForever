@@ -254,7 +254,6 @@ namespace NexusForever.Game.Entity
         private bool emitVisual;
         private readonly Dictionary<ItemSlot, IItemVisual> itemVisuals = new();
 
-
         #region Dependency Injection
 
         public WorldEntity(
