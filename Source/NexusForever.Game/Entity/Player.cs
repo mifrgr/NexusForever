@@ -809,7 +809,7 @@ namespace NexusForever.Game.Entity
 
             if (ControlGuid != null)
             {
-                entity.ControllerGuid = ControlGuid;
+                entity.ControllerGuid = Guid;
 
                 Session.EnqueueMessageEncrypted(new ServerMovementControl
                 {
@@ -963,6 +963,8 @@ namespace NexusForever.Game.Entity
                 VanityPetId = vanityPetId
             };
 
+            SetControl(null);
+
             MapManager.Instance.AddToMap(this, mapPosition);
             log.Trace($"Teleporting {Name}({CharacterId}) to map: {mapPosition.Info.Entry.Id}, instance: {mapPosition.Info.MapLock?.InstanceId ?? null}.");
         }
@@ -976,6 +978,8 @@ namespace NexusForever.Game.Entity
             {
                 SendGenericError(error);
                 pendingTeleport = null;
+
+                SetControl(this);
 
                 log.Trace($"Error {error} occured during teleport for {Name}({CharacterId})!");
             }
