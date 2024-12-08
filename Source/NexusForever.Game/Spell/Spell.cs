@@ -250,8 +250,12 @@ namespace NexusForever.Game.Spell
             // Runners override the Caster Check, allowing the Caster to Cast the spell due to this Prerequisite being met
             if (Parameters.SpellInfo.CasterCastPrerequisite != null && !CheckRunnerOverride(player))
             {
-                if (!PrerequisiteManager.Instance.Meets(player, Parameters.SpellInfo.CasterCastPrerequisite.Id))
-                    return CastResult.PrereqCasterCast;
+                var parameters = new PrerequisiteParameters
+                {
+                    TaxiNode = Parameters.TaxiNode,
+                };
+                if (!PrerequisiteManager.Instance.Meets(player, Parameters.SpellInfo.CasterCastPrerequisite.Id, parameters))
+                    return parameters.CastResult != null ? parameters.CastResult.Value : CastResult.PrereqCasterCast;
             }
 
             // not sure if this should be for explicit and/or implicit targets
@@ -955,7 +959,11 @@ namespace NexusForever.Game.Spell
             persistCheck.Update(lastTick);
             if (persistCheck.HasElapsed)
             {
-                if (Parameters.SpellInfo.Entry.PrerequisiteIdCasterPersistence > 0 && !PrerequisiteManager.Instance.Meets(player, Parameters.SpellInfo.Entry.PrerequisiteIdCasterPersistence))
+                var parameters = new PrerequisiteParameters
+                {
+                    TaxiNode = Parameters.TaxiNode,
+                };
+                if (Parameters.SpellInfo.Entry.PrerequisiteIdCasterPersistence > 0 && !PrerequisiteManager.Instance.Meets(player, Parameters.SpellInfo.Entry.PrerequisiteIdCasterPersistence, parameters))
                     Finish();
 
                 // TODO: Check if target can still persist

@@ -14,7 +14,7 @@ namespace NexusForever.Game.Spell
         public uint PrimaryTargetId { get; set; }
         public Position TargetPosition { get; set; }
         public uint PositionalUnitId { get; set; }
-        public ushort TaxiNode { get; set; }
+        public ushort? TaxiNode { get; set; }
         public ulong SpellCost { get; set; }
         public uint ThresholdValue { get; set; }
         public bool IsProxy { get; set; }

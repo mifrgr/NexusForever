@@ -277,7 +277,7 @@
         Unknown266                  = 266, // Exist in PrerequisiteType.tbl but does not have a description
         Unknown267                  = 267, // Exist in PrerequisiteType.tbl but does not have a description
         Unknown268                  = 268, // Exist in PrerequisiteType.tbl but does not have a description
-        Unknown269                  = 269, // Exist in PrerequisiteType.tbl but does not have a description
+        RapidTransport              = 269, // Exist in PrerequisiteType.tbl but does not have a description
         LoyaltyRewards              = 270, // Loyalty requirement not met
         Unknown271                  = 271, // Exist in PrerequisiteType.tbl but does not have a description
         Unknown272                  = 272, // Exist in PrerequisiteType.tbl but does not have a description
